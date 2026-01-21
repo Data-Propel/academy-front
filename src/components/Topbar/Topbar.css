@@ -1,0 +1,40 @@
+.topbar {
+  background-color: #116D66;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.topbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.topbar-logo-img {
+  height: 45px;
+  width: auto;
+}
+
+.topbar-nav {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 1rem;
+  }
+
+  .topbar-logo-img {
+    height: 35px;
+  }
+}
