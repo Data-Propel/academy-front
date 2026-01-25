@@ -1,0 +1,83 @@
+.notfound-page {
+  min-height: 60vh;
+  background: linear-gradient(135deg, #043A37 28%, #032220 95%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8% 0;
+}
+
+.notfound-container {
+  text-align: center;
+  padding: 0 20px;
+}
+
+.notfound-code {
+  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 150px;
+  font-weight: 700;
+  color: #FD6A44;
+  margin: 0;
+  line-height: 1;
+}
+
+.notfound-title {
+  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: #F2F2F2;
+  margin: 20px 0;
+}
+
+.notfound-message {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 18px;
+  color: rgba(242, 242, 242, 0.8);
+  margin: 0 0 40px 0;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.notfound-button {
+  display: inline-block;
+  padding: 14px 40px;
+  background: #FD6A44;
+  color: #ffffff;
+  text-decoration: none;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.notfound-button:hover {
+  background: #e55a36;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .notfound-code {
+    font-size: 120px;
+  }
+
+  .notfound-title {
+    font-size: 28px;
+  }
+
+  .notfound-message {
+    font-size: 16px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .notfound-code {
+    font-size: 100px;
+  }
+
+  .notfound-title {
+    font-size: 24px;
+  }
+}
