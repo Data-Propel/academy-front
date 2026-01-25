@@ -60,7 +60,7 @@ const Login = () => {
                 />
                 <span>Recuérdame</span>
               </label>
-              <a href="#" className="forgot-password">¿Olvidaste tu contraseña?</a>
+              <a href="/restablecer-contrasena" className="forgot-password">¿Olvidaste tu contraseña?</a>
             </div>
 
             <div className="button-divider"></div>
