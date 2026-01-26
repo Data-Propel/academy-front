@@ -11,12 +11,20 @@ const Topbar = () => {
   useEffect(() => {
     const authenticated = isAuthenticated();
     setLoggedIn(authenticated);
-    setIsAdmin(isSuperuser());
 
-    // Fetch profile to get superuser status if logged in but no superuser flag set
-    if (authenticated && !isSuperuser()) {
-      authApi.getProfile().then(() => {
-        setIsAdmin(isSuperuser());
+    // Check localStorage directly
+    const superuserFlag = localStorage.getItem('is_superuser');
+    setIsAdmin(superuserFlag === 'true');
+
+    // Always fetch profile when logged in to get current superuser status
+    if (authenticated) {
+      authApi.getProfile().then((res) => {
+        if (res.ok) {
+          const adminStatus = res.data.is_superuser || res.data.is_admin || false;
+          setIsAdmin(adminStatus);
+        }
+      }).catch(() => {
+        // Profile fetch failed, use cached value
       });
     }
   }, [location]);

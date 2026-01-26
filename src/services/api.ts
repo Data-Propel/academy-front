@@ -156,7 +156,7 @@ export const authApi = {
     const data = await response.json();
     if (response.ok && data.tokens) {
       setTokens(data.tokens.access, data.tokens.refresh);
-      setSuperuser(data.is_superuser || false);
+      setSuperuser(data.is_superuser || data.is_admin || false);
     }
     return { ok: response.ok, data };
   },
@@ -170,7 +170,7 @@ export const authApi = {
     const data = await response.json();
     if (response.ok) {
       setTokens(data.access, data.refresh);
-      setSuperuser(data.is_superuser || false);
+      setSuperuser(data.is_superuser || data.is_admin || false);
     }
     return { ok: response.ok, data };
   },
@@ -208,7 +208,7 @@ export const authApi = {
     const data = await response.json();
     if (response.ok && data.tokens) {
       setTokens(data.tokens.access, data.tokens.refresh);
-      setSuperuser(data.is_superuser || false);
+      setSuperuser(data.is_superuser || data.is_admin || false);
     }
     return { ok: response.ok, data };
   },
@@ -216,8 +216,9 @@ export const authApi = {
   getProfile: async () => {
     const response = await apiFetch('/users/profile/');
     const data = await response.json();
-    if (response.ok && data.is_superuser !== undefined) {
-      setSuperuser(data.is_superuser);
+    if (response.ok) {
+      const isAdmin = data.is_superuser || data.is_admin || false;
+      setSuperuser(isAdmin);
     }
     return { ok: response.ok, data };
   },
