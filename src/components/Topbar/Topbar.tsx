@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { isAuthenticated, authApi } from '../../services/api';
 import './Topbar.css';
 
 const Topbar = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const location = useLocation();
+  const [loggedIn, setLoggedIn] = useState(isAuthenticated());
 
   useEffect(() => {
     setLoggedIn(isAuthenticated());
-  }, []);
+  }, [location]);
 
   const handleLogout = () => {
     authApi.logout();
