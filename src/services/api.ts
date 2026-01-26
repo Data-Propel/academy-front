@@ -213,6 +213,15 @@ export const authApi = {
     return { ok: response.ok, data };
   },
 
+  resendVerification: async (email: string) => {
+    const response = await fetch(`${API_URL}/users/resend-verification/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
   autoLogin: async (token: string) => {
     const response = await fetch(`${API_URL}/users/auto-login/`, {
       method: 'POST',

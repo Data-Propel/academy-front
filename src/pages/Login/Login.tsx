@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
 import './Login.css';
 
-type LoginStep = 'email' | 'password' | 'setup-password';
+type LoginStep = 'email' | 'password' | 'setup-password' | 'verify-email';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState('');
 
   const handleCheckAccount = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +55,29 @@ const Login = () => {
       const { ok, data } = await authApi.login(email, password);
       if (ok) {
         navigate('/');
+      } else if (data.email_verified === false) {
+        setStep('verify-email');
       } else {
         setError(data.detail || 'Credenciales inválidas. Intenta de nuevo.');
+      }
+    } catch {
+      setError('Error de conexión. Intenta más tarde.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setError('');
+    setResendSuccess('');
+    setLoading(true);
+
+    try {
+      const { ok, data } = await authApi.resendVerification(email);
+      if (ok) {
+        setResendSuccess('Correo de verificación enviado. Revisa tu bandeja de entrada.');
+      } else {
+        setError(data.detail || 'Error al enviar el correo. Intenta de nuevo.');
       }
     } catch {
       setError('Error de conexión. Intenta más tarde.');
@@ -122,6 +144,12 @@ const Login = () => {
               <>
                 <h2 className="login-title">¡Bienvenido, {userName}!</h2>
                 <p className="login-subtitle">Configura tu contraseña para continuar.</p>
+              </>
+            )}
+            {step === 'verify-email' && (
+              <>
+                <h2 className="login-title">Verifica tu correo</h2>
+                <p className="login-subtitle">Tu cuenta aún no ha sido verificada.</p>
               </>
             )}
             <div className="login-divider"></div>
@@ -256,6 +284,41 @@ const Login = () => {
                 <span className="button-text">{loading ? 'Configurando...' : 'Configurar contraseña'}</span>
               </button>
             </form>
+          )}
+
+          {/* Step 4: Verify Email */}
+          {step === 'verify-email' && (
+            <div className="verify-email-container">
+              {error && <div className="form-error">{error}</div>}
+              {resendSuccess && <div className="form-success">{resendSuccess}</div>}
+
+              <div className="verify-email-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+
+              <p className="verify-email-text">
+                Hemos enviado un correo de verificación a <strong>{email}</strong>
+              </p>
+              <p className="verify-email-subtext">
+                Revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.
+              </p>
+
+              <button
+                type="button"
+                className="submit-button"
+                onClick={handleResendVerification}
+                disabled={loading}
+              >
+                <span className="button-text">{loading ? 'Enviando...' : 'Reenviar correo'}</span>
+              </button>
+
+              <button type="button" className="back-to-login" onClick={handleBack}>
+                Volver al inicio de sesión
+              </button>
+            </div>
           )}
 
           <div className="login-footer">
