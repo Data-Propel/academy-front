@@ -151,6 +151,10 @@ const Login = () => {
               <button type="submit" className="submit-button" disabled={loading}>
                 <span className="button-text">{loading ? 'Verificando...' : 'Continuar'}</span>
               </button>
+
+              <div className="forgot-password-container">
+                <a href="/reset-password" className="forgot-password">¿Olvidaste tu contraseña?</a>
+              </div>
             </form>
           )}
 
@@ -190,7 +194,7 @@ const Login = () => {
                   />
                   <span>Recuérdame</span>
                 </label>
-                <a href="/restablecer-contrasena" className="forgot-password">¿Olvidaste tu contraseña?</a>
+                <a href="/reset-password" className="forgot-password">¿Olvidaste tu contraseña?</a>
               </div>
 
               <div className="button-divider"></div>
@@ -256,7 +260,7 @@ const Login = () => {
 
           <div className="login-footer">
             ¿Todavía no eres miembro?{' '}
-            <a href="/registro" className="register-link">Regístrate ahora.</a>
+            <a href="/register" className="register-link">Regístrate ahora.</a>
           </div>
         </div>
       </div>

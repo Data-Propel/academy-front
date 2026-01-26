@@ -45,6 +45,17 @@ Most pages use a gradient background:
 background: linear-gradient(135deg, #043A37 28%, #032220 95%);
 ```
 
+## Routes (English)
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Dashboard | Main page (courses grid) |
+| `/login` | Login | Multi-step login |
+| `/register` | Register | User registration |
+| `/reset-password` | ResetPassword | Request password reset |
+| `/reset-password?token=...` | ResetPassword | Set new password with token |
+| `/admin` | Admin | Admin panel (superusers only) |
+| `*` | NotFound | 404 page |
+
 ## Project Structure
 ```
 src/
@@ -54,9 +65,9 @@ src/
 ├── pages/
 │   ├── Login/           # Multi-step login (email → password/setup)
 │   ├── Register/        # User registration
-│   ├── ResetPassword/   # Password reset request
+│   ├── ResetPassword/   # Password reset request + set new password with token
 │   ├── Dashboard/       # Main page after login (shows courses)
-│   ├── Admin/           # Admin panel (superusers only)
+│   ├── Admin/           # Admin panel (superusers only) - CRUD for users, courses, categories, lessons, topics, quizzes
 │   └── NotFound/        # 404 page
 ├── services/
 │   └── api.ts           # API client with JWT handling
@@ -89,6 +100,7 @@ src/
 | `/login/` | POST | No | Login with email/password (returns JWT) |
 | `/register/` | POST | No | Create new account |
 | `/password-reset/` | POST | No | Request password reset email |
+| `/password-reset/confirm/` | POST | No | Set new password with token (returns JWT) |
 | `/profile/` | GET/PUT | Yes | Get/update user profile |
 | `/token/refresh/` | POST | No | Refresh access token |
 
@@ -127,6 +139,12 @@ src/
 | `/categories/<id>/` | GET | Admin | Get category details |
 | `/categories/<id>/` | PUT | Admin | Update category |
 | `/categories/<id>/` | DELETE | Admin | Delete category |
+| `/lessons/` | GET/POST | Admin | List/Create lessons |
+| `/lessons/<id>/` | GET/PUT/DELETE | Admin | Get/Update/Delete lesson |
+| `/topics/` | GET/POST | Admin | List/Create topics |
+| `/topics/<id>/` | GET/PUT/DELETE | Admin | Get/Update/Delete topic |
+| `/quizzes/` | GET/POST | Admin | List/Create quizzes |
+| `/quizzes/<id>/` | GET/PUT/DELETE | Admin | Get/Update/Delete quiz |
 
 ## Pages Status
 
