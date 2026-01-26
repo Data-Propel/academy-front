@@ -211,6 +211,17 @@
   font-size: 0.9rem;
 }
 
+.clickable-cell {
+  color: #FD6A44;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.clickable-cell:hover {
+  color: #f8b81f;
+  text-decoration: underline;
+}
+
 .admin-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
@@ -584,6 +595,17 @@
   border-radius: 4px;
   font-size: 0.85rem;
   margin-bottom: 12px;
+}
+
+.thumbnail-error {
+  background: rgba(253, 106, 68, 0.15);
+  border: 1px solid #FD6A44;
+  color: #FD6A44;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-top: 10px;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .form-actions {

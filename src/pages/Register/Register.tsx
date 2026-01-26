@@ -14,6 +14,7 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -41,7 +42,7 @@ const Register = () => {
       });
 
       if (ok) {
-        navigate('/login');
+        setRegistered(true);
       } else {
         const errorMsg = data.email?.[0] || data.password?.[0] || data.detail || 'Error al registrar. Intenta de nuevo.';
         setError(errorMsg);
@@ -52,6 +53,38 @@ const Register = () => {
       setLoading(false);
     }
   };
+
+  if (registered) {
+    return (
+      <div className="register-page">
+        <div className="register-container">
+          <div className="register-card">
+            <div className="register-header">
+              <h2 className="register-title">Confirma tu correo</h2>
+              <div className="register-divider"></div>
+            </div>
+            <div className="confirm-email-message">
+              <div className="confirm-email-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <p className="confirm-email-text">
+                Hemos enviado un correo de confirmación a <strong>{formData.email}</strong>
+              </p>
+              <p className="confirm-email-subtext">
+                Revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.
+              </p>
+              <button className="submit-button" onClick={() => navigate('/login')}>
+                <span className="button-text">Ir a Iniciar Sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="register-page">

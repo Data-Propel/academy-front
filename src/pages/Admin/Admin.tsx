@@ -139,6 +139,11 @@ const Admin = () => {
   const [lessonThumbnailPreview, setLessonThumbnailPreview] = useState<string>('');
   const [deleteThumbnailLesson, setDeleteThumbnailLesson] = useState(false);
 
+  // Thumbnail validation errors
+  const [courseThumbnailError, setCourseThumbnailError] = useState<string>('');
+  const [lessonThumbnailError, setLessonThumbnailError] = useState<string>('');
+
+
   const [topicForm, setTopicForm] = useState({
     title: '',
     content: '',
@@ -262,113 +267,117 @@ const Admin = () => {
     setCourseThumbnail(null);
     setCourseThumbnailPreview('');
     setDeleteThumbnailCourse(false);
+    setCourseThumbnailError('');
     setCategoryForm({ name: '', slug: '', description: '' });
     setLessonForm({ title: '', content: '', course_id: 0, order_index: 1 });
     setLessonThumbnail(null);
     setLessonThumbnailPreview('');
     setDeleteThumbnailLesson(false);
+    setLessonThumbnailError('');
     setTopicForm({ title: '', content: '', course_id: 0, lesson_id: 0, order_index: 1 });
     setQuizForm({ title: '', content: '', course_id: 0, lesson_id: 0, order_index: 1 });
   };
 
-  const validateThumbnail = (file: File): Promise<{ valid: boolean; error?: string; width?: number; height?: number }> => {
-    return new Promise((resolve) => {
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        resolve({ valid: false, error: 'El archivo debe ser una imagen.' });
-        return;
-      }
-
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
-
-      img.onload = () => {
-        URL.revokeObjectURL(objectUrl); // Clean up
-
-        const width = img.width;
-        const height = img.height;
-        const ratio = width / height;
-        const targetRatio = 16 / 9; // 1.777...
-        const tolerance = 0.15; // 15% tolerance
-
-        // Check minimum dimensions
-        if (width < 400 || height < 225) {
-          resolve({ valid: false, error: `Imagen muy pequeña. Mínimo 400x225px. Tu imagen: ${width}x${height}px`, width, height });
-          return;
-        }
-
-        // Check aspect ratio (16:9 with tolerance)
-        if (Math.abs(ratio - targetRatio) > tolerance) {
-          resolve({ valid: false, error: `La imagen debe tener proporción 16:9 (ej: 1280x720, 1920x1080). Tu imagen: ${width}x${height}px`, width, height });
-          return;
-        }
-
-        resolve({ valid: true, width, height });
-      };
-
-      img.onerror = () => {
-        URL.revokeObjectURL(objectUrl);
-        resolve({ valid: false, error: 'No se pudo cargar la imagen. Verifica que el archivo sea válido.' });
-      };
-
-      img.src = objectUrl;
-    });
-  };
-
-  const handleCourseThumbnailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCourseThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setError('');
+    // Basic validation
+    if (!file.type.startsWith('image/')) {
+      setCourseThumbnailError('El archivo debe ser una imagen.');
+      return;
+    }
 
-    try {
-      const validation = await validateThumbnail(file);
-      if (!validation.valid) {
-        setError(validation.error || 'Imagen inválida.');
-        e.target.value = '';
+    if (file.size > 5 * 1024 * 1024) {
+      setCourseThumbnailError('La imagen es muy grande. Máximo 5MB.');
+      return;
+    }
+
+    // Create blob URL for preview
+    const blobUrl = URL.createObjectURL(file);
+
+    // Check dimensions
+    const img = new Image();
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      const ratio = width / height;
+      const targetRatio = 16 / 9;
+      const tolerance = 0.25;
+
+      if (width < 400 || height < 225) {
+        setCourseThumbnailError(`Imagen muy pequeña. Mínimo 400x225px. Tu imagen: ${width}x${height}px`);
+        URL.revokeObjectURL(blobUrl);
         return;
       }
 
-      // Clean up old preview URL if exists
-      if (courseThumbnailPreview && courseThumbnailPreview.startsWith('blob:')) {
-        URL.revokeObjectURL(courseThumbnailPreview);
+      if (Math.abs(ratio - targetRatio) > tolerance) {
+        setCourseThumbnailError(`La imagen debe ser 16:9 (ej: 1280x720). Tu imagen: ${width}x${height}px`);
+        URL.revokeObjectURL(blobUrl);
+        return;
       }
 
+      setCourseThumbnailError('');
       setCourseThumbnail(file);
-      setCourseThumbnailPreview(URL.createObjectURL(file));
+      setCourseThumbnailPreview(blobUrl);
       setDeleteThumbnailCourse(false);
-    } catch (err) {
-      setError('Error al procesar la imagen.');
-      e.target.value = '';
-    }
+    };
+    img.onerror = () => {
+      setCourseThumbnailError('No se pudo cargar la imagen.');
+      URL.revokeObjectURL(blobUrl);
+    };
+    img.src = blobUrl;
   };
 
-  const handleLessonThumbnailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLessonThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setError('');
+    // Basic validation
+    if (!file.type.startsWith('image/')) {
+      setLessonThumbnailError('El archivo debe ser una imagen.');
+      return;
+    }
 
-    try {
-      const validation = await validateThumbnail(file);
-      if (!validation.valid) {
-        setError(validation.error || 'Imagen inválida.');
-        e.target.value = '';
+    if (file.size > 5 * 1024 * 1024) {
+      setLessonThumbnailError('La imagen es muy grande. Máximo 5MB.');
+      return;
+    }
+
+    // Create blob URL for preview
+    const blobUrl = URL.createObjectURL(file);
+
+    // Check dimensions
+    const img = new Image();
+    img.onload = () => {
+      const width = img.width;
+      const height = img.height;
+      const ratio = width / height;
+      const targetRatio = 16 / 9;
+      const tolerance = 0.25;
+
+      if (width < 400 || height < 225) {
+        setLessonThumbnailError(`Imagen muy pequeña. Mínimo 400x225px. Tu imagen: ${width}x${height}px`);
+        URL.revokeObjectURL(blobUrl);
         return;
       }
 
-      // Clean up old preview URL if exists
-      if (lessonThumbnailPreview && lessonThumbnailPreview.startsWith('blob:')) {
-        URL.revokeObjectURL(lessonThumbnailPreview);
+      if (Math.abs(ratio - targetRatio) > tolerance) {
+        setLessonThumbnailError(`La imagen debe ser 16:9 (ej: 1280x720). Tu imagen: ${width}x${height}px`);
+        URL.revokeObjectURL(blobUrl);
+        return;
       }
 
+      setLessonThumbnailError('');
       setLessonThumbnail(file);
-      setLessonThumbnailPreview(URL.createObjectURL(file));
+      setLessonThumbnailPreview(blobUrl);
       setDeleteThumbnailLesson(false);
-    } catch (err) {
-      setError('Error al procesar la imagen.');
-      e.target.value = '';
-    }
+    };
+    img.onerror = () => {
+      setLessonThumbnailError('No se pudo cargar la imagen.');
+      URL.revokeObjectURL(blobUrl);
+    };
+    img.src = blobUrl;
   };
 
   const handleDeleteCourseThumbnail = () => {
@@ -769,7 +778,7 @@ const Admin = () => {
                       {users.map(user => (
                         <tr key={user.id}>
                           <td>{user.id}</td>
-                          <td>{user.email}</td>
+                          <td><span className="clickable-cell" onClick={() => openEditForm(user)}>{user.email}</span></td>
                           <td>{user.first_name} {user.last_name}</td>
                           <td><span className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}>{user.is_active ? 'Sí' : 'No'}</span></td>
                           <td><span className={`status-badge ${user.is_superuser ? 'admin' : ''}`}>{user.is_superuser ? 'Sí' : 'No'}</span></td>
@@ -1017,7 +1026,8 @@ const Admin = () => {
                       <div className="thumbnail-deleted">Thumbnail será eliminado al guardar</div>
                     )}
                     <input type="file" accept="image/*" onChange={handleCourseThumbnailChange} className="file-input" />
-                    {view === 'edit' && !deleteThumbnailCourse && <span className="file-hint">Selecciona una nueva imagen para cambiar el thumbnail</span>}
+                    {courseThumbnailError && <div className="thumbnail-error">{courseThumbnailError}</div>}
+                    {view === 'edit' && !deleteThumbnailCourse && !courseThumbnailError && <span className="file-hint">Selecciona una nueva imagen para cambiar el thumbnail</span>}
                   </div>
                   <div className="form-row">
                     <div className="form-group">
@@ -1104,7 +1114,8 @@ const Admin = () => {
                       <div className="thumbnail-deleted">Thumbnail será eliminado al guardar</div>
                     )}
                     <input type="file" accept="image/*" onChange={handleLessonThumbnailChange} className="file-input" />
-                    {view === 'edit' && !deleteThumbnailLesson && <span className="file-hint">Selecciona una nueva imagen para cambiar el thumbnail</span>}
+                    {lessonThumbnailError && <div className="thumbnail-error">{lessonThumbnailError}</div>}
+                    {view === 'edit' && !deleteThumbnailLesson && !lessonThumbnailError && <span className="file-hint">Selecciona una nueva imagen para cambiar el thumbnail</span>}
                   </div>
                   <div className="form-group">
                     <label>Contenido</label>

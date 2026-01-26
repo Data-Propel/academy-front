@@ -4,6 +4,7 @@ import Footer from './components/Footer/Footer';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
+import AutoLogin from './pages/AutoLogin/AutoLogin';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Admin from './pages/Admin/Admin';
 import NotFound from './pages/NotFound/NotFound';
@@ -20,6 +21,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/auto-login" element={<AutoLogin />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

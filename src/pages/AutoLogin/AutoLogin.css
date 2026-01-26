@@ -1,0 +1,116 @@
+.autologin-page {
+  min-height: 60vh;
+  background: linear-gradient(135deg, #043A37 28%, #032220 95%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8% 0;
+}
+
+.autologin-container {
+  width: 90%;
+  max-width: 450px;
+}
+
+.autologin-card {
+  background: transparent;
+  border: 1px solid #656565;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.autologin-header {
+  text-align: center;
+  padding: 40px 30px 0;
+}
+
+.autologin-title {
+  color: #F2F2F2;
+  font-size: 28px;
+  font-weight: 600;
+  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0;
+}
+
+.autologin-divider {
+  width: 61%;
+  height: 1px;
+  background: #656565;
+  margin: 2rem auto 0;
+}
+
+.autologin-content {
+  padding: 40px 30px;
+  text-align: center;
+}
+
+.autologin-loading {
+  padding: 60px 30px;
+  text-align: center;
+}
+
+.autologin-loading p {
+  color: #F2F2F2;
+  font-size: 1.1rem;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 20px 0 0;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #FD6A44;
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.autologin-error-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 20px;
+  background: rgba(253, 106, 68, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.autologin-error-icon svg {
+  width: 35px;
+  height: 35px;
+  color: #FD6A44;
+}
+
+.autologin-error-text {
+  color: #F2F2F2;
+  font-size: 1rem;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0 0 30px;
+  line-height: 1.5;
+}
+
+.autologin-button {
+  display: inline-block;
+  padding: 12px 40px;
+  border: none;
+  border-radius: 4px;
+  background: #FD6A44;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.autologin-button:hover {
+  background: #e55a36;
+}

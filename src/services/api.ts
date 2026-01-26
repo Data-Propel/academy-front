@@ -208,7 +208,21 @@ export const authApi = {
     const data = await response.json();
     if (response.ok && data.tokens) {
       setTokens(data.tokens.access, data.tokens.refresh);
-      setSuperuser(data.is_superuser || data.is_admin || false);
+      setSuperuser(data.user?.is_admin || false);
+    }
+    return { ok: response.ok, data };
+  },
+
+  autoLogin: async (token: string) => {
+    const response = await fetch(`${API_URL}/users/auto-login/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    const data = await response.json();
+    if (response.ok && data.tokens) {
+      setTokens(data.tokens.access, data.tokens.refresh);
+      setSuperuser(data.user?.is_admin || false);
     }
     return { ok: response.ok, data };
   },
