@@ -71,6 +71,28 @@ const refreshToken = async (): Promise<boolean> => {
 
 // Auth API
 export const authApi = {
+  checkAccount: async (email: string) => {
+    const response = await fetch(`${API_URL}/users/check-account/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  setInitialPassword: async (email: string, token: string, password: string, password_confirm: string) => {
+    const response = await fetch(`${API_URL}/users/set-initial-password/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, token, password, password_confirm }),
+    });
+    const data = await response.json();
+    if (response.ok && data.tokens) {
+      setTokens(data.tokens.access, data.tokens.refresh);
+    }
+    return { ok: response.ok, data };
+  },
+
   login: async (email: string, password: string) => {
     const response = await fetch(`${API_URL}/users/login/`, {
       method: 'POST',
