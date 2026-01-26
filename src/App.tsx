@@ -4,6 +4,7 @@ import Footer from './components/Footer/Footer';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
+import Dashboard from './pages/Dashboard/Dashboard';
 import NotFound from './pages/NotFound/NotFound';
 
 import './App.css';
@@ -14,7 +15,7 @@ function App() {
       <div className="app">
         <Topbar />
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Register />} />
           <Route path="/restablecer-contrasena" element={<ResetPassword />} />

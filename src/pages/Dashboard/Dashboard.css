@@ -1,0 +1,233 @@
+.dashboard-page {
+  min-height: 60vh;
+  background: linear-gradient(135deg, #043A37 28%, #032220 95%);
+  padding: 40px 0;
+}
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+.dashboard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #F2F2F2;
+  font-size: 1.2rem;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+}
+
+.dashboard-welcome {
+  flex: 1;
+}
+
+.dashboard-title {
+  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 48px;
+  font-weight: 600;
+  color: #F2F2F2;
+  margin: 0 0 10px 0;
+  line-height: 1.2;
+}
+
+.dashboard-subtitle {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 18px;
+  color: rgba(242, 242, 242, 0.8);
+  margin: 0;
+}
+
+.logout-button {
+  background: transparent;
+  border: 1px solid #656565;
+  color: #F2F2F2;
+  padding: 10px 24px;
+  border-radius: 4px;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  border-color: #FD6A44;
+  color: #FD6A44;
+}
+
+/* Courses Section */
+.courses-section {
+  margin-top: 20px;
+}
+
+.section-title {
+  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #F2F2F2;
+  margin: 0 0 30px 0;
+}
+
+.no-courses {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #656565;
+  border-radius: 8px;
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.no-courses p {
+  color: rgba(242, 242, 242, 0.8);
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Courses Grid */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.course-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #656565;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-4px);
+  border-color: #FD6A44;
+}
+
+.course-thumbnail {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: #032220;
+}
+
+.course-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.course-content {
+  padding: 20px;
+}
+
+.course-category {
+  display: inline-block;
+  background: rgba(253, 106, 68, 0.2);
+  color: #FD6A44;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.course-title {
+  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #F2F2F2;
+  margin: 0 0 10px 0;
+  line-height: 1.3;
+}
+
+.course-description {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  color: rgba(242, 242, 242, 0.7);
+  margin: 0 0 15px 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.course-meta {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.course-level,
+.course-duration {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(242, 242, 242, 0.6);
+}
+
+.course-button {
+  width: 100%;
+  background: #FD6A44;
+  border: none;
+  color: #ffffff;
+  padding: 12px;
+  border-radius: 4px;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.course-button:hover {
+  background: #e55a36;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .dashboard-title {
+    font-size: 36px;
+  }
+
+  .logout-button {
+    align-self: flex-start;
+  }
+
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-page {
+    padding: 20px 0;
+  }
+
+  .dashboard-container {
+    padding: 0 15px;
+  }
+
+  .dashboard-title {
+    font-size: 28px;
+  }
+
+  .section-title {
+    font-size: 22px;
+  }
+}
