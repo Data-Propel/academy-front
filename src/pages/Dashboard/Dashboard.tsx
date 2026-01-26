@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi, coursesApi, isAuthenticated } from '../../services/api';
+import { coursesApi, isAuthenticated, authApi } from '../../services/api';
 import './Dashboard.css';
 
 interface User {
@@ -58,10 +58,6 @@ const Dashboard = () => {
     fetchData();
   }, [navigate]);
 
-  const handleLogout = () => {
-    authApi.logout();
-  };
-
   const getLevelLabel = (level: string) => {
     const levels: Record<string, string> = {
       beginner: 'Principiante',
@@ -92,9 +88,6 @@ const Dashboard = () => {
               Continúa tu aprendizaje y escala con IA.
             </p>
           </div>
-          <button className="logout-button" onClick={handleLogout}>
-            Cerrar sesión
-          </button>
         </div>
 
         {/* Courses Section */}

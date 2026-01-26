@@ -1,6 +1,18 @@
+import { useEffect, useState } from 'react';
+import { isAuthenticated, authApi } from '../../services/api';
 import './Topbar.css';
 
 const Topbar = () => {
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setLoggedIn(isAuthenticated());
+  }, []);
+
+  const handleLogout = () => {
+    authApi.logout();
+  };
+
   return (
     <header className="topbar">
       <div className="topbar-container">
@@ -12,7 +24,15 @@ const Topbar = () => {
           />
         </a>
         <nav className="topbar-nav">
-          {/* Navigation items can be added here */}
+          {loggedIn ? (
+            <button className="topbar-logout" onClick={handleLogout}>
+              Cerrar sesión
+            </button>
+          ) : (
+            <a href="/login" className="topbar-login">
+              Iniciar sesión
+            </a>
+          )}
         </nav>
       </div>
     </header>

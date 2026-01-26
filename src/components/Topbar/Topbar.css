@@ -29,6 +29,27 @@
   align-items: center;
 }
 
+.topbar-login,
+.topbar-logout {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.topbar-login:hover,
+.topbar-logout:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #ffffff;
+}
+
 @media (max-width: 768px) {
   .topbar {
     padding: 1rem;
