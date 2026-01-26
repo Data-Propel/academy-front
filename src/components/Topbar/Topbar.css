@@ -50,6 +50,24 @@
   border-color: #ffffff;
 }
 
+.topbar-admin {
+  background: #FD6A44;
+  border: 1px solid #FD6A44;
+  color: #ffffff;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.topbar-admin:hover {
+  background: #e55a36;
+  border-color: #e55a36;
+}
+
 @media (max-width: 768px) {
   .topbar {
     padding: 1rem;

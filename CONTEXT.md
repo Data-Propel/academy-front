@@ -49,13 +49,14 @@ background: linear-gradient(135deg, #043A37 28%, #032220 95%);
 ```
 src/
 ├── components/
-│   ├── Topbar/          # Navigation header with logo and login/logout
+│   ├── Topbar/          # Navigation header with logo, admin link, and login/logout
 │   └── Footer/          # Site footer with links and social
 ├── pages/
 │   ├── Login/           # Multi-step login (email → password/setup)
 │   ├── Register/        # User registration
 │   ├── ResetPassword/   # Password reset request
 │   ├── Dashboard/       # Main page after login (shows courses)
+│   ├── Admin/           # Admin panel (superusers only)
 │   └── NotFound/        # 404 page
 ├── services/
 │   └── api.ts           # API client with JWT handling
@@ -102,6 +103,31 @@ src/
 | `/my/enrollments/` | GET | Yes | User's enrollments |
 | `/my/favorites/` | GET | Yes | User's favorites |
 
+### Admin - Superuser only
+
+#### Users Admin (`/api/users/admin/`)
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/` | GET | Admin | List all users |
+| `/` | POST | Admin | Create user |
+| `/<id>/` | GET | Admin | Get user details |
+| `/<id>/` | PUT | Admin | Update user |
+| `/<id>/` | DELETE | Admin | Delete user |
+
+#### Courses Admin (`/api/courses/admin/`)
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/` | GET | Admin | List all courses |
+| `/` | POST | Admin | Create course |
+| `/<id>/` | GET | Admin | Get course details |
+| `/<id>/` | PUT | Admin | Update course |
+| `/<id>/` | DELETE | Admin | Delete course |
+| `/categories/` | GET | Admin | List all categories |
+| `/categories/` | POST | Admin | Create category |
+| `/categories/<id>/` | GET | Admin | Get category details |
+| `/categories/<id>/` | PUT | Admin | Update category |
+| `/categories/<id>/` | DELETE | Admin | Delete category |
+
 ## Pages Status
 
 ### Completed ✅
@@ -109,8 +135,9 @@ src/
 - [x] Register
 - [x] Reset Password
 - [x] Dashboard (courses grid)
+- [x] Admin Panel (users, courses, categories CRUD - superusers only)
 - [x] 404 Page ("¡Ups!" friendly message)
-- [x] Topbar (logo + login/logout button)
+- [x] Topbar (logo + admin link for superusers + login/logout button)
 - [x] Footer (logo, nav columns, social links)
 
 ### Pending 📋
@@ -143,3 +170,5 @@ Located in `ElementorSite/templates/`. Key templates:
 4. The Topbar logo links to: `https://www.academy.wepropel.org/wp-content/uploads/2025/04/Logotipo_Propel_Horizontal-02-removebg-preview-e1745455801946.png`
 5. Vercel needs `vercel.json` with rewrites for SPA routing
 6. Backend has migrated users from WordPress that need password setup on first login
+7. Admin panel at `/admin` is only accessible to superusers (`is_superuser: true`)
+8. Superuser flag is stored in localStorage (`is_superuser`) and set during login

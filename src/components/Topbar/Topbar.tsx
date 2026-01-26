@@ -1,14 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { isAuthenticated, authApi } from '../../services/api';
+import { isAuthenticated, isSuperuser, authApi } from '../../services/api';
 import './Topbar.css';
 
 const Topbar = () => {
   const location = useLocation();
   const [loggedIn, setLoggedIn] = useState(isAuthenticated());
+  const [isAdmin, setIsAdmin] = useState(isSuperuser());
 
   useEffect(() => {
-    setLoggedIn(isAuthenticated());
+    const authenticated = isAuthenticated();
+    setLoggedIn(authenticated);
+    setIsAdmin(isSuperuser());
+
+    // Fetch profile to get superuser status if logged in but no superuser flag set
+    if (authenticated && !isSuperuser()) {
+      authApi.getProfile().then(() => {
+        setIsAdmin(isSuperuser());
+      });
+    }
   }, [location]);
 
   const handleLogout = () => {
@@ -26,6 +36,11 @@ const Topbar = () => {
           />
         </a>
         <nav className="topbar-nav">
+          {loggedIn && isAdmin && (
+            <a href="/admin" className="topbar-admin">
+              Admin
+            </a>
+          )}
           {loggedIn ? (
             <button className="topbar-logout" onClick={handleLogout}>
               Cerrar sesión
