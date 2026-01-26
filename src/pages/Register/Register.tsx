@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authApi } from '../../services/api';
 import './Register.css';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -9,16 +12,45 @@ const Register = () => {
     password: '',
     confirmPassword: '',
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Register attempt:', formData);
-    // Register logic will be implemented here
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { ok, data } = await authApi.register({
+        email: formData.email,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        password: formData.password,
+        password_confirm: formData.confirmPassword,
+      });
+
+      if (ok) {
+        navigate('/login');
+      } else {
+        const errorMsg = data.email?.[0] || data.password?.[0] || data.detail || 'Error al registrar. Intenta de nuevo.';
+        setError(errorMsg);
+      }
+    } catch {
+      setError('Error de conexión. Intenta más tarde.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,6 +64,8 @@ const Register = () => {
           </div>
 
           <form className="register-form" onSubmit={handleSubmit}>
+            {error && <div className="form-error">{error}</div>}
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="firstName">
@@ -111,8 +145,8 @@ const Register = () => {
 
             <div className="button-divider"></div>
 
-            <button type="submit" className="submit-button">
-              <span className="button-text">Regístrate</span>
+            <button type="submit" className="submit-button" disabled={loading}>
+              <span className="button-text">{loading ? 'Cargando...' : 'Regístrate'}</span>
             </button>
           </form>
 

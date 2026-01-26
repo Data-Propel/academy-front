@@ -1,15 +1,33 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authApi } from '../../services/api';
 import './Login.css';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt:', { email, password, rememberMe });
-    // Login logic will be implemented here
+    setError('');
+    setLoading(true);
+
+    try {
+      const { ok, data } = await authApi.login(email, password);
+      if (ok) {
+        navigate('/');
+      } else {
+        setError(data.detail || 'Credenciales inválidas. Intenta de nuevo.');
+      }
+    } catch {
+      setError('Error de conexión. Intenta más tarde.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,6 +41,8 @@ const Login = () => {
           </div>
 
           <form className="login-form" onSubmit={handleSubmit}>
+            {error && <div className="form-error">{error}</div>}
+
             <div className="form-group">
               <label htmlFor="email">
                 Correo electrónico <span className="required">*</span>
@@ -65,8 +85,8 @@ const Login = () => {
 
             <div className="button-divider"></div>
 
-            <button type="submit" className="submit-button">
-              <span className="button-text">Inicia sesión</span>
+            <button type="submit" className="submit-button" disabled={loading}>
+              <span className="button-text">{loading ? 'Cargando...' : 'Inicia sesión'}</span>
             </button>
           </form>
 

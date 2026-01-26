@@ -1,13 +1,32 @@
 import { useState } from 'react';
+import { authApi } from '../../services/api';
 import './ResetPassword.css';
 
 const ResetPassword = () => {
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Reset password for:', email);
-    // Reset password logic will be implemented here
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const { ok, data } = await authApi.resetPassword(email);
+      if (ok) {
+        setSuccess(data.message || 'Si el correo existe, recibirás un enlace para restablecer tu contraseña.');
+        setEmail('');
+      } else {
+        setError(data.email?.[0] || data.detail || 'Error al enviar. Intenta de nuevo.');
+      }
+    } catch {
+      setError('Error de conexión. Intenta más tarde.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -21,6 +40,9 @@ const ResetPassword = () => {
           </div>
 
           <form className="reset-form" onSubmit={handleSubmit}>
+            {error && <div className="form-error">{error}</div>}
+            {success && <div className="form-success">{success}</div>}
+
             <div className="form-group">
               <label htmlFor="email">
                 Correo electrónico <span className="required">*</span>
@@ -38,8 +60,8 @@ const ResetPassword = () => {
 
             <div className="button-divider"></div>
 
-            <button type="submit" className="submit-button">
-              <span className="button-text">Enviar enlace</span>
+            <button type="submit" className="submit-button" disabled={loading}>
+              <span className="button-text">{loading ? 'Enviando...' : 'Enviar enlace'}</span>
             </button>
           </form>
 
