@@ -55,10 +55,10 @@ const Login = () => {
       const { ok, data } = await authApi.login(email, password);
       if (ok) {
         navigate('/');
-      } else if (data.email_verified === false) {
+      } else if (data.email?.[0]?.toLowerCase().includes('verificar')) {
         setStep('verify-email');
       } else {
-        setError(data.detail || 'Credenciales inválidas. Intenta de nuevo.');
+        setError(data.detail || data.email?.[0] || 'Credenciales inválidas. Intenta de nuevo.');
       }
     } catch {
       setError('Error de conexión. Intenta más tarde.');
