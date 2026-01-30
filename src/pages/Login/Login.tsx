@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
-import logo from '../../assets/propel-nonprofitaca.svg';
+const logo = 'https://www.academy.wepropel.org/wp-content/uploads/2025/04/Logotipo_Propel_Horizontal-02-removebg-preview-e1745455801946.png';
 import './Login.css';
 
 type LoginStep = 'email' | 'password' | 'setup-password' | 'verify-email';

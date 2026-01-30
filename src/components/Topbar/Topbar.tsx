@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { isAuthenticated, isSuperuser, authApi } from '../../services/api';
+import logo from '../../assets/propel-nonprofitaca.svg';
 import './Topbar.css';
 
 const Topbar = () => {
@@ -38,7 +39,7 @@ const Topbar = () => {
       <div className="topbar-container">
         <a href="/" className="topbar-logo">
           <img
-            src="https://www.academy.wepropel.org/wp-content/uploads/2025/04/Logotipo_Propel_Horizontal-02-removebg-preview-e1745455801946.png"
+            src={logo}
             alt="Propel Logo"
             className="topbar-logo-img"
           />
