@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
+import logo from '../../assets/propel-nonprofitaca.svg';
 import './Login.css';
 
 type LoginStep = 'email' | 'password' | 'setup-password' | 'verify-email';
@@ -128,6 +129,7 @@ const Login = () => {
       <div className="login-container">
         <div className="login-card">
           <div className="login-header">
+            <img src={logo} alt="Propel Logo" className="login-logo" />
             {step === 'email' && (
               <>
                 <h2 className="login-title">Inicia sesión</h2>

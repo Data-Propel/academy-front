@@ -17,6 +17,12 @@
   padding: 40px 30px 0;
 }
 
+.login-logo {
+  max-width: 200px;
+  height: auto;
+  margin-bottom: 1.5rem;
+}
+
 .login-title {
   color: #F2F2F2;
   font-size: 34px;

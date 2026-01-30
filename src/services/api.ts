@@ -248,7 +248,7 @@ export const authApi = {
 
   logout: () => {
     clearTokens();
-    window.location.href = '/login';
+    window.location.href = 'https://www.academy.wepropel.org/';
   },
 };
 
