@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { coursesApi, isAuthenticated, authApi } from '../../services/api';
 import './Dashboard.css';
 
@@ -101,7 +101,11 @@ const Dashboard = () => {
           ) : (
             <div className="courses-grid">
               {courses.map((course) => (
-                <div key={course.id} className="course-card">
+                <Link
+                  key={course.id}
+                  to={`/courses/${course.slug}`}
+                  className="course-card"
+                >
                   {course.thumbnail && (
                     <div className="course-thumbnail">
                       <img src={course.thumbnail} alt={course.title} />
@@ -117,9 +121,9 @@ const Dashboard = () => {
                       <span className="course-level">{getLevelLabel(course.level)}</span>
                       <span className="course-duration">{course.duration_hours}h</span>
                     </div>
-                    <button className="course-button">Ver curso</button>
+                    <span className="course-button">Ver curso</span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

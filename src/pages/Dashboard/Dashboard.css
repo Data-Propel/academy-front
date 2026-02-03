@@ -101,16 +101,24 @@
 }
 
 .course-card {
+  display: block;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid #656565;
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.3s ease, border-color 0.3s ease;
+  text-decoration: none;
+  color: inherit;
 }
 
 .course-card:hover {
   transform: translateY(-4px);
   border-color: #FD6A44;
+}
+
+.course-card:focus {
+  outline: 2px solid #FD6A44;
+  outline-offset: 2px;
 }
 
 .course-thumbnail {

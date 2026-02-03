@@ -6,6 +6,7 @@ import Register from './pages/Register/Register';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import AutoLogin from './pages/AutoLogin/AutoLogin';
 import Dashboard from './pages/Dashboard/Dashboard';
+import CourseDetail from './pages/CourseDetail/CourseDetail';
 import Admin from './pages/Admin/Admin';
 import NotFound from './pages/NotFound/NotFound';
 
@@ -18,6 +19,7 @@ function App() {
         <Topbar />
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/courses/:slug" element={<CourseDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
