@@ -1,4 +1,5 @@
 const API_URL = 'https://api.academy.wepropel.org/api';
+export const MEDIA_URL = 'https://api.academy.wepropel.org';
 
 // Token management
 export const getToken = () => localStorage.getItem('access_token');

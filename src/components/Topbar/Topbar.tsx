@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { isAuthenticated, isSuperuser, authApi } from '../../services/api';
-import logo from '../../assets/propel-nonprofitaca.svg';
+import logo from '../../assets/logoacademyblanco.png';
 import './Topbar.css';
 
 const Topbar = () => {

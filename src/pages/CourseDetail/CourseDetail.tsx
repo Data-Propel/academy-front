@@ -3,10 +3,33 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { coursesApi, isAuthenticated } from '../../services/api';
 import './CourseDetail.css';
 
+const localThumbnails: Record<string, string> = {
+  'conecta-con-nuevos-donantes': '/thumbnails/Conacta-con-donantes-portada.svg',
+  'crea-contenido-para-redes-sociales-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-may.svg',
+  'aprende-a-liderar-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-oct.svg',
+  'growth-marketing-para-ongs': '/thumbnails/Imagen-destacada.svg',
+  'impact-accelerator': '/thumbnails/Copy-of-Imagen-destacada-1.png',
+  'propel-fellowship': '/thumbnails/Thumbnail-Propel-Fellowship-C8-1.png',
+  'team-handbook': '/thumbnails/Portadas-cursos-1.png',
+  'guia-de-procesos-internos': '/thumbnails/Portadas-cursos.png',
+  'introduccion-a-chatgpt-para-organizaciones-sociale': '/thumbnails/Introduccion-a-CHATGPT.svg',
+  'define-tus-metas-con-okrs': '/thumbnails/okr.jpg',
+  'atrae-mas-vistas-con-seo': '/thumbnails/002.svg',
+  'lean-data-para-impacto-social': '/thumbnails/Imagen-destacada-10-1.svg',
+  'construye-indicadores-para-medir-impacto': '/thumbnails/Imagen-destacada-14.svg',
+  'convierte-tus-ideas-en-un-pitch-ganador': '/thumbnails/001-1.svg',
+  'potencia-tu-teoria-de-cambio': '/thumbnails/Imagen-destacada-11.svg',
+  'aplica-a-tu-siguiente-grant-con-ia': '/thumbnails/003.svg',
+  'identifica-a-tu-donante-ideal': '/thumbnails/Imagen-destacada-13-1.svg',
+  'crea-tu-asistente-ia': '/thumbnails/Asistente-IA-portada.svg',
+};
+
 interface Lesson {
   id: number;
   title: string;
   order_index: number;
+  video_url?: string;
+  content?: string;
   topics?: Topic[];
 }
 
@@ -36,7 +59,7 @@ interface Course {
   slug: string;
   short_description: string;
   description: string;
-  thumbnail: string;
+  thumbnail_url: string | null;
   level: string;
   duration_hours: number;
   duration_minutes?: number;
@@ -74,12 +97,26 @@ const CourseDetail = () => {
       if (!slug) return;
 
       try {
-        const response = await coursesApi.getBySlug(slug);
-        if (response.ok) {
-          setCourse(response.data);
+        const [courseRes, enrollmentsRes] = await Promise.all([
+          coursesApi.getBySlug(slug),
+          coursesApi.getMyEnrollments(),
+        ]);
+
+        if (courseRes.ok) {
+          const courseData = courseRes.data;
+
+          // Check enrollment status
+          if (enrollmentsRes.ok) {
+            const enrolledSlugs = enrollmentsRes.data.map(
+              (e: { course?: { slug?: string }; slug?: string }) => e.course?.slug || e.slug || ''
+            );
+            courseData.is_enrolled = enrolledSlugs.includes(slug);
+          }
+
+          setCourse(courseData);
           // Expand first module by default
-          if (response.data.lessons?.length > 0) {
-            setExpandedModules(new Set([response.data.lessons[0].id]));
+          if (courseData.lessons?.length > 0) {
+            setExpandedModules(new Set([courseData.lessons[0].id]));
           }
         } else {
           setError('No se pudo cargar el curso');
@@ -216,8 +253,10 @@ const CourseDetail = () => {
 
             {/* Course Description */}
             <div className="course-section">
-              <h2 className="section-title">Descripción del curso</h2>
-              <p className="course-description-text">{course.short_description || course.description}</p>
+              <div
+                className="course-description-text"
+                dangerouslySetInnerHTML={{ __html: course.description || course.short_description }}
+              />
             </div>
 
             {/* What You'll Learn */}
@@ -296,13 +335,13 @@ const CourseDetail = () => {
                 <div className="modules-list">
                   {course.lessons
                     .sort((a, b) => a.order_index - b.order_index)
-                    .map((lesson, index) => (
+                    .map((lesson) => (
                       <div key={lesson.id} className="module-item">
                         <button
                           className={`module-header ${expandedModules.has(lesson.id) ? 'expanded' : ''}`}
                           onClick={() => toggleModule(lesson.id)}
                         >
-                          <span className="module-title">Módulo {index + 1}: {lesson.title}</span>
+                          <span className="module-title">{lesson.title}</span>
                           <svg
                             className="module-chevron"
                             width="20"
@@ -316,19 +355,44 @@ const CourseDetail = () => {
                           </svg>
                         </button>
 
-                        {expandedModules.has(lesson.id) && lesson.topics && lesson.topics.length > 0 && (
-                          <div className="topics-list">
-                            {lesson.topics
-                              .sort((a, b) => a.order_index - b.order_index)
-                              .map((topic) => (
-                                <div key={topic.id} className="topic-item">
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <polygon points="10 8 16 12 10 16 10 8"/>
-                                  </svg>
-                                  <span>{topic.title}</span>
-                                </div>
-                              ))}
+                        {expandedModules.has(lesson.id) && (
+                          <div className="module-expanded-content">
+                            {lesson.video_url && (
+                              <a
+                                href={lesson.video_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="module-video-link"
+                              >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polygon points="5 3 19 12 5 21 5 3"/>
+                                </svg>
+                                Ver video en Vimeo
+                              </a>
+                            )}
+
+                            {lesson.content && (
+                              <div
+                                className="module-content-html"
+                                dangerouslySetInnerHTML={{ __html: lesson.content }}
+                              />
+                            )}
+
+                            {lesson.topics && lesson.topics.length > 0 && (
+                              <div className="topics-list">
+                                {lesson.topics
+                                  .sort((a, b) => a.order_index - b.order_index)
+                                  .map((topic) => (
+                                    <div key={topic.id} className="topic-item">
+                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polygon points="10 8 16 12 10 16 10 8"/>
+                                      </svg>
+                                      <span>{topic.title}</span>
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -366,35 +430,44 @@ const CourseDetail = () => {
           {/* Sidebar */}
           <div className="course-sidebar">
             <div className="sidebar-card">
-              <h3 className="sidebar-title">Contenido</h3>
-
-              <div className="sidebar-info">
-                {course.instructor && (
-                  <div className="sidebar-row">
-                    <span className="sidebar-label">Instructor:</span>
-                    <span className="sidebar-value">{course.instructor.name}</span>
+              {(() => {
+                const thumbSrc = localThumbnails[course.slug] || course.thumbnail_url;
+                return thumbSrc ? (
+                  <div className="sidebar-thumbnail">
+                    <img src={thumbSrc} alt={course.title} />
                   </div>
-                )}
+                ) : null;
+              })()}
+              <div className="sidebar-card-body">
+                <h3 className="sidebar-title">Contenido</h3>
 
-                <div className="sidebar-row">
-                  <span className="sidebar-label">Duración:</span>
-                  <span className="sidebar-value">{formatDuration(course.duration_hours, course.duration_minutes)}</span>
+                <div className="sidebar-info">
+                  {course.instructor && (
+                    <div className="sidebar-row">
+                      <span className="sidebar-label">Instructor:</span>
+                      <span className="sidebar-value">{course.instructor.name}</span>
+                    </div>
+                  )}
+
+                  <div className="sidebar-row">
+                    <span className="sidebar-label">Duración:</span>
+                    <span className="sidebar-value">{formatDuration(course.duration_hours, course.duration_minutes)}</span>
+                  </div>
+
+                  {course.lessons && (
+                    <div className="sidebar-row">
+                      <span className="sidebar-label">Módulos:</span>
+                      <span className="sidebar-value">{course.lessons.length}</span>
+                    </div>
+                  )}
+
+                  <div className="sidebar-row">
+                    <span className="sidebar-label">Certificación:</span>
+                    <span className="sidebar-value">{course.has_certificate !== false ? 'Sí' : 'No'}</span>
+                  </div>
                 </div>
 
-                {course.lessons && (
-                  <div className="sidebar-row">
-                    <span className="sidebar-label">Módulos:</span>
-                    <span className="sidebar-value">{course.lessons.length}</span>
-                  </div>
-                )}
-
-                <div className="sidebar-row">
-                  <span className="sidebar-label">Certificación:</span>
-                  <span className="sidebar-value">{course.has_certificate !== false ? 'Sí' : 'No'}</span>
-                </div>
-              </div>
-
-              <button
+                <button
                 className={`sidebar-cta ${course.is_enrolled ? 'enrolled' : ''}`}
                 onClick={handleEnroll}
                 disabled={enrolling}
@@ -409,7 +482,8 @@ const CourseDetail = () => {
                 ) : (
                   'Inscribirme'
                 )}
-              </button>
+                </button>
+              </div>
             </div>
           </div>
         </div>
