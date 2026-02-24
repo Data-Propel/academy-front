@@ -114,8 +114,15 @@ const CourseDetail = () => {
           }
 
           setCourse(courseData);
-          // Expand first module by default
-          if (courseData.lessons?.length > 0) {
+          // Hash-aware initial expansion
+          const hash = window.location.hash;
+          const hashMatch = hash.match(/^#lesson-(\d+)$/);
+          const hashLessonId = hashMatch ? Number(hashMatch[1]) : null;
+          const validHashLesson = hashLessonId && courseData.lessons?.some((l: Lesson) => l.id === hashLessonId);
+
+          if (validHashLesson) {
+            setExpandedModules(new Set([hashLessonId]));
+          } else if (courseData.lessons?.length > 0) {
             setExpandedModules(new Set([courseData.lessons[0].id]));
           }
         } else {
@@ -131,6 +138,26 @@ const CourseDetail = () => {
 
     fetchCourse();
   }, [slug, navigate]);
+
+  // Scroll to hash target after course loads
+  useEffect(() => {
+    if (!course) return;
+    const hash = window.location.hash;
+    const hashMatch = hash.match(/^#lesson-(\d+)$/);
+    if (!hashMatch) return;
+
+    const lessonId = Number(hashMatch[1]);
+    const validLesson = course.lessons?.some((l) => l.id === lessonId);
+    if (!validLesson) return;
+
+    const timer = setTimeout(() => {
+      const el = document.getElementById(`lesson-${lessonId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [course]);
 
   const handleEnroll = async () => {
     if (!course) return;
@@ -172,11 +199,51 @@ const CourseDetail = () => {
       const newSet = new Set(prev);
       if (newSet.has(lessonId)) {
         newSet.delete(lessonId);
+        // Clear hash when collapsing
+        history.replaceState(null, '', window.location.pathname + window.location.search);
       } else {
         newSet.add(lessonId);
+        // Update hash when expanding
+        history.replaceState(null, '', `#lesson-${lessonId}`);
+        if (slug) {
+          localStorage.setItem(`lastLesson:${slug}`, String(lessonId));
+        }
       }
       return newSet;
     });
+  };
+
+  const handleTocClick = (lessonId: number) => {
+    setExpandedModules((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(lessonId);
+      return newSet;
+    });
+    history.replaceState(null, '', `#lesson-${lessonId}`);
+    if (slug) {
+      localStorage.setItem(`lastLesson:${slug}`, String(lessonId));
+    }
+    setTimeout(() => {
+      const el = document.getElementById(`lesson-${lessonId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 150);
+  };
+
+  const getEmbedUrl = (url: string): string | null => {
+    // Vimeo: https://vimeo.com/123456 or https://vimeo.com/123456/hash or https://player.vimeo.com/video/123456
+    const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-f0-9]+))?/);
+    if (vimeo) {
+      const hash = vimeo[2] ? `&h=${vimeo[2]}` : '';
+      return `https://player.vimeo.com/video/${vimeo[1]}?title=0&byline=0&portrait=0${hash}`;
+    }
+
+    // YouTube: https://youtube.com/watch?v=ID or https://youtu.be/ID
+    const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+    if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+
+    return null;
   };
 
   const formatDuration = (hours?: number, minutes?: number) => {
@@ -336,7 +403,7 @@ const CourseDetail = () => {
                   {course.lessons
                     .sort((a, b) => a.order_index - b.order_index)
                     .map((lesson) => (
-                      <div key={lesson.id} className="module-item">
+                      <div key={lesson.id} id={`lesson-${lesson.id}`} className="module-item">
                         <button
                           className={`module-header ${expandedModules.has(lesson.id) ? 'expanded' : ''}`}
                           onClick={() => toggleModule(lesson.id)}
@@ -357,19 +424,33 @@ const CourseDetail = () => {
 
                         {expandedModules.has(lesson.id) && (
                           <div className="module-expanded-content">
-                            {lesson.video_url && (
-                              <a
-                                href={lesson.video_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="module-video-link"
-                              >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <polygon points="5 3 19 12 5 21 5 3"/>
-                                </svg>
-                                Ver video en Vimeo
-                              </a>
-                            )}
+                            {lesson.video_url && (() => {
+                              const embedUrl = getEmbedUrl(lesson.video_url);
+                              if (embedUrl) {
+                                return (
+                                  <div className="module-video-embed">
+                                    <iframe
+                                      src={embedUrl}
+                                      allow="autoplay; fullscreen; picture-in-picture"
+                                      allowFullScreen
+                                      title={lesson.title}
+                                    />
+                                  </div>
+                                );
+                              }
+                              return (
+                                <div className="module-video-player">
+                                  <video
+                                    controls
+                                    controlsList="nodownload"
+                                    preload="metadata"
+                                    title={lesson.title}
+                                  >
+                                    <source src={lesson.video_url} />
+                                  </video>
+                                </div>
+                              );
+                            })()}
 
                             {lesson.content && (
                               <div
@@ -466,6 +547,26 @@ const CourseDetail = () => {
                     <span className="sidebar-value">{course.has_certificate !== false ? 'Sí' : 'No'}</span>
                   </div>
                 </div>
+
+                {course.lessons && course.lessons.length > 0 && (
+                  <div className="sidebar-toc">
+                    <h4 className="sidebar-toc-title">Navegación rápida</h4>
+                    <nav className="sidebar-toc-nav">
+                      {course.lessons
+                        .sort((a, b) => a.order_index - b.order_index)
+                        .map((lesson, index) => (
+                          <button
+                            key={lesson.id}
+                            className={`sidebar-toc-item ${expandedModules.has(lesson.id) ? 'active' : ''}`}
+                            onClick={() => handleTocClick(lesson.id)}
+                          >
+                            <span className="sidebar-toc-number">{index + 1}</span>
+                            <span className="sidebar-toc-label">{lesson.title}</span>
+                          </button>
+                        ))}
+                    </nav>
+                  </div>
+                )}
 
                 <button
                 className={`sidebar-cta ${course.is_enrolled ? 'enrolled' : ''}`}

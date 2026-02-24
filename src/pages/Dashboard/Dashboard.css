@@ -1,5 +1,6 @@
 .dashboard-page {
   min-height: 60vh;
+  min-height: 60dvh;
   background: linear-gradient(135deg, #043A37 28%, #032220 95%);
   padding: 40px 0;
 }
@@ -15,6 +16,7 @@
   align-items: center;
   justify-content: center;
   min-height: 60vh;
+  min-height: 60dvh;
   color: #F2F2F2;
   font-size: 1.2rem;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -320,5 +322,22 @@ h3.course-title {
 
   .section-title {
     font-size: 22px;
+  }
+
+  .courses-scroll .course-card {
+    flex: 0 0 280px;
+  }
+
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .course-thumbnail {
+    height: 200px;
+  }
+
+  .filter-button {
+    padding: 8px 14px;
+    font-size: 0.8rem;
   }
 }

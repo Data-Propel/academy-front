@@ -57,8 +57,14 @@ const getLevelLabel = (level: string) => {
 
 const CourseCard = ({ course, buttonLabel }: { course: Course; buttonLabel: string }) => {
   const src = localThumbnails[course.slug] || course.thumbnail_url;
+  const lastLesson = buttonLabel === 'Continuar'
+    ? localStorage.getItem(`lastLesson:${course.slug}`)
+    : null;
+  const courseUrl = lastLesson
+    ? `/courses/${course.slug}#lesson-${lastLesson}`
+    : `/courses/${course.slug}`;
   return (
-    <Link to={`/courses/${course.slug}`} className="course-card">
+    <Link to={courseUrl} className="course-card">
       <div className="course-thumbnail">
         {src ? (
           <img src={src} alt={course.title} loading="lazy" decoding="async" />

@@ -1,5 +1,6 @@
 .course-detail-page {
   min-height: 60vh;
+  min-height: 60dvh;
   background: linear-gradient(135deg, #043A37 28%, #032220 95%);
   padding: 20px 0 60px;
 }
@@ -12,6 +13,7 @@
   align-items: center;
   justify-content: center;
   min-height: 60vh;
+  min-height: 60dvh;
   color: #F2F2F2;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   gap: 16px;
@@ -298,6 +300,7 @@
   border: 1px solid rgba(17, 84, 79, 0.3);
   border-radius: 8px;
   overflow: hidden;
+  scroll-margin-top: 20px;
 }
 
 .module-header {
@@ -342,31 +345,37 @@
   gap: 16px;
 }
 
-.module-video-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: rgba(17, 84, 79, 0.15);
-  border: 1px solid rgba(17, 84, 79, 0.3);
-  border-radius: 6px;
-  color: #F2F2F2;
-  text-decoration: none;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+/* Video Embed */
+.module-video-embed {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
 }
 
-.module-video-link:hover {
-  background: rgba(253, 106, 68, 0.15);
-  border-color: #FD6A44;
-  color: #FD6A44;
+.module-video-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
-.module-video-link svg {
-  color: #FD6A44;
-  flex-shrink: 0;
+/* HTML5 Video Player (S3 / direct video files) */
+.module-video-player {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+
+.module-video-player video {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
 }
 
 .module-content-html {
@@ -584,6 +593,104 @@
   animation: spin 1s linear infinite;
 }
 
+/* Sidebar TOC */
+.sidebar-toc {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(17, 84, 79, 0.4);
+}
+
+.sidebar-toc-title {
+  font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(242, 242, 242, 0.7);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-toc-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.sidebar-toc-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-toc-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-toc-nav::-webkit-scrollbar-thumb {
+  background: rgba(17, 84, 79, 0.4);
+  border-radius: 2px;
+}
+
+.sidebar-toc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.sidebar-toc-item:hover {
+  background: rgba(17, 84, 79, 0.2);
+  border-color: rgba(17, 84, 79, 0.3);
+}
+
+.sidebar-toc-item.active {
+  background: rgba(253, 106, 68, 0.1);
+  border-color: rgba(253, 106, 68, 0.3);
+}
+
+.sidebar-toc-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(17, 84, 79, 0.3);
+  font-family: 'Libre Franklin', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(242, 242, 242, 0.7);
+  flex-shrink: 0;
+}
+
+.sidebar-toc-item.active .sidebar-toc-number {
+  background: #FD6A44;
+  color: #ffffff;
+}
+
+.sidebar-toc-label {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  color: rgba(242, 242, 242, 0.8);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.sidebar-toc-item.active .sidebar-toc-label {
+  color: #FD6A44;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .course-detail-layout {
@@ -623,6 +730,10 @@
   .sidebar-cta {
     height: fit-content;
   }
+
+  .sidebar-toc {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
@@ -659,12 +770,16 @@
 }
 
 @media (max-width: 480px) {
+  .course-detail-container {
+    padding: 0 15px;
+  }
+
   .course-title {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .section-title {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .course-header-meta {
@@ -680,5 +795,26 @@
 
   .takeaway-item span {
     padding-top: 0;
+  }
+
+  .module-header {
+    padding: 14px 16px;
+  }
+
+  .module-expanded-content {
+    padding: 0 16px 14px;
+  }
+
+  .sidebar-thumbnail {
+    height: 180px;
+  }
+
+  .sidebar-card-body {
+    padding: 16px;
+  }
+
+  .sidebar-cta {
+    padding: 14px 16px;
+    font-size: 15px;
   }
 }

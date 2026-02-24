@@ -1,5 +1,6 @@
 .admin-page {
   min-height: 60vh;
+  min-height: 60dvh;
   background: linear-gradient(135deg, #043A37 28%, #032220 95%);
   padding: 40px 0;
 }
@@ -15,6 +16,7 @@
   align-items: center;
   justify-content: center;
   min-height: 60vh;
+  min-height: 60dvh;
   color: #F2F2F2;
   font-size: 1.2rem;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -658,16 +660,44 @@
   }
 
   .admin-tabs {
-    flex-wrap: wrap;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-tabs::-webkit-scrollbar {
+    display: none;
   }
 
   .admin-tab {
     padding: 12px 16px;
     font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .admin-content {
     padding: 16px;
+  }
+
+  .admin-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-filters {
+    flex-direction: column;
+  }
+
+  .admin-filters select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .search-input {
+    min-width: 0;
+    width: 100%;
   }
 
   .admin-table th,
@@ -685,6 +715,12 @@
     padding: 4px 8px;
     font-size: 0.75rem;
   }
+
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -693,11 +729,33 @@
   }
 
   .admin-container {
-    padding: 0 15px;
+    padding: 0 12px;
   }
 
   .admin-title {
     font-size: 26px;
+  }
+
+  .admin-content {
+    padding: 12px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 8px;
+    font-size: 0.8rem;
+  }
+
+  .admin-form-container {
+    max-width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
   }
 
   .admin-modal {

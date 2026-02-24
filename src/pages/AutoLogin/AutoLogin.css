@@ -1,5 +1,6 @@
 .autologin-page {
   min-height: 60vh;
+  min-height: 60dvh;
   background: linear-gradient(135deg, #043A37 28%, #032220 95%);
   display: flex;
   align-items: center;

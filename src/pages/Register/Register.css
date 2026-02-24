@@ -1,5 +1,6 @@
 .register-page {
   min-height: 60vh;
+  min-height: 60dvh;
   background: linear-gradient(135deg, #043A37 28%, #032220 95%);
   display: flex;
   align-items: center;
@@ -240,7 +241,7 @@
 /* Tablet (768px) */
 @media (max-width: 768px) {
   .register-page {
-    padding: 15% 5%;
+    padding: 10% 5%;
   }
 
   .register-container {
@@ -248,7 +249,7 @@
   }
 
   .register-form {
-    padding: 90px 50px 20px;
+    padding: 30px 30px 20px;
   }
 
   .register-footer {
@@ -264,18 +265,31 @@
 /* Mobile (480px) */
 @media (max-width: 480px) {
   .register-page {
-    padding: 10% 2%;
+    padding: 8% 4%;
   }
 
   .register-title {
-    font-size: 35px;
+    font-size: 26px;
   }
 
   .register-subtitle {
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  .register-header {
+    padding: 24px 16px 0;
   }
 
   .register-form {
-    padding: 90px 10px 20px;
+    padding: 24px 16px 20px;
+  }
+
+  .register-divider {
+    margin: 1.5rem auto 0;
+  }
+
+  .submit-button {
+    width: 100%;
+    padding: 14px 20px;
   }
 }

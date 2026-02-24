@@ -1,5 +1,6 @@
 .login-page {
   min-height: 60vh;
+  min-height: 60dvh;
   background: linear-gradient(135deg, #043A37 28%, #032220 95%);
   display: flex;
   align-items: center;
@@ -344,7 +345,7 @@
 /* Tablet (768px) */
 @media (max-width: 768px) {
   .login-page {
-    padding: 15% 5%;
+    padding: 10% 5%;
   }
 
   .login-container {
@@ -352,7 +353,7 @@
   }
 
   .login-form {
-    padding: 90px 50px 20px;
+    padding: 30px 30px 20px;
   }
 
   .login-footer {
@@ -369,18 +370,31 @@
 /* Mobile (480px) */
 @media (max-width: 480px) {
   .login-page {
-    padding: 10% 2%;
+    padding: 8% 4%;
   }
 
   .login-title {
-    font-size: 35px;
+    font-size: 26px;
   }
 
   .login-subtitle {
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  .login-header {
+    padding: 24px 16px 0;
   }
 
   .login-form {
-    padding: 90px 10px 20px;
+    padding: 24px 16px 20px;
+  }
+
+  .login-divider {
+    margin: 1.5rem auto 0;
+  }
+
+  .submit-button {
+    width: 100%;
+    padding: 14px 20px;
   }
 }

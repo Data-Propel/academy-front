@@ -16,6 +16,7 @@
   display: flex;
   align-items: center;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .topbar-logo-img {
@@ -42,6 +43,7 @@
   cursor: pointer;
   text-decoration: none;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .topbar-login:hover,
@@ -61,6 +63,7 @@
   font-weight: 600;
   text-decoration: none;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .topbar-admin:hover {
@@ -70,10 +73,47 @@
 
 @media (max-width: 768px) {
   .topbar {
-    padding: 1rem;
+    padding: 0.65rem 0.75rem;
   }
 
   .topbar-logo-img {
-    height: 35px;
+    height: 24px;
+  }
+
+  .topbar-nav {
+    gap: 0.5rem;
+  }
+
+  .topbar-login,
+  .topbar-logout {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    border-width: 1px;
+  }
+
+  .topbar-admin {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar {
+    padding: 0.5rem 0.5rem;
+  }
+
+  .topbar-logo-img {
+    height: 20px;
+  }
+
+  .topbar-nav {
+    gap: 0.35rem;
+  }
+
+  .topbar-login,
+  .topbar-logout,
+  .topbar-admin {
+    padding: 5px 8px;
+    font-size: 0.7rem;
   }
 }
