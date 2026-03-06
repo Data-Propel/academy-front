@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { isAuthenticated, isSuperuser, adminApi } from '../../services/api';
 import './Admin.css';
 
-type TabType = 'users' | 'courses' | 'categories' | 'lessons' | 'topics' | 'quizzes';
+type TabType = 'users' | 'courses' | 'categories' | 'lessons' | 'topics' | 'quizzes' | 'resources';
 type ViewType = 'list' | 'create' | 'edit';
 
 interface User {
@@ -65,6 +65,21 @@ interface Quiz {
   order_index: number;
 }
 
+interface Resource {
+  id: number;
+  title: string;
+  lesson_id: number;
+  file: string;
+  file_url: string;
+  file_size: number;
+}
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
 const Admin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('users');
@@ -80,6 +95,7 @@ const Admin = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
 
   // Filter states
   const [filterCourseId, setFilterCourseId] = useState<number>(0);
@@ -96,7 +112,7 @@ const Admin = () => {
   const [usersLoading, setUsersLoading] = useState(false);
 
   // Editing item
-  const [editingItem, setEditingItem] = useState<User | Course | Category | Lesson | Topic | Quiz | null>(null);
+  const [editingItem, setEditingItem] = useState<User | Course | Category | Lesson | Topic | Quiz | Resource | null>(null);
 
   // Form states
   const [userForm, setUserForm] = useState({
@@ -160,6 +176,13 @@ const Admin = () => {
     order_index: 1,
   });
 
+  const [resourceForm, setResourceForm] = useState({
+    title: '',
+    lesson_id: 0,
+    file_url: '',
+  });
+  const [resourceFile, setResourceFile] = useState<File | null>(null);
+
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/login');
@@ -219,12 +242,13 @@ const Admin = () => {
     setError('');
 
     try {
-      const [coursesRes, categoriesRes, lessonsRes, topicsRes, quizzesRes] = await Promise.all([
+      const [coursesRes, categoriesRes, lessonsRes, topicsRes, quizzesRes, resourcesRes] = await Promise.all([
         adminApi.getCourses(),
         adminApi.getCategories(),
         adminApi.getLessons(),
         adminApi.getTopics(),
         adminApi.getQuizzes(),
+        adminApi.getResources(),
       ]);
 
       if (coursesRes.ok) setCourses(extractArray(coursesRes.data) as Course[]);
@@ -232,6 +256,7 @@ const Admin = () => {
       if (lessonsRes.ok) setLessons(extractArray(lessonsRes.data) as Lesson[]);
       if (topicsRes.ok) setTopics(extractArray(topicsRes.data) as Topic[]);
       if (quizzesRes.ok) setQuizzes(extractArray(quizzesRes.data) as Quiz[]);
+      if (resourcesRes.ok) setResources(extractArray(resourcesRes.data) as Resource[]);
 
       // Load users separately with pagination
       await loadUsers('', 1, '', '');
@@ -276,6 +301,8 @@ const Admin = () => {
     setLessonThumbnailError('');
     setTopicForm({ title: '', content: '', course_id: 0, lesson_id: 0, order_index: 1 });
     setQuizForm({ title: '', content: '', course_id: 0, lesson_id: 0, order_index: 1 });
+    setResourceForm({ title: '', lesson_id: 0, file_url: '' });
+    setResourceFile(null);
   };
 
   const handleCourseThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -416,13 +443,14 @@ const Admin = () => {
     if (filterLessonId) {
       setTopicForm(prev => ({ ...prev, lesson_id: filterLessonId }));
       setQuizForm(prev => ({ ...prev, lesson_id: filterLessonId }));
+      setResourceForm(prev => ({ ...prev, lesson_id: filterLessonId }));
     }
     setEditingItem(null);
     setView('create');
     setError('');
   };
 
-  const openEditForm = (item: User | Course | Category | Lesson | Topic | Quiz) => {
+  const openEditForm = (item: User | Course | Category | Lesson | Topic | Quiz | Resource) => {
     setEditingItem(item);
     setError('');
 
@@ -448,6 +476,10 @@ const Admin = () => {
     } else if (activeTab === 'quizzes') {
       const quiz = item as Quiz;
       setQuizForm({ title: quiz.title, content: quiz.content || '', course_id: quiz.course_id, lesson_id: quiz.lesson_id, order_index: quiz.order_index });
+    } else if (activeTab === 'resources') {
+      const resource = item as Resource;
+      setResourceForm({ title: resource.title, lesson_id: resource.lesson_id, file_url: resource.file_url || '' });
+      setResourceFile(null);
     }
 
     setView('edit');
@@ -496,6 +528,7 @@ const Admin = () => {
     if (filterLessonId) filtered = filtered.filter(q => q.lesson_id === filterLessonId);
     return filtered;
   })();
+  const filteredResources = filterLessonId ? resources.filter(r => r.lesson_id === filterLessonId) : resources;
 
   // User handlers
   const handleUserSubmit = async (e: React.FormEvent) => {
@@ -669,13 +702,41 @@ const Admin = () => {
     } catch { setError('Error de conexión.'); }
   };
 
+  // Resource handlers
+  const handleResourceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!resourceForm.lesson_id) { setError('Selecciona una lección.'); return; }
+    if (view === 'create' && !resourceFile && !resourceForm.file_url) { setError('Selecciona un archivo o ingresa una URL.'); return; }
+    try {
+      if (view === 'create') {
+        const { ok, data } = await adminApi.createResource(resourceForm, resourceFile || undefined);
+        if (ok) { setResources([...resources, data]); showSuccessMessage('Recurso creado.'); goBackToList(); }
+        else setError(data.detail || 'Error al crear recurso.');
+      } else if (editingItem) {
+        const { ok, data } = await adminApi.updateResource((editingItem as Resource).id, resourceForm, resourceFile || undefined);
+        if (ok) { setResources(resources.map(r => r.id === data.id ? data : r)); showSuccessMessage('Recurso actualizado.'); goBackToList(); }
+        else setError(data.detail || 'Error al actualizar recurso.');
+      }
+    } catch { setError('Error de conexión.'); }
+  };
+
+  const handleDeleteResource = async (id: number) => {
+    if (!confirm('¿Eliminar este recurso?')) return;
+    try {
+      const { ok } = await adminApi.deleteResource(id);
+      if (ok) { setResources(resources.filter(r => r.id !== id)); showSuccessMessage('Recurso eliminado.'); }
+      else setError('Error al eliminar recurso.');
+    } catch { setError('Error de conexión.'); }
+  };
+
   const getLevelLabel = (level: string) => {
     const levels: Record<string, string> = { beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado' };
     return levels[level] || level;
   };
 
   const getTabLabel = () => {
-    const labels: Record<TabType, string> = { users: 'Usuario', courses: 'Curso', categories: 'Categoría', lessons: 'Lección', topics: 'Tema', quizzes: 'Quiz' };
+    const labels: Record<TabType, string> = { users: 'Usuario', courses: 'Curso', categories: 'Categoría', lessons: 'Lección', topics: 'Tema', quizzes: 'Quiz', resources: 'Recurso' };
     return labels[activeTab];
   };
 
@@ -717,6 +778,9 @@ const Admin = () => {
           <button className={`admin-tab ${activeTab === 'quizzes' ? 'active' : ''}`} onClick={() => handleTabChange('quizzes')}>
             Quizzes ({quizzes.length})
           </button>
+          <button className={`admin-tab ${activeTab === 'resources' ? 'active' : ''}`} onClick={() => handleTabChange('resources')}>
+            Recursos ({resources.length})
+          </button>
         </div>
 
         <div className="admin-content">
@@ -747,18 +811,20 @@ const Admin = () => {
                   </div>
                 )}
                 {/* Filters for lessons, topics, quizzes */}
-                {(activeTab === 'lessons' || activeTab === 'topics' || activeTab === 'quizzes') && (
+                {(activeTab === 'lessons' || activeTab === 'topics' || activeTab === 'quizzes' || activeTab === 'resources') && (
                   <div className="admin-filters">
-                    <select value={filterCourseId} onChange={e => { setFilterCourseId(Number(e.target.value)); setFilterLessonId(0); }}>
-                      <option value={0}>Todos los cursos</option>
-                      {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                    </select>
-                    {(activeTab === 'topics' || activeTab === 'quizzes') && filterCourseId > 0 && (
-                      <select value={filterLessonId} onChange={e => setFilterLessonId(Number(e.target.value))}>
-                        <option value={0}>Todas las lecciones</option>
-                        {getLessonsForCourse(filterCourseId).map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
+                    {activeTab !== 'resources' && (
+                      <select value={filterCourseId} onChange={e => { setFilterCourseId(Number(e.target.value)); setFilterLessonId(0); }}>
+                        <option value={0}>Todos los cursos</option>
+                        {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
                       </select>
                     )}
+                    {((activeTab === 'topics' || activeTab === 'quizzes') && filterCourseId > 0) || activeTab === 'resources' ? (
+                      <select value={filterLessonId} onChange={e => setFilterLessonId(Number(e.target.value))}>
+                        <option value={0}>Todas las lecciones</option>
+                        {(activeTab === 'resources' ? lessons : getLessonsForCourse(filterCourseId)).map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
+                      </select>
+                    ) : null}
                   </div>
                 )}
                 <button className="admin-create-btn" onClick={openCreateForm}>
@@ -949,6 +1015,32 @@ const Admin = () => {
                     </tbody>
                   </table>
                   {filteredQuizzes.length === 0 && <div className="admin-empty">No hay quizzes.</div>}
+                </div>
+              )}
+
+              {/* Resources Table */}
+              {activeTab === 'resources' && (
+                <div className="admin-table-container">
+                  <table className="admin-table">
+                    <thead>
+                      <tr><th>ID</th><th>Título</th><th>Lección</th><th>Tamaño</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody>
+                      {filteredResources.map(resource => (
+                        <tr key={resource.id}>
+                          <td>{resource.id}</td>
+                          <td>{resource.title}</td>
+                          <td>{getLessonName(resource.lesson_id)}</td>
+                          <td>{formatFileSize(resource.file_size)}</td>
+                          <td>
+                            <button className="action-btn edit" onClick={() => openEditForm(resource)}>Editar</button>
+                            <button className="action-btn delete" onClick={() => handleDeleteResource(resource.id)}>Eliminar</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {filteredResources.length === 0 && <div className="admin-empty">No hay recursos.</div>}
                 </div>
               )}
             </>
@@ -1200,6 +1292,37 @@ const Admin = () => {
                   <div className="form-group">
                     <label>Orden</label>
                     <input type="number" min="1" value={quizForm.order_index} onChange={e => setQuizForm({ ...quizForm, order_index: Number(e.target.value) })} />
+                  </div>
+                  <div className="form-actions">
+                    <button type="button" className="btn-cancel" onClick={goBackToList}>Cancelar</button>
+                    <button type="submit" className="btn-submit">{view === 'create' ? 'Crear' : 'Guardar'}</button>
+                  </div>
+                </form>
+              )}
+
+              {/* Resource Form */}
+              {activeTab === 'resources' && (
+                <form className="admin-form" onSubmit={handleResourceSubmit}>
+                  <div className="form-group">
+                    <label>Lección <span className="required">*</span></label>
+                    <select value={resourceForm.lesson_id} onChange={e => setResourceForm({ ...resourceForm, lesson_id: Number(e.target.value) })} required>
+                      <option value={0}>Seleccionar lección</option>
+                      {lessons.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Título <span className="required">*</span></label>
+                    <input type="text" value={resourceForm.title} onChange={e => setResourceForm({ ...resourceForm, title: e.target.value })} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Archivo {view === 'create' && !resourceForm.file_url && <span className="required">*</span>}</label>
+                    <input type="file" onChange={e => setResourceFile(e.target.files?.[0] || null)} className="file-input" />
+                    {view === 'edit' && <span className="file-hint">Selecciona un nuevo archivo para reemplazar el actual</span>}
+                  </div>
+                  <div className="form-group">
+                    <label>O URL externa</label>
+                    <input type="url" value={resourceForm.file_url} onChange={e => setResourceForm({ ...resourceForm, file_url: e.target.value })} placeholder="https://..." />
+                    <span className="file-hint">Usa una URL externa si no subes un archivo</span>
                   </div>
                   <div className="form-actions">
                     <button type="button" className="btn-cancel" onClick={goBackToList}>Cancelar</button>

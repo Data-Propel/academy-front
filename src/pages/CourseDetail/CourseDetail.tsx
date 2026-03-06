@@ -4,25 +4,78 @@ import { coursesApi, isAuthenticated } from '../../services/api';
 import './CourseDetail.css';
 
 const localThumbnails: Record<string, string> = {
-  'conecta-con-nuevos-donantes': '/thumbnails/Conacta-con-donantes-portada.svg',
-  'crea-contenido-para-redes-sociales-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-may.svg',
-  'aprende-a-liderar-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-oct.svg',
-  'growth-marketing-para-ongs': '/thumbnails/Imagen-destacada.svg',
-  'impact-accelerator': '/thumbnails/Copy-of-Imagen-destacada-1.png',
-  'propel-fellowship': '/thumbnails/Thumbnail-Propel-Fellowship-C8-1.png',
-  'team-handbook': '/thumbnails/Portadas-cursos-1.png',
-  'guia-de-procesos-internos': '/thumbnails/Portadas-cursos.png',
-  'introduccion-a-chatgpt-para-organizaciones-sociale': '/thumbnails/Introduccion-a-CHATGPT.svg',
-  'define-tus-metas-con-okrs': '/thumbnails/okr.jpg',
-  'atrae-mas-vistas-con-seo': '/thumbnails/002.svg',
-  'lean-data-para-impacto-social': '/thumbnails/Imagen-destacada-10-1.svg',
-  'construye-indicadores-para-medir-impacto': '/thumbnails/Imagen-destacada-14.svg',
-  'convierte-tus-ideas-en-un-pitch-ganador': '/thumbnails/001-1.svg',
-  'potencia-tu-teoria-de-cambio': '/thumbnails/Imagen-destacada-11.svg',
-  'aplica-a-tu-siguiente-grant-con-ia': '/thumbnails/003.svg',
-  'identifica-a-tu-donante-ideal': '/thumbnails/Imagen-destacada-13-1.svg',
-  'crea-tu-asistente-ia': '/thumbnails/Asistente-IA-portada.svg',
+  'conecta-con-nuevos-donantes': '/thumbnails/Conacta-con-donantes-portada.webp',
+  'crea-contenido-para-redes-sociales-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-may.webp',
+  'aprende-a-liderar-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-oct.webp',
+  'growth-marketing-para-ongs': '/thumbnails/Imagen-destacada.webp',
+  'impact-accelerator': '/thumbnails/Copy-of-Imagen-destacada-1.webp',
+  'propel-fellowship': '/thumbnails/Thumbnail-Propel-Fellowship-C8-1.webp',
+  'team-handbook': '/thumbnails/Portadas-cursos-1.webp',
+  'guia-de-procesos-internos': '/thumbnails/Portadas-cursos.webp',
+  'introduccion-a-chatgpt-para-organizaciones-sociale': '/thumbnails/Introduccion-a-CHATGPT.webp',
+  'define-tus-metas-con-okrs': '/thumbnails/okr.webp',
+  'atrae-mas-vistas-con-seo': '/thumbnails/002.webp',
+  'lean-data-para-impacto-social': '/thumbnails/Imagen-destacada-10-1.webp',
+  'construye-indicadores-para-medir-impacto': '/thumbnails/Imagen-destacada-14.webp',
+  'convierte-tus-ideas-en-un-pitch-ganador': '/thumbnails/001-1.webp',
+  'potencia-tu-teoria-de-cambio': '/thumbnails/Imagen-destacada-11.webp',
+  'aplica-a-tu-siguiente-grant-con-ia': '/thumbnails/003.webp',
+  'identifica-a-tu-donante-ideal': '/thumbnails/Imagen-destacada-13-1.webp',
+  'crea-tu-asistente-ia': '/thumbnails/Asistente-IA-portada.webp',
 };
+
+/** Rewrite WordPress upload URLs to local /pdfs/ path */
+function localizeUrl(url: string): string {
+  return url.replace(
+    /^https?:\/\/(?:www\.)?academy\.wepropel\.org\/wp-content\/uploads\//,
+    '/pdfs/'
+  );
+}
+
+/** Replace [pdfjs-viewer url="..."] shortcodes with embedded PDF.js viewer */
+function processContent(html: string): string {
+  return html.replace(
+    /\[pdfjs-viewer\s+[^\]]*?url=["']?([^"'\]\s]+)["']?[^\]]*?\]/gi,
+    (_match, url: string) => {
+      const pdfUrl = localizeUrl(url);
+      const filename = pdfUrl.split('/').pop() || 'document.pdf';
+      const viewerUrl = `/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
+      return `<div class="cd-pdf-embed">
+        <div class="cd-pdf-toolbar">
+          <a href="${pdfUrl}" download="${filename}" target="_blank" rel="noopener noreferrer" class="cd-pdf-toolbar-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Descargar
+          </a>
+          <a href="${pdfUrl}" target="_blank" rel="noopener noreferrer" class="cd-pdf-toolbar-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Abrir
+          </a>
+        </div>
+        <iframe src="${viewerUrl}" width="100%" height="700" style="border:none;" loading="lazy" allowfullscreen></iframe>
+      </div>`;
+    }
+  );
+}
+
+const localAvatars: Record<string, string> = {
+  'Carolina Diez Canseco': '/instructors/Carolina.webp',
+  'Shoshana Grossman-Crist': '/instructors/Shoshana-1.webp',
+  'Maria Liliana Mor': '/instructors/Imagen-speakers-2025.webp',
+  'Carla Grados': '/instructors/Imagen-speakers-2025-1.webp',
+  'Cinthia Varela': '/instructors/Cinthia-foto.webp',
+  'José Pajuelo': '/instructors/Imagen-speakers-2025-2.webp',
+  'Vincent Wongvalle': '/instructors/Imagen-speakers-2025-3.webp',
+  'Stephanie Hoyle': '/instructors/Imagen-speakers-2025-1.webp',
+  'Herman Marin': '/instructors/Imagen-speakers-2025-1.webp',
+  'Laura Loáiciga': '/instructors/Imagen-speakers-2025-2.webp',
+};
+
+interface LessonResource {
+  id: number;
+  title: string;
+  url: string;
+  file_size: number;
+}
 
 interface Lesson {
   id: number;
@@ -31,12 +84,15 @@ interface Lesson {
   video_url?: string;
   content?: string;
   topics?: Topic[];
+  resources?: LessonResource[];
 }
 
 interface Topic {
   id: number;
   title: string;
   order_index: number;
+  video_url?: string;
+  content?: string;
 }
 
 interface Material {
@@ -52,6 +108,7 @@ interface Instructor {
   bio?: string;
   avatar?: string;
 }
+
 
 interface Course {
   id: number;
@@ -77,6 +134,12 @@ interface Course {
   is_favorite?: boolean;
 }
 
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
 const CourseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -85,7 +148,11 @@ const CourseDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [togglingFavorite, setTogglingFavorite] = useState(false);
+  const [previewResourceId, setPreviewResourceId] = useState<number | null>(null);
   const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set());
+  const [completedLessons, setCompletedLessons] = useState<Set<number>>(new Set());
+  const [completedTopics, setCompletedTopics] = useState<Set<number>>(new Set());
+  const [downloadingCert, setDownloadingCert] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -97,9 +164,10 @@ const CourseDetail = () => {
       if (!slug) return;
 
       try {
-        const [courseRes, enrollmentsRes] = await Promise.all([
+        const [courseRes, enrollmentsRes, progressRes] = await Promise.all([
           coursesApi.getBySlug(slug),
           coursesApi.getMyEnrollments(),
+          coursesApi.getCourseProgress(slug),
         ]);
 
         if (courseRes.ok) {
@@ -111,6 +179,12 @@ const CourseDetail = () => {
               (e: { course?: { slug?: string }; slug?: string }) => e.course?.slug || e.slug || ''
             );
             courseData.is_enrolled = enrolledSlugs.includes(slug);
+          }
+
+          // Set progress data
+          if (progressRes.ok) {
+            setCompletedLessons(new Set(progressRes.data.completed_lessons));
+            setCompletedTopics(new Set(progressRes.data.completed_topics));
           }
 
           setCourse(courseData);
@@ -277,6 +351,13 @@ const CourseDetail = () => {
     );
   }
 
+  const instructor = course.instructor
+    ? {
+        ...course.instructor,
+        avatar: (course.instructor.name && localAvatars[course.instructor.name]) || course.instructor.avatar,
+      }
+    : null;
+
   return (
     <div className="course-detail-page">
       <div className="course-detail-container">
@@ -297,8 +378,8 @@ const CourseDetail = () => {
             <div className="course-header-section">
               <h1 className="course-title">{course.title}</h1>
 
-              {course.instructor && (
-                <p className="course-instructor-name">{course.instructor.name}</p>
+              {instructor && (
+                <p className="course-instructor-name">{instructor.name}</p>
               )}
 
               <div className="course-header-meta">
@@ -408,6 +489,12 @@ const CourseDetail = () => {
                           className={`module-header ${expandedModules.has(lesson.id) ? 'expanded' : ''}`}
                           onClick={() => toggleModule(lesson.id)}
                         >
+                          {completedLessons.has(lesson.id) && (
+                            <svg className="module-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                              <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                          )}
                           <span className="module-title">{lesson.title}</span>
                           <svg
                             className="module-chevron"
@@ -455,7 +542,7 @@ const CourseDetail = () => {
                             {lesson.content && (
                               <div
                                 className="module-content-html"
-                                dangerouslySetInnerHTML={{ __html: lesson.content }}
+                                dangerouslySetInnerHTML={{ __html: processContent(lesson.content) }}
                               />
                             )}
 
@@ -464,14 +551,122 @@ const CourseDetail = () => {
                                 {lesson.topics
                                   .sort((a, b) => a.order_index - b.order_index)
                                   .map((topic) => (
-                                    <div key={topic.id} className="topic-item">
-                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <circle cx="12" cy="12" r="10"/>
-                                        <polygon points="10 8 16 12 10 16 10 8"/>
-                                      </svg>
-                                      <span>{topic.title}</span>
+                                    <div key={topic.id} className="topic-item-wrapper">
+                                      <Link
+                                        to={`/courses/${slug}/topics/${topic.id}`}
+                                        className={`topic-item ${completedTopics.has(topic.id) ? 'completed' : ''}`}
+                                      >
+                                        {completedTopics.has(topic.id) ? (
+                                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                            <polyline points="22 4 12 14.01 9 11.01"/>
+                                          </svg>
+                                        ) : (
+                                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <polygon points="10 8 16 12 10 16 10 8"/>
+                                          </svg>
+                                        )}
+                                        <span>{topic.title}</span>
+                                      </Link>
                                     </div>
                                   ))}
+                              </div>
+                            )}
+
+                            {lesson.resources && lesson.resources.length > 0 && (
+                              <div className="module-resources">
+                                <h4 className="module-resources-title">
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                  </svg>
+                                  Recursos
+                                </h4>
+                                {lesson.resources.map(resource => {
+                                  const url = localizeUrl(resource.url);
+                                  const isPdf = url?.toLowerCase().endsWith('.pdf');
+                                  const isExternalLink = !isPdf && /^https?:\/\//.test(url);
+                                  const isPreviewOpen = previewResourceId === resource.id;
+
+                                  if (isExternalLink) {
+                                    return (
+                                      <div key={resource.id} className="module-resource-wrapper">
+                                        <a
+                                          href={url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="module-resource-item"
+                                        >
+                                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                                            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                                          </svg>
+                                          <span className="module-resource-name">{resource.title}</span>
+                                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+                                          </svg>
+                                        </a>
+                                      </div>
+                                    );
+                                  }
+
+                                  return (
+                                    <div key={resource.id} className="module-resource-wrapper">
+                                      <div
+                                        className={`module-resource-item ${isPreviewOpen ? 'active' : ''}`}
+                                        onClick={isPdf ? (e) => { e.preventDefault(); setPreviewResourceId(isPreviewOpen ? null : resource.id); } : undefined}
+                                        style={isPdf ? { cursor: 'pointer' } : undefined}
+                                      >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                          <polyline points="14 2 14 8 20 8" />
+                                        </svg>
+                                        <span className="module-resource-name">{resource.title}</span>
+                                        {resource.file_size > 0 && (
+                                          <span className="module-resource-size">{formatFileSize(resource.file_size)}</span>
+                                        )}
+                                        {isPdf ? (
+                                          <svg className={`module-resource-chevron ${isPreviewOpen ? 'open' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M6 9l6 6 6-6"/>
+                                          </svg>
+                                        ) : (
+                                          <a href={url} download target="_blank" rel="noopener noreferrer" className="module-resource-download" onClick={e => e.stopPropagation()}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                              <polyline points="7 10 12 15 17 10" />
+                                              <line x1="12" y1="15" x2="12" y2="3" />
+                                            </svg>
+                                          </a>
+                                        )}
+                                      </div>
+                                      {isPdf && isPreviewOpen && (
+                                        <div className="module-resource-preview">
+                                          <div className="module-resource-preview-toolbar">
+                                            <a href={url} download target="_blank" rel="noopener noreferrer" className="preview-toolbar-btn">
+                                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                                <polyline points="7 10 12 15 17 10" />
+                                                <line x1="12" y1="15" x2="12" y2="3" />
+                                              </svg>
+                                              Descargar
+                                            </a>
+                                            <a href={url} target="_blank" rel="noopener noreferrer" className="preview-toolbar-btn">
+                                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                                                <polyline points="15 3 21 3 21 9" />
+                                                <line x1="10" y1="14" x2="21" y2="3" />
+                                              </svg>
+                                              Abrir
+                                            </a>
+                                          </div>
+                                          <iframe src={`/pdfjs/web/viewer.html?file=${encodeURIComponent(url)}`} className="module-resource-iframe" title={resource.title} />
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
@@ -483,24 +678,35 @@ const CourseDetail = () => {
             )}
 
             {/* Instructor Section */}
-            {course.instructor && (
+            {instructor && (
               <div className="course-section instructor-section">
                 <h2 className="section-title">Conoce a tu instructor:</h2>
                 <div className="instructor-card">
-                  {course.instructor.avatar && (
-                    <img
-                      src={course.instructor.avatar}
-                      alt={course.instructor.name}
-                      className="instructor-avatar"
-                    />
-                  )}
-                  <div className="instructor-info">
-                    <h3 className="instructor-name">{course.instructor.name}</h3>
-                    {course.instructor.title && (
-                      <p className="instructor-title">{course.instructor.title}</p>
+                  <div className="instructor-avatar-wrapper">
+                    {instructor.avatar ? (
+                      <img
+                        src={instructor.avatar}
+                        alt={instructor.name}
+                        className="instructor-avatar"
+                        width={120}
+                        height={120}
+                      />
+                    ) : (
+                      <div className="instructor-avatar-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(242,242,242,0.3)" strokeWidth="1.5">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                          <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                      </div>
                     )}
-                    {course.instructor.bio && (
-                      <p className="instructor-bio">{course.instructor.bio}</p>
+                  </div>
+                  <div className="instructor-info">
+                    <h3 className="instructor-name">{instructor.name}</h3>
+                    {instructor.title && (
+                      <p className="instructor-title">{instructor.title}</p>
+                    )}
+                    {instructor.bio && (
+                      <p className="instructor-bio">{instructor.bio}</p>
                     )}
                   </div>
                 </div>
@@ -515,7 +721,7 @@ const CourseDetail = () => {
                 const thumbSrc = localThumbnails[course.slug] || course.thumbnail_url;
                 return thumbSrc ? (
                   <div className="sidebar-thumbnail">
-                    <img src={thumbSrc} alt={course.title} />
+                    <img src={thumbSrc} alt={course.title} width={400} height={260} />
                   </div>
                 ) : null;
               })()}
@@ -523,10 +729,10 @@ const CourseDetail = () => {
                 <h3 className="sidebar-title">Contenido</h3>
 
                 <div className="sidebar-info">
-                  {course.instructor && (
+                  {instructor && (
                     <div className="sidebar-row">
                       <span className="sidebar-label">Instructor:</span>
-                      <span className="sidebar-value">{course.instructor.name}</span>
+                      <span className="sidebar-value">{instructor.name}</span>
                     </div>
                   )}
 
@@ -557,10 +763,16 @@ const CourseDetail = () => {
                         .map((lesson, index) => (
                           <button
                             key={lesson.id}
-                            className={`sidebar-toc-item ${expandedModules.has(lesson.id) ? 'active' : ''}`}
+                            className={`sidebar-toc-item ${expandedModules.has(lesson.id) ? 'active' : ''} ${completedLessons.has(lesson.id) ? 'completed' : ''}`}
                             onClick={() => handleTocClick(lesson.id)}
                           >
-                            <span className="sidebar-toc-number">{index + 1}</span>
+                            {completedLessons.has(lesson.id) ? (
+                              <svg className="sidebar-toc-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
+                                <polyline points="20 6 9 17 4 12"/>
+                              </svg>
+                            ) : (
+                              <span className="sidebar-toc-number">{index + 1}</span>
+                            )}
                             <span className="sidebar-toc-label">{lesson.title}</span>
                           </button>
                         ))}
@@ -568,22 +780,96 @@ const CourseDetail = () => {
                   </div>
                 )}
 
-                <button
-                className={`sidebar-cta ${course.is_enrolled ? 'enrolled' : ''}`}
-                onClick={handleEnroll}
-                disabled={enrolling}
-              >
-                {enrolling ? (
-                  <>
-                    <span className="button-spinner"></span>
-                    Inscribiendo...
-                  </>
-                ) : course.is_enrolled ? (
-                  'Continuar'
-                ) : (
-                  'Inscribirme'
+                {(() => {
+                  if (!course.is_enrolled || !course.lessons) return false;
+                  const allLessons = course.lessons.filter(l => l.video_url || l.content);
+                  const allTopics = course.lessons.flatMap(l => l.topics || []);
+                  const totalItems = allLessons.length + allTopics.length;
+                  if (totalItems === 0) return false;
+                  return allLessons.every(l => completedLessons.has(l.id)) &&
+                    allTopics.every(t => completedTopics.has(t.id));
+                })() && (
+                  <button
+                    className="sidebar-certificate-btn"
+                    disabled={downloadingCert}
+                    onClick={async () => {
+                      setDownloadingCert(true);
+                      try {
+                        await coursesApi.downloadCertificate(course.slug);
+                      } finally {
+                        setDownloadingCert(false);
+                      }
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
+                  </button>
                 )}
-                </button>
+
+                {course.is_enrolled ? (() => {
+                  // Find first incomplete content item for "Continuar" link
+                  const sortedLessons = [...(course.lessons || [])].sort((a, b) => a.order_index - b.order_index);
+                  let firstPath = `/courses/${slug}`;
+                  let found = false;
+
+                  // First pass: find the first incomplete item
+                  for (const lesson of sortedLessons) {
+                    if ((lesson.video_url || lesson.content) && !completedLessons.has(lesson.id)) {
+                      firstPath = `/courses/${slug}/lessons/${lesson.id}`;
+                      found = true;
+                      break;
+                    }
+                    if (lesson.topics && lesson.topics.length > 0) {
+                      const incompleteTopic = [...lesson.topics]
+                        .sort((a, b) => a.order_index - b.order_index)
+                        .find(t => !completedTopics.has(t.id));
+                      if (incompleteTopic) {
+                        firstPath = `/courses/${slug}/topics/${incompleteTopic.id}`;
+                        found = true;
+                        break;
+                      }
+                    }
+                  }
+
+                  // Fallback: if everything is completed, go to the first item
+                  if (!found) {
+                    for (const lesson of sortedLessons) {
+                      if (lesson.video_url || lesson.content) {
+                        firstPath = `/courses/${slug}/lessons/${lesson.id}`;
+                        break;
+                      }
+                      if (lesson.topics && lesson.topics.length > 0) {
+                        const firstTopic = [...lesson.topics].sort((a, b) => a.order_index - b.order_index)[0];
+                        firstPath = `/courses/${slug}/topics/${firstTopic.id}`;
+                        break;
+                      }
+                    }
+                  }
+                  return (
+                    <Link to={firstPath} className="sidebar-cta enrolled">
+                      Continuar
+                    </Link>
+                  );
+                })() : (
+                  <button
+                    className="sidebar-cta"
+                    onClick={handleEnroll}
+                    disabled={enrolling}
+                  >
+                    {enrolling ? (
+                      <>
+                        <span className="button-spinner"></span>
+                        Inscribiendo...
+                      </>
+                    ) : (
+                      'Inscribirme'
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>

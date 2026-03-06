@@ -1,0 +1,116 @@
+/* Academy custom overrides for PDF.js viewer */
+
+/* Hide editor toolbar (draw, highlight, text, stamp) */
+#editorModeButtons { display: none !important; }
+
+/* Hide print button */
+#printButton,
+#secondaryPrint { display: none !important; }
+
+/* Hide open file */
+#openFile,
+#secondaryOpenFile { display: none !important; }
+
+/* Hide the print dialog */
+#printServiceDialog,
+#printContainer { display: none !important; }
+
+/* Keep download button visible — users need a way to save */
+
+/* Sidebar: hide attachment/layers tabs, keep pages & outline */
+
+/* Dark theme overrides to blend with Academy background */
+:root {
+  --body-bg-color: #032220;
+  --toolbar-bg-color: #043A37;
+  --toolbar-border-color: rgba(17, 84, 79, 0.4);
+  --toolbar-icon-bg-color: transparent;
+  --toolbar-icon-hover-bg-color: rgba(17, 84, 79, 0.4);
+  --button-hover-color: rgba(253, 106, 68, 0.15);
+  --toggled-btn-bg-color: rgba(253, 106, 68, 0.2);
+  --toggled-btn-color: #FD6A44;
+  --dropdown-btn-bg-color: #043A37;
+  --separator-color: rgba(17, 84, 79, 0.4);
+  --field-color: #F2F2F2;
+  --field-bg-color: rgba(3, 34, 32, 0.8);
+  --field-border-color: rgba(17, 84, 79, 0.5);
+  --sidebar-width: 200px;
+  --sidebar-bg-color: #032220;
+  --sidebar-narrow-bg-color: #032220;
+}
+
+body {
+  background: #032220;
+}
+
+/* Toolbar styling */
+.toolbar {
+  background: #043A37 !important;
+  border-bottom: 1px solid rgba(17, 84, 79, 0.4) !important;
+}
+
+#toolbarContainer {
+  background: #043A37 !important;
+}
+
+/* Toolbar button colors */
+.toolbarButton {
+  color: rgba(242, 242, 242, 0.85) !important;
+}
+
+.toolbarButton:hover {
+  background: rgba(17, 84, 79, 0.4) !important;
+  color: #FD6A44 !important;
+}
+
+.toolbarButton::before {
+  filter: brightness(0) invert(0.9);
+}
+
+.toolbarButton:hover::before {
+  filter: brightness(0) saturate(100%) invert(52%) sepia(57%) saturate(2000%) hue-rotate(340deg) brightness(100%) contrast(98%);
+}
+
+/* Page number input */
+#pageNumber {
+  background: rgba(3, 34, 32, 0.8) !important;
+  border-color: rgba(17, 84, 79, 0.5) !important;
+  color: #F2F2F2 !important;
+}
+
+/* "of X" text */
+#numPages {
+  color: rgba(242, 242, 242, 0.7) !important;
+}
+
+/* Sidebar */
+#sidebarContainer {
+  background: #032220 !important;
+}
+
+#sidebarContent {
+  background: #032220 !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(17, 84, 79, 0.4);
+  border-radius: 3px;
+}
+
+/* Loading bar accent color */
+#loadingBar .progress {
+  background: #FD6A44 !important;
+}
+
+.indeterminate .glimmer {
+  background: linear-gradient(to right, transparent, #FD6A44, transparent) !important;
+}

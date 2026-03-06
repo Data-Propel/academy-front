@@ -19,7 +19,7 @@
   min-height: 60dvh;
   color: #F2F2F2;
   font-size: 1.2rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Header */
@@ -28,7 +28,7 @@
 }
 
 .admin-title {
-  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 42px;
   font-weight: 600;
   color: #F2F2F2;
@@ -36,7 +36,7 @@
 }
 
 .admin-subtitle {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 16px;
   color: rgba(242, 242, 242, 0.8);
   margin: 0;
@@ -51,7 +51,7 @@
   border-radius: 4px;
   margin-bottom: 20px;
   font-size: 0.9rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .admin-success {
@@ -62,7 +62,7 @@
   border-radius: 4px;
   margin-bottom: 20px;
   font-size: 0.9rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Tabs */
@@ -78,7 +78,7 @@
   border: none;
   color: rgba(242, 242, 242, 0.6);
   padding: 16px 24px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -126,7 +126,7 @@
   background: rgba(255, 255, 255, 0.1);
   color: #F2F2F2;
   font-size: 0.9rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   cursor: pointer;
   min-width: 200px;
 }
@@ -148,7 +148,7 @@
   background: rgba(255, 255, 255, 0.1);
   color: #F2F2F2;
   font-size: 0.9rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   min-width: 280px;
 }
 
@@ -168,7 +168,7 @@
   color: #ffffff;
   padding: 10px 20px;
   border-radius: 4px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -189,7 +189,7 @@
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .admin-table th,
@@ -232,7 +232,7 @@
   text-align: center;
   padding: 40px;
   color: rgba(242, 242, 242, 0.6);
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Loading overlay */
@@ -247,7 +247,7 @@
   align-items: center;
   justify-content: center;
   color: #F2F2F2;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.95rem;
   z-index: 10;
 }
@@ -264,7 +264,7 @@
 
 .pagination-info {
   color: rgba(242, 242, 242, 0.7);
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
 }
 
@@ -280,7 +280,7 @@
   color: #F2F2F2;
   padding: 8px 16px;
   border-radius: 4px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -298,7 +298,7 @@
 
 .pagination-page {
   color: #F2F2F2;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   padding: 0 8px;
 }
@@ -337,7 +337,7 @@
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.8rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   cursor: pointer;
   margin-right: 8px;
   transition: all 0.3s ease;
@@ -375,7 +375,7 @@
   color: #F2F2F2;
   padding: 8px 16px;
   border-radius: 4px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -389,7 +389,7 @@
 .form-title {
   margin: 0;
   color: #F2F2F2;
-  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1.5rem;
   font-weight: 600;
 }
@@ -405,7 +405,7 @@
   color: #F2F2F2;
   font-size: 0.9rem;
   font-weight: 500;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .admin-form .required {
@@ -425,7 +425,7 @@
   background: rgba(255, 255, 255, 0.1);
   color: #F2F2F2;
   font-size: 0.95rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   transition: border-color 0.3s ease, background-color 0.3s ease;
   box-sizing: border-box;
 }
@@ -471,7 +471,7 @@
   gap: 8px;
   color: #F2F2F2;
   font-size: 0.9rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   cursor: pointer;
 }
 
@@ -491,7 +491,7 @@
   background: rgba(255, 255, 255, 0.1);
   color: #F2F2F2;
   font-size: 0.95rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   cursor: pointer;
   box-sizing: border-box;
 }
@@ -502,7 +502,7 @@
   color: #ffffff;
   padding: 8px 16px;
   border-radius: 4px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -553,7 +553,7 @@
   border-radius: 4px;
   font-size: 0.7rem;
   font-weight: 600;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .thumbnail-current {
@@ -607,7 +607,7 @@
   border-radius: 4px;
   font-size: 0.85rem;
   margin-top: 10px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .form-actions {
@@ -625,7 +625,7 @@
   color: #F2F2F2;
   padding: 12px 24px;
   border-radius: 4px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -642,7 +642,7 @@
   color: #ffffff;
   padding: 12px 28px;
   border-radius: 4px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;

@@ -296,6 +296,59 @@ export const coursesApi = {
     const response = await apiFetch('/courses/my/favorites/');
     return { ok: response.ok, data: await response.json() };
   },
+
+  getCourseProgress: async (slug: string) => {
+    const response = await apiFetch(`/courses/${slug}/progress/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  markLessonComplete: async (lessonId: number) => {
+    const response = await apiFetch(`/courses/lessons/${lessonId}/complete/`, { method: 'POST' });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  markTopicComplete: async (topicId: number) => {
+    const response = await apiFetch(`/courses/topics/${topicId}/complete/`, { method: 'POST' });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  downloadCertificate: async (slug: string) => {
+    const token = getToken();
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    let response = await fetch(`${API_URL}/courses/${slug}/certificate/`, { headers });
+
+    if (response.status === 401) {
+      const refreshed = await refreshToken();
+      if (refreshed) {
+        headers['Authorization'] = `Bearer ${getToken()}`;
+        response = await fetch(`${API_URL}/courses/${slug}/certificate/`, { headers });
+      } else {
+        clearTokens();
+        window.location.href = '/login';
+        return;
+      }
+    }
+
+    if (!response.ok) return;
+
+    const blob = await response.blob();
+    triggerBlobDownload(blob, `certificado-${slug}.pdf`);
+  },
+};
+
+export const triggerBlobDownload = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };
 
 // Check if user is authenticated
@@ -615,6 +668,49 @@ export const adminApi = {
 
   deleteQuiz: async (id: number) => {
     const response = await apiFetch(`/courses/admin/quizzes/${id}/`, {
+      method: 'DELETE',
+    });
+    return { ok: response.ok, data: response.ok ? null : await response.json() };
+  },
+
+  // Resources - /api/courses/admin/resources/
+  getResources: async (lessonId?: number) => {
+    const params = lessonId ? `?lesson_id=${lessonId}` : '';
+    return fetchAllPages(`/courses/admin/resources/${params}`);
+  },
+
+  createResource: async (resourceData: {
+    lesson_id: number;
+    title: string;
+    file_url?: string;
+  }, file?: File) => {
+    const formData = new FormData();
+    formData.append('lesson_id', String(resourceData.lesson_id));
+    formData.append('title', resourceData.title);
+    if (file) formData.append('file', file);
+    if (resourceData.file_url) formData.append('file_url', resourceData.file_url);
+
+    const response = await apiFetchFormData('/courses/admin/resources/', formData, 'POST');
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  updateResource: async (id: number, resourceData: {
+    lesson_id?: number;
+    title?: string;
+    file_url?: string;
+  }, file?: File) => {
+    const formData = new FormData();
+    if (resourceData.lesson_id) formData.append('lesson_id', String(resourceData.lesson_id));
+    if (resourceData.title) formData.append('title', resourceData.title);
+    if (file) formData.append('file', file);
+    if (resourceData.file_url) formData.append('file_url', resourceData.file_url);
+
+    const response = await apiFetchFormData(`/courses/admin/resources/${id}/`, formData, 'PUT');
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  deleteResource: async (id: number) => {
+    const response = await apiFetch(`/courses/admin/resources/${id}/`, {
       method: 'DELETE',
     });
     return { ok: response.ok, data: response.ok ? null : await response.json() };

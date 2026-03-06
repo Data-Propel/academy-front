@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { isAuthenticated, isSuperuser, authApi } from '../../services/api';
-import logo from '../../assets/logoacademyblanco.png';
+import logo from '../../assets/logoacademyblanco.webp';
 import './Topbar.css';
 
 const Topbar = () => {
@@ -42,6 +42,8 @@ const Topbar = () => {
             src={logo}
             alt="Propel Logo"
             className="topbar-logo-img"
+            width={98}
+            height={32}
           />
         </a>
         <nav className="topbar-nav">

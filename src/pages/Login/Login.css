@@ -28,7 +28,7 @@
   color: #F2F2F2;
   font-size: 34px;
   font-weight: 600;
-  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   margin: 0 0 1.25rem 0;
   line-height: 100%;
 }
@@ -37,7 +37,7 @@
   color: #F2F2F2;
   font-size: 24px;
   font-weight: 600;
-  font-family: 'Libre Franklin', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   margin: 0 0 0 0;
   line-height: 100%;
 }
@@ -69,7 +69,7 @@
   border-radius: 4px;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .form-info {
@@ -80,7 +80,7 @@
   border-radius: 4px;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.5;
 }
 
@@ -88,7 +88,7 @@
   color: #F2F2F2;
   font-size: 1rem;
   font-weight: 500;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .change-email {
@@ -96,7 +96,7 @@
   border: none;
   color: #FD6A44;
   font-size: 0.85rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   cursor: pointer;
   margin-left: 10px;
   padding: 0;
@@ -118,7 +118,7 @@
   color: #F2F2F2;
   font-size: 0.95rem;
   font-weight: 500;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .required {
@@ -136,7 +136,7 @@
   border: 1px solid #656565;
   border-radius: 4px;
   font-size: 15px;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   transition: border-color 0.3s ease, background-color 0.3s ease;
   box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.1);
@@ -172,7 +172,7 @@
   cursor: pointer;
   font-size: 0.9rem;
   color: #F2F2F2;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -186,7 +186,7 @@
   color: #FD6A44;
   text-decoration: none;
   font-size: 0.9rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   transition: color 0.3s ease;
 }
 
@@ -218,7 +218,7 @@
   color: #ffffff;
   font-size: 1rem;
   font-weight: 600;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
@@ -248,7 +248,7 @@
   border-top: 1px solid #656565;
   font-size: 0.95rem;
   color: #F2F2F2;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .register-link {
@@ -289,7 +289,7 @@
 .verify-email-text {
   color: #F2F2F2;
   font-size: 1.1rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   margin: 0 0 12px 0;
   line-height: 1.5;
 }
@@ -301,7 +301,7 @@
 .verify-email-subtext {
   color: rgba(242, 242, 242, 0.7);
   font-size: 0.95rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   margin: 0 0 30px 0;
   line-height: 1.5;
 }
@@ -312,7 +312,7 @@
   border: none;
   color: #FD6A44;
   font-size: 0.95rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   cursor: pointer;
   margin: 20px auto 0;
   padding: 0;
@@ -332,7 +332,7 @@
   border-radius: 4px;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Laptop (1920px) */
