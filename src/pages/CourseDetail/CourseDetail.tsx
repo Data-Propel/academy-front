@@ -70,6 +70,25 @@ const localAvatars: Record<string, string> = {
   'Laura Loáiciga': '/instructors/Imagen-speakers-2025-2.webp',
 };
 
+interface CourseMaterial {
+  url: string;
+  title: string;
+}
+
+/** Parse course-level materials HTML into a list of links */
+function parseMaterialsHtml(html: string): CourseMaterial[] {
+  const materials: CourseMaterial[] = [];
+  const linkPattern = /<a\s[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  for (const match of html.matchAll(linkPattern)) {
+    const url = match[1];
+    const title = match[2].replace(/<[^>]*>/g, '').trim();
+    if (url && title) {
+      materials.push({ url, title });
+    }
+  }
+  return materials;
+}
+
 interface LessonResource {
   id: number;
   title: string;
@@ -126,6 +145,7 @@ interface Course {
   };
   lessons?: Lesson[];
   materials?: Material[];
+  materials_html?: string;
   instructor?: Instructor;
   what_you_learn?: string[];
   what_you_get?: string[];
@@ -448,33 +468,36 @@ const CourseDetail = () => {
             )}
 
             {/* Course Materials */}
-            {course.materials && course.materials.length > 0 && (
-              <div className="course-section">
-                <h2 className="section-title">Materiales del curso</h2>
-                <div className="materials-list">
-                  {course.materials.map((material) => (
-                    <a
-                      key={material.id}
-                      href={material.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="material-item"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        {material.type === 'presentation' ? (
-                          <><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>
-                        ) : material.type === 'drive' ? (
-                          <><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></>
-                        ) : (
-                          <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>
-                        )}
-                      </svg>
-                      <span>{material.title}</span>
-                    </a>
-                  ))}
+            {(() => {
+              const mats = course.materials && course.materials.length > 0
+                ? course.materials.map(m => ({ url: m.url, title: m.title }))
+                : course.materials_html
+                  ? parseMaterialsHtml(course.materials_html)
+                  : [];
+              if (mats.length === 0) return null;
+              return (
+                <div className="course-section">
+                  <h2 className="section-title">Materiales del curso</h2>
+                  <div className="materials-list">
+                    {mats.map((material, i) => (
+                      <a
+                        key={i}
+                        href={material.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="material-item"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                          <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                        </svg>
+                        <span>{material.title}</span>
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Course Content / Modules */}
             {course.lessons && course.lessons.length > 0 && (

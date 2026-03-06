@@ -139,6 +139,25 @@ function processContent(html: string): string {
   return result;
 }
 
+interface CourseMaterial {
+  url: string;
+  title: string;
+}
+
+/** Parse course-level materials HTML (from LearnDash) into a list of links */
+function parseMaterialsHtml(html: string): CourseMaterial[] {
+  const materials: CourseMaterial[] = [];
+  const linkPattern = /<a\s[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  for (const match of html.matchAll(linkPattern)) {
+    const url = match[1];
+    const title = match[2].replace(/<[^>]*>/g, '').trim();
+    if (url && title) {
+      materials.push({ url, title });
+    }
+  }
+  return materials;
+}
+
 interface LessonResource {
   id: number;
   title: string;
@@ -169,6 +188,7 @@ interface Course {
   title: string;
   slug: string;
   lessons?: Lesson[];
+  materials_html?: string;
 }
 
 interface NavItem {
@@ -449,7 +469,10 @@ const CourseLearner = () => {
     ? (course.lessons?.find(l => l.id === currentItem.lessonId)?.resources || [])
     : [];
 
-  const hasMaterials = googleLinks.length > 0 || currentResources.length > 0;
+  // Course-level materials (from LearnDash course_materials field)
+  const courseMaterials = course.materials_html ? parseMaterialsHtml(course.materials_html) : [];
+
+  const hasMaterials = googleLinks.length > 0 || currentResources.length > 0 || courseMaterials.length > 0;
 
   return (
     <div className="cl-page">
@@ -609,6 +632,17 @@ const CourseLearner = () => {
                     className="cl-sidebar-material-item"
                   >
                     {resource.title}
+                  </a>
+                ))}
+                {courseMaterials.map((mat, i) => (
+                  <a
+                    key={`cm-${i}`}
+                    href={mat.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cl-sidebar-material-item"
+                  >
+                    {mat.title}
                   </a>
                 ))}
               </div>
@@ -828,6 +862,38 @@ const CourseLearner = () => {
                       </div>
                     );
                   })}
+                </div>
+              )}
+
+              {/* Course-level materials */}
+              {courseMaterials.length > 0 && (
+                <div className="cl-resources">
+                  <h3 className="cl-resources-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                    </svg>
+                    Materiales del curso
+                  </h3>
+                  {courseMaterials.map((mat, i) => (
+                    <div key={i} className="cl-resource-wrapper">
+                      <a
+                        href={mat.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cl-resource-item"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                          <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                        </svg>
+                        <span className="cl-resource-title">{mat.title}</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </a>
+                    </div>
+                  ))}
                 </div>
               )}
 
