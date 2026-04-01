@@ -1,0 +1,75 @@
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-dialog {
+  background: rgba(4, 58, 55, 0.98);
+  border: 1px solid #656565;
+  border-radius: 8px;
+  padding: 28px 32px;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.confirm-title {
+  margin: 0 0 12px 0;
+  color: #F2F2F2;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.confirm-message {
+  margin: 0 0 24px 0;
+  color: rgba(242, 242, 242, 0.8);
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.confirm-btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.confirm-btn.cancel {
+  background: transparent;
+  border: 1px solid #656565;
+  color: #F2F2F2;
+}
+
+.confirm-btn.cancel:hover {
+  border-color: #F2F2F2;
+}
+
+.confirm-btn.confirm {
+  background: #FD6A44;
+  border: 1px solid #FD6A44;
+  color: #ffffff;
+}
+
+.confirm-btn.confirm:hover {
+  background: #e55a36;
+  border-color: #e55a36;
+}

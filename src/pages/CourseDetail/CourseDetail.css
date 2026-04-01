@@ -193,6 +193,22 @@
   margin: 0;
 }
 
+.course-description-text h2 {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #F2F2F2;
+  margin: 28px 0 12px 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(17, 84, 79, 0.3);
+}
+
+.course-description-text h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
 .course-description-text ul,
 .course-description-text ol {
   padding-left: 1.5rem;
@@ -307,7 +323,7 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   padding: 16px 20px;
   background: transparent;
   border: none;
@@ -321,7 +337,26 @@
 
 .module-check {
   flex-shrink: 0;
-  margin-right: 8px;
+}
+
+.module-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(17, 84, 79, 0.4);
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(242, 242, 242, 0.7);
+  flex-shrink: 0;
+}
+
+.module-header.expanded .module-number {
+  background: #FD6A44;
+  color: #ffffff;
 }
 
 .module-title {
@@ -330,6 +365,7 @@
   font-weight: 600;
   color: #F2F2F2;
   text-align: left;
+  flex: 1;
 }
 
 .module-chevron {
@@ -350,37 +386,52 @@
   gap: 16px;
 }
 
-/* Video Embed */
-.module-video-embed {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
-  border-radius: 8px;
-  overflow: hidden;
-  background: #000;
+.module-lesson-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(253, 106, 68, 0.1);
+  border: 1px solid rgba(253, 106, 68, 0.3);
+  border-radius: 6px;
+  color: #FD6A44;
+  text-decoration: none;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+  align-self: flex-start;
 }
 
-.module-video-embed iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
+.module-lesson-cta:hover {
+  background: rgba(253, 106, 68, 0.2);
 }
 
-/* HTML5 Video Player (S3 / direct video files) */
-.module-video-player {
+/* Video placeholder link */
+.module-video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
+  padding: 40px 20px;
   border-radius: 8px;
-  overflow: hidden;
-  background: #000;
+  background: linear-gradient(135deg, #0E4B43, #043A37);
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
 }
 
-.module-video-player video {
-  display: block;
-  width: 100%;
-  border-radius: 8px;
+.module-video-placeholder:hover {
+  opacity: 0.9;
+}
+
+.module-video-placeholder span {
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .module-content-html {

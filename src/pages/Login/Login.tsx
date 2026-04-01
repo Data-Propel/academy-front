@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from '../../services/api';
+import { authApi, isAuthenticated } from '../../services/api';
 const logo = 'https://www.academy.wepropel.org/wp-content/uploads/2025/04/Logotipo_Propel_Horizontal-02-removebg-preview-e1745455801946.png';
 import './Login.css';
 
@@ -9,6 +9,12 @@ type LoginStep = 'email' | 'password' | 'setup-password' | 'verify-email';
 const Login = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<LoginStep>('email');
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/');
+    }
+  }, [navigate]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

@@ -42,11 +42,14 @@ const Topbar = () => {
             src={logo}
             alt="Propel Logo"
             className="topbar-logo-img"
-            width={98}
-            height={32}
           />
         </a>
         <nav className="topbar-nav">
+          {loggedIn && (
+            <a href="/profile" className="topbar-profile">
+              Mi Perfil
+            </a>
+          )}
           {loggedIn && isAdmin && (
             <a href="/admin" className="topbar-admin">
               Admin

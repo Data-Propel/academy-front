@@ -16,10 +16,12 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
+  background-color: #032220;
 }
 
 #root {
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: hidden;
+  background-color: #032220;
 }

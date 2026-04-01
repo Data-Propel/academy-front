@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { coursesApi, isAuthenticated } from '../../services/api';
 import './CourseLearner.css';
@@ -188,6 +188,13 @@ interface Course {
   title: string;
   slug: string;
   lessons?: Lesson[];
+  resources?: Array<{
+    id: number;
+    title: string;
+    resource_type: string;
+    url: string;
+    file_size: number;
+  }>;
   materials_html?: string;
 }
 
@@ -213,7 +220,7 @@ const getEmbedUrl = (url: string): string | null => {
     const hash = vimeo[2] ? `&h=${vimeo[2]}` : '';
     return `https://player.vimeo.com/video/${vimeo[1]}?title=0&byline=0&portrait=0${hash}`;
   }
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([\w-]+)/);
   if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
   return null;
 };
@@ -275,6 +282,10 @@ const CourseLearner = () => {
   const [previewResourceId, setPreviewResourceId] = useState<number | null>(null);
   const [downloadingCert, setDownloadingCert] = useState(false);
   const [materialsOpen, setMaterialsOpen] = useState(true);
+  const [justCompleted, setJustCompleted] = useState(false);
+  const [evalStatus, setEvalStatus] = useState<{ has_evaluation_form: boolean; has_submitted: boolean } | null>(null);
+  const activeItemRef = useRef<HTMLAnchorElement | HTMLDivElement>(null);
+  const sidebarNavRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -319,6 +330,20 @@ const CourseLearner = () => {
     fetchProgress();
   }, [slug, course]);
 
+  // Fetch evaluation status when course is fully completed (once)
+  useEffect(() => {
+    if (!slug || !course?.lessons || evalStatus !== null) return;
+    const items = buildNavItems(course.lessons);
+    const allDone = items.length > 0 && items.every(item =>
+      item.type === 'lesson' ? completedLessons.has(item.id) : completedTopics.has(item.id)
+    );
+    if (allDone) {
+      coursesApi.getEvaluationStatus(slug).then(res => {
+        if (res.ok) setEvalStatus(res.data);
+      });
+    }
+  }, [slug, course, completedLessons, completedTopics, evalStatus]);
+
   // Scroll to top when lesson/topic changes
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -327,6 +352,16 @@ const CourseLearner = () => {
   // Close sidebar on mobile when navigating
   useEffect(() => {
     setSidebarOpen(false);
+  }, [lessonId, topicId]);
+
+  // Auto-scroll active sidebar item into view
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeItemRef.current && sidebarNavRef.current) {
+        activeItemRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 100);
+    return () => clearTimeout(timer);
   }, [lessonId, topicId]);
 
   // Expand the lesson that contains the current item
@@ -346,6 +381,33 @@ const CourseLearner = () => {
       }
     }
   }, [course, lessonId, topicId]);
+
+  // Keyboard navigation (left/right arrow keys)
+  const handleKeyNav = useCallback((e: KeyboardEvent) => {
+    // Don't interfere with input fields
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+    if (!slug) return;
+
+    const items = buildNavItems(course?.lessons || []);
+    const idx = items.findIndex((item) =>
+      lessonId
+        ? item.type === 'lesson' && item.id === Number(lessonId)
+        : item.type === 'topic' && item.id === Number(topicId)
+    );
+
+    if (e.key === 'ArrowRight' && idx < items.length - 1) {
+      e.preventDefault();
+      navigate(getNavPath(slug, items[idx + 1]));
+    } else if (e.key === 'ArrowLeft' && idx > 0) {
+      e.preventDefault();
+      navigate(getNavPath(slug, items[idx - 1]));
+    }
+  }, [course, slug, lessonId, topicId, navigate]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyNav);
+    return () => window.removeEventListener('keydown', handleKeyNav);
+  }, [handleKeyNav]);
 
   if (loading) {
     return (
@@ -413,6 +475,7 @@ const CourseLearner = () => {
       setCompletedTopics((prev) => new Set(prev).add(currentItem.id));
     }
 
+    setJustCompleted(true);
     setMarkingComplete(true);
     try {
       if (currentItem.type === 'lesson') {
@@ -420,7 +483,17 @@ const CourseLearner = () => {
       } else {
         await coursesApi.markTopicComplete(currentItem.id);
       }
+      // Auto-advance to next item after a brief celebration
+      if (nextItem && slug) {
+        setTimeout(() => {
+          setJustCompleted(false);
+          navigate(getNavPath(slug, nextItem));
+        }, 1200);
+      } else {
+        setTimeout(() => setJustCompleted(false), 1200);
+      }
     } catch (err) {
+      setJustCompleted(false);
       // Revert on error
       if (currentItem.type === 'lesson') {
         setCompletedLessons((prev) => {
@@ -470,12 +543,41 @@ const CourseLearner = () => {
     : [];
 
   // Course-level materials (from LearnDash course_materials field)
-  const courseMaterials = course.materials_html ? parseMaterialsHtml(course.materials_html) : [];
+  const courseMaterials = course.resources && course.resources.length > 0
+    ? course.resources.map(r => ({ url: r.url, title: r.title }))
+    : course.materials_html ? parseMaterialsHtml(course.materials_html) : [];
 
   const hasMaterials = googleLinks.length > 0 || currentResources.length > 0 || courseMaterials.length > 0;
 
   return (
     <div className="cl-page">
+      {/* Top bar — unified dark bar */}
+      <div className="cl-topbar">
+        <Link to={`/courses/${slug}`} className="cl-topbar-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+          Volver
+        </Link>
+        <span className="cl-topbar-title">{course.title}</span>
+        <div className="cl-topbar-right">
+          <div className="cl-topbar-progress">
+            <div className="cl-topbar-progress-bar">
+              <div
+                className="cl-topbar-progress-fill"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <span className="cl-topbar-progress-label">{progressPercent}% completado</span>
+          </div>
+          <Link to={`/courses/${slug}`} className="cl-topbar-close" aria-label="Cerrar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+
       {/* Mobile hamburger */}
       <button
         className="cl-hamburger"
@@ -498,16 +600,7 @@ const CourseLearner = () => {
 
       {/* Sidebar */}
       <aside className={`cl-sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="cl-sidebar-header">
-          <Link to={`/courses/${slug}`} className="cl-sidebar-back">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-            Volver
-          </Link>
-        </div>
-
-        <nav className="cl-sidebar-nav">
+        <nav className="cl-sidebar-nav" ref={sidebarNavRef}>
           <div className="cl-sidebar-section-title">Contenido del Curso</div>
           {sortedLessons.map((lesson) => {
             const hasContent = !!(lesson.video_url || lesson.content);
@@ -515,9 +608,12 @@ const CourseLearner = () => {
             const isExpanded = expandedLessons.has(lesson.id);
             const lessonCompleted = isCompleted('lesson', lesson.id);
             const lessonActive = hasContent && isActive('lesson', lesson.id);
+            // Per-lesson topic progress
+            const topicCount = lesson.topics?.length || 0;
+            const topicsDone = lesson.topics?.filter(t => completedTopics.has(t.id)).length || 0;
 
             return (
-              <div key={lesson.id} className="cl-sidebar-lesson">
+              <div key={lesson.id} className="cl-sidebar-lesson" ref={lessonActive ? activeItemRef as React.Ref<HTMLDivElement> : undefined}>
                 <div className={`cl-sidebar-lesson-header ${lessonActive ? 'active' : ''} ${!hasContent && !hasTopics ? 'empty' : ''}`}>
                   <div className={`cl-module-icon ${lessonCompleted ? 'completed' : ''}`}>
                     {lessonCompleted ? (
@@ -561,6 +657,17 @@ const CourseLearner = () => {
                     </button>
                   )}
                 </div>
+                {hasTopics && topicCount > 0 && (
+                  <div className="cl-lesson-progress-row">
+                    <div className="cl-lesson-progress-track">
+                      <div
+                        className="cl-lesson-progress-fill"
+                        style={{ width: `${Math.round((topicsDone / topicCount) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="cl-lesson-progress-count">{topicsDone}/{topicCount}</span>
+                  </div>
+                )}
                 {isExpanded && hasTopics && (
                   <div className="cl-sidebar-topics">
                     {[...(lesson.topics || [])].sort((a, b) => a.order_index - b.order_index).map((topic) => (
@@ -568,6 +675,7 @@ const CourseLearner = () => {
                         key={topic.id}
                         to={`/courses/${slug}/topics/${topic.id}`}
                         className={`cl-sidebar-topic-link ${isActive('topic', topic.id) ? 'active' : ''} ${isCompleted('topic', topic.id) ? 'completed' : ''}`}
+                        ref={isActive('topic', topic.id) ? activeItemRef as React.Ref<HTMLAnchorElement> : undefined}
                       >
                         {isCompleted('topic', topic.id) ? (
                           <svg className="cl-completed-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -587,95 +695,87 @@ const CourseLearner = () => {
               </div>
             );
           })}
-        </nav>
 
-        {/* Materials section */}
-        {hasMaterials && (
-          <div className="cl-sidebar-materials">
-            <button
-              className="cl-sidebar-materials-toggle"
-              onClick={() => setMaterialsOpen(!materialsOpen)}
-            >
-              Materiales del curso
-              <svg
-                className={materialsOpen ? 'expanded' : ''}
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+          {/* Materials section */}
+          {hasMaterials && (
+            <div className="cl-sidebar-materials">
+              <button
+                className="cl-sidebar-materials-toggle"
+                onClick={() => setMaterialsOpen(!materialsOpen)}
               >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            {materialsOpen && (
-              <div className="cl-sidebar-materials-list">
-                {googleLinks.map((link, i) => (
-                  <a
-                    key={`gl-${i}`}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="cl-sidebar-material-item"
-                  >
-                    {link.title}
-                  </a>
-                ))}
-                {currentResources.map(resource => (
-                  <a
-                    key={`res-${resource.id}`}
-                    href={localizeUrl(resource.url)}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="cl-sidebar-material-item"
-                  >
-                    {resource.title}
-                  </a>
-                ))}
-                {courseMaterials.map((mat, i) => (
-                  <a
-                    key={`cm-${i}`}
-                    href={mat.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="cl-sidebar-material-item"
-                  >
-                    {mat.title}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                Materiales del curso
+                <svg
+                  className={materialsOpen ? 'expanded' : ''}
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {materialsOpen && (
+                <div className="cl-sidebar-materials-list">
+                  {googleLinks.map((link, i) => (
+                    <a
+                      key={`gl-${i}`}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cl-sidebar-material-item"
+                    >
+                      {link.title}
+                    </a>
+                  ))}
+                  {currentResources.map(resource => (
+                    <a
+                      key={`res-${resource.id}`}
+                      href={localizeUrl(resource.url)}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cl-sidebar-material-item"
+                    >
+                      {resource.title}
+                    </a>
+                  ))}
+                  {courseMaterials.map((mat, i) => (
+                    <a
+                      key={`cm-${i}`}
+                      href={mat.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cl-sidebar-material-item"
+                    >
+                      {mat.title}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </nav>
       </aside>
 
       {/* Main content */}
       <main className="cl-main">
         <div className="cl-main-inner">
-          {/* Top header bar */}
-          <div className="cl-main-header">
-            <span className="cl-main-header-title">{course.title}</span>
-            <div className="cl-progress-wrapper">
-              <div className="cl-progress-bar">
-                <div
-                  className="cl-progress-fill"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-              <span className="cl-progress-label">{progressPercent}% completado</span>
-            </div>
-            <Link to={`/courses/${slug}`} className="cl-close-btn" aria-label="Cerrar">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </Link>
-          </div>
-
           {currentItem ? (
             <>
               <h1 className="cl-title">{currentItem.title}</h1>
+
+              {/* HTML content */}
+              {hasHtmlContent && (
+                <>
+                  <div
+                    className="cl-content-html"
+                    dangerouslySetInnerHTML={{ __html: cleanedHtml }}
+                  />
+                  <hr className="cl-content-divider" />
+                </>
+              )}
 
               {/* Video */}
               {currentItem.video_url && (() => {
@@ -705,18 +805,6 @@ const CourseLearner = () => {
                   </div>
                 );
               })()}
-
-              {/* Description / HTML content */}
-              {hasHtmlContent && (
-                <>
-                  <h2 className="cl-description-heading">Descripci&oacute;n</h2>
-                  <div
-                    className="cl-content-html"
-                    dangerouslySetInnerHTML={{ __html: cleanedHtml }}
-                  />
-                  <hr className="cl-content-divider" />
-                </>
-              )}
 
               {/* Google link resources */}
               {googleLinks.length > 0 && (
@@ -865,41 +953,9 @@ const CourseLearner = () => {
                 </div>
               )}
 
-              {/* Course-level materials */}
-              {courseMaterials.length > 0 && (
-                <div className="cl-resources">
-                  <h3 className="cl-resources-title">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-                      <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-                    </svg>
-                    Materiales del curso
-                  </h3>
-                  {courseMaterials.map((mat, i) => (
-                    <div key={i} className="cl-resource-wrapper">
-                      <a
-                        href={mat.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="cl-resource-item"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-                          <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-                        </svg>
-                        <span className="cl-resource-title">{mat.title}</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
-                        </svg>
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {/* Mark as complete button */}
               <button
-                className={`cl-mark-complete-btn ${currentItemCompleted ? 'completed' : ''}`}
+                className={`cl-mark-complete-btn ${currentItemCompleted ? 'completed' : ''} ${justCompleted ? 'just-completed' : ''}`}
                 onClick={handleMarkComplete}
                 disabled={currentItemCompleted || markingComplete}
               >
@@ -908,7 +964,7 @@ const CourseLearner = () => {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M20 6L9 17l-5-5" />
                     </svg>
-                    Completado
+                    {justCompleted ? (nextItem ? 'Siguiente...' : '!Completado!') : 'Completado'}
                   </>
                 ) : (
                   <>
@@ -925,7 +981,7 @@ const CourseLearner = () => {
                 item.type === 'lesson' ? completedLessons.has(item.id) : completedTopics.has(item.id)
               ) && (
                 <div className="cl-certificate-banner">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF5A2F" strokeWidth="1.5">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e8512a" strokeWidth="1.5">
                     <circle cx="12" cy="8" r="6" />
                     <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" />
                   </svg>
@@ -951,6 +1007,23 @@ const CourseLearner = () => {
                     </svg>
                     {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
                   </button>
+                  {evalStatus?.has_evaluation_form && !evalStatus.has_submitted && (
+                    <Link to={`/courses/${slug}/evaluate`} className="cl-evaluation-btn">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                      Evaluar este curso
+                    </Link>
+                  )}
+                  {evalStatus?.has_evaluation_form && evalStatus.has_submitted && (
+                    <span className="cl-evaluation-done">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                      Evaluado
+                    </span>
+                  )}
                 </div>
               )}
 

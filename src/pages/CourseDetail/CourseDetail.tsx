@@ -65,9 +65,9 @@ const localAvatars: Record<string, string> = {
   'Cinthia Varela': '/instructors/Cinthia-foto.webp',
   'José Pajuelo': '/instructors/Imagen-speakers-2025-2.webp',
   'Vincent Wongvalle': '/instructors/Imagen-speakers-2025-3.webp',
-  'Stephanie Hoyle': '/instructors/Imagen-speakers-2025-1.webp',
-  'Herman Marin': '/instructors/Imagen-speakers-2025-1.webp',
-  'Laura Loáiciga': '/instructors/Imagen-speakers-2025-2.webp',
+  'Stephanie Hoyle': '/instructors/Stephanie-Hoyle.webp',
+  'Herman Marin': '/instructors/Herman-Marin.webp',
+  'Laura Loáiciga': '/instructors/Laura-Loaiciga.webp',
 };
 
 interface CourseMaterial {
@@ -144,6 +144,13 @@ interface Course {
     name: string;
   };
   lessons?: Lesson[];
+  resources?: Array<{
+    id: number;
+    title: string;
+    resource_type: string;
+    url: string;
+    file_size: number;
+  }>;
   materials?: Material[];
   materials_html?: string;
   instructor?: Instructor;
@@ -325,20 +332,6 @@ const CourseDetail = () => {
     }, 150);
   };
 
-  const getEmbedUrl = (url: string): string | null => {
-    // Vimeo: https://vimeo.com/123456 or https://vimeo.com/123456/hash or https://player.vimeo.com/video/123456
-    const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-f0-9]+))?/);
-    if (vimeo) {
-      const hash = vimeo[2] ? `&h=${vimeo[2]}` : '';
-      return `https://player.vimeo.com/video/${vimeo[1]}?title=0&byline=0&portrait=0${hash}`;
-    }
-
-    // YouTube: https://youtube.com/watch?v=ID or https://youtu.be/ID
-    const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-    if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
-
-    return null;
-  };
 
   const formatDuration = (hours?: number, minutes?: number) => {
     if (minutes) return `${minutes} min`;
@@ -398,7 +391,7 @@ const CourseDetail = () => {
             <div className="course-header-section">
               <h1 className="course-title">{course.title}</h1>
 
-              {instructor && (
+              {instructor?.name && (
                 <p className="course-instructor-name">{instructor.name}</p>
               )}
 
@@ -469,11 +462,13 @@ const CourseDetail = () => {
 
             {/* Course Materials */}
             {(() => {
-              const mats = course.materials && course.materials.length > 0
-                ? course.materials.map(m => ({ url: m.url, title: m.title }))
-                : course.materials_html
-                  ? parseMaterialsHtml(course.materials_html)
-                  : [];
+              const mats = course.resources && course.resources.length > 0
+                ? course.resources.map(r => ({ url: r.url, title: r.title }))
+                : course.materials && course.materials.length > 0
+                  ? course.materials.map(m => ({ url: m.url, title: m.title }))
+                  : course.materials_html
+                    ? parseMaterialsHtml(course.materials_html)
+                    : [];
               if (mats.length === 0) return null;
               return (
                 <div className="course-section">
@@ -506,17 +501,19 @@ const CourseDetail = () => {
                 <div className="modules-list">
                   {course.lessons
                     .sort((a, b) => a.order_index - b.order_index)
-                    .map((lesson) => (
+                    .map((lesson, index) => (
                       <div key={lesson.id} id={`lesson-${lesson.id}`} className="module-item">
                         <button
                           className={`module-header ${expandedModules.has(lesson.id) ? 'expanded' : ''}`}
                           onClick={() => toggleModule(lesson.id)}
                         >
-                          {completedLessons.has(lesson.id) && (
+                          {completedLessons.has(lesson.id) ? (
                             <svg className="module-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
                               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                               <polyline points="22 4 12 14.01 9 11.01"/>
                             </svg>
+                          ) : (
+                            <span className="module-number">{index + 1}</span>
                           )}
                           <span className="module-title">{lesson.title}</span>
                           <svg
@@ -534,33 +531,16 @@ const CourseDetail = () => {
 
                         {expandedModules.has(lesson.id) && (
                           <div className="module-expanded-content">
-                            {lesson.video_url && (() => {
-                              const embedUrl = getEmbedUrl(lesson.video_url);
-                              if (embedUrl) {
-                                return (
-                                  <div className="module-video-embed">
-                                    <iframe
-                                      src={embedUrl}
-                                      allow="autoplay; fullscreen; picture-in-picture"
-                                      allowFullScreen
-                                      title={lesson.title}
-                                    />
-                                  </div>
-                                );
-                              }
-                              return (
-                                <div className="module-video-player">
-                                  <video
-                                    controls
-                                    controlsList="nodownload"
-                                    preload="metadata"
-                                    title={lesson.title}
-                                  >
-                                    <source src={lesson.video_url} />
-                                  </video>
-                                </div>
-                              );
-                            })()}
+                            {lesson.video_url && (
+                              <Link to={course.is_enrolled ? `/courses/${slug}/lessons/${lesson.id}` : '#'} className="module-video-placeholder" onClick={(e) => {
+                                if (!course.is_enrolled) { e.preventDefault(); }
+                              }}>
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)" stroke="none">
+                                  <polygon points="5 3 19 12 5 21 5 3"/>
+                                </svg>
+                                <span>{course.is_enrolled ? 'Ver lección' : 'Inscríbete para ver'}</span>
+                              </Link>
+                            )}
 
                             {lesson.content && (
                               <div
@@ -692,6 +672,15 @@ const CourseDetail = () => {
                                 })}
                               </div>
                             )}
+
+                            {course.is_enrolled && (
+                              <Link to={`/courses/${slug}/lessons/${lesson.id}`} className="module-lesson-cta">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polygon points="5 3 19 12 5 21 5 3"/>
+                                </svg>
+                                Ir a la lección
+                              </Link>
+                            )}
                           </div>
                         )}
                       </div>
@@ -724,7 +713,9 @@ const CourseDetail = () => {
                     )}
                   </div>
                   <div className="instructor-info">
-                    <h3 className="instructor-name">{instructor.name}</h3>
+                    {instructor.name && (
+                      <h3 className="instructor-name">{instructor.name}</h3>
+                    )}
                     {instructor.title && (
                       <p className="instructor-title">{instructor.title}</p>
                     )}

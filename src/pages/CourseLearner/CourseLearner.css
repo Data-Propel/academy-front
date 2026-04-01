@@ -1,31 +1,121 @@
-/* ===== CourseLearner Focus Mode — Light Theme ===== */
+/* ===== CourseLearner — Unified Dark Top Bar + Sidebar ===== */
 
 .cl-page {
-  display: flex;
-  min-height: 100vh;
-  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  grid-template-rows: 50px 1fr;
+  height: 100vh;
+  height: 100dvh;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* Loading / Error */
+/* ===== Top Bar ===== */
+.cl-topbar {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  background: #0d2b27;
+  z-index: 10;
+}
+
+.cl-topbar-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.cl-topbar-back:hover {
+  opacity: 0.7;
+}
+
+.cl-topbar-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.cl-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cl-topbar-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cl-topbar-progress-bar {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cl-topbar-progress-fill {
+  height: 100%;
+  background: #d4e84a;
+  border-radius: 2px;
+  transition: width 0.4s ease-in-out;
+}
+
+.cl-topbar-progress-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #d4e84a;
+  white-space: nowrap;
+}
+
+.cl-topbar-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.cl-topbar-close:hover {
+  opacity: 0.7;
+}
+
+/* ===== Loading / Error ===== */
 .cl-loading {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-  color: #0E4B43;
+  color: #1a4a42;
   gap: 16px;
-  background: #F5F5F3;
+  background: #ffffff;
 }
 
 .cl-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(14, 75, 67, 0.15);
-  border-top-color: #FF5A2F;
+  border: 3px solid rgba(26, 74, 66, 0.15);
+  border-top-color: #e8512a;
   border-radius: 50%;
   animation: cl-spin 1s linear infinite;
 }
@@ -38,16 +128,16 @@
 .cl-hamburger {
   display: none;
   position: fixed;
-  top: 16px;
+  top: 60px;
   left: 16px;
   z-index: 110;
-  background: #0E4B43;
+  background: #0d2b27;
   border: none;
   border-radius: 8px;
   padding: 10px;
-  color: #FFFFFF;
+  color: #ffffff;
   cursor: pointer;
-  transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.2s;
 }
 
 .cl-hamburger:hover {
@@ -65,41 +155,19 @@
 
 /* ===== Sidebar ===== */
 .cl-sidebar {
-  width: 320px;
-  min-width: 320px;
-  background: #0E4B43;
+  grid-column: 1;
+  grid-row: 2;
+  background: #0d2b27;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  position: sticky;
-  top: 0;
   overflow: hidden;
-}
-
-.cl-sidebar-header {
-  padding: 24px 20px 8px;
-}
-
-.cl-sidebar-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.cl-sidebar-back:hover {
-  opacity: 0.65;
 }
 
 .cl-sidebar-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 0 12px 16px;
+  padding: 20px 16px 16px;
+  scroll-behavior: smooth;
 }
 
 .cl-sidebar-nav::-webkit-scrollbar {
@@ -111,37 +179,34 @@
 }
 
 .cl-sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 2px;
 }
 
-/* Section titles */
+/* Section title */
 .cl-sidebar-section-title {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 20px 0 12px 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 16px 4px;
 }
 
 /* Module cards (lessons) */
 .cl-sidebar-lesson {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .cl-sidebar-lesson-header {
   display: flex;
   align-items: center;
   gap: 0;
-  background: #145C53;
-  border-radius: 8px;
-  transition: background 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  background: #1a4a42;
+  border-radius: 6px;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 .cl-sidebar-lesson-header.active {
-  background: #1a6d63;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+  background: #225952;
 }
 
 .cl-sidebar-lesson-header.empty {
@@ -149,7 +214,7 @@
 }
 
 .cl-sidebar-lesson-header:hover:not(.empty) {
-  background: #18675d;
+  background: #225952;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
@@ -163,15 +228,15 @@
   cursor: pointer;
   color: rgba(255, 255, 255, 0.5);
   flex-shrink: 0;
-  transition: color 0.2s ease-in-out;
+  transition: color 0.2s;
 }
 
 .cl-sidebar-chevron-btn:hover {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .cl-sidebar-chevron {
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s;
 }
 
 .cl-sidebar-chevron.expanded {
@@ -187,16 +252,16 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 11px;
   font-weight: 600;
   margin-left: 12px;
 }
 
 .cl-module-icon.completed {
-  background: #FF5A2F;
-  color: #FFFFFF;
+  background: #e8512a;
+  color: #ffffff;
 }
 
 .cl-sidebar-lesson-link,
@@ -206,7 +271,7 @@
   padding: 12px 12px 12px 10px;
   font-size: 13.5px;
   font-weight: 500;
-  color: #FFFFFF;
+  color: #ffffff;
   text-decoration: none;
   text-align: left;
   border: none;
@@ -215,7 +280,6 @@
   line-height: 1.4;
 }
 
-/* Lessons without a chevron */
 .cl-sidebar-lesson-header:not(:has(.cl-sidebar-chevron-btn)) .cl-sidebar-lesson-link,
 .cl-sidebar-lesson-header:not(:has(.cl-sidebar-chevron-btn)) .cl-sidebar-lesson-label {
   padding-right: 14px;
@@ -225,12 +289,48 @@
   cursor: default;
 }
 
+/* Per-lesson progress indicator */
+.cl-lesson-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px 8px 52px;
+}
+
+.cl-lesson-progress-track {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cl-lesson-progress-fill {
+  height: 100%;
+  background: #d4e84a;
+  border-radius: 2px;
+  transition: width 0.5s ease-in-out;
+}
+
+.cl-lesson-progress-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+}
+
 /* Topic links */
 .cl-sidebar-topics {
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 4px 0 4px 16px;
+  animation: cl-slide-down 0.25s ease-out;
+}
+
+@keyframes cl-slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .cl-sidebar-topic-link {
@@ -242,47 +342,48 @@
   color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
   border-radius: 6px;
-  transition: background 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition: background 0.2s, color 0.2s;
   line-height: 1.4;
 }
 
 .cl-sidebar-topic-link svg {
   flex-shrink: 0;
   color: rgba(255, 255, 255, 0.35);
-  transition: color 0.2s ease-in-out;
+  transition: color 0.2s;
 }
 
 .cl-sidebar-topic-link:hover {
-  color: #FFFFFF;
+  color: #ffffff;
   background: rgba(255, 255, 255, 0.08);
 }
 
 .cl-sidebar-topic-link:hover svg {
-  color: #FF5A2F;
+  color: #e8512a;
 }
 
 .cl-sidebar-topic-link.active {
-  color: #FFFFFF;
+  color: #ffffff;
   background: rgba(255, 255, 255, 0.1);
 }
 
 .cl-sidebar-topic-link.active svg {
-  color: #FF5A2F;
+  color: #e8512a;
 }
 
 /* Completed check */
 .cl-completed-check {
-  color: #FF5A2F;
+  color: #e8512a;
   flex-shrink: 0;
 }
 
 .cl-sidebar-topic-link.completed svg.cl-completed-check {
-  color: #FF5A2F;
+  color: #e8512a;
 }
 
 /* ===== Materials section ===== */
 .cl-sidebar-materials {
-  padding: 0 12px 16px;
+  padding: 16px 0 0;
+  margin-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -293,23 +394,21 @@
   width: 100%;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  padding: 16px 4px 12px;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 8px 4px 12px;
   cursor: pointer;
-  transition: color 0.2s ease-in-out;
+  transition: color 0.2s;
 }
 
 .cl-sidebar-materials-toggle:hover {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .cl-sidebar-materials-toggle svg {
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s;
 }
 
 .cl-sidebar-materials-toggle svg.expanded {
@@ -319,7 +418,7 @@
 .cl-sidebar-materials-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .cl-sidebar-material-item {
@@ -327,28 +426,29 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 6px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
   background: transparent;
-  color: #FFFFFF;
+  color: #ffffff;
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
   text-align: center;
-  transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .cl-sidebar-material-item:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.45);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* ===== Main Content ===== */
 .cl-main {
-  flex: 1;
-  min-width: 0;
-  background: #F5F5F3;
+  grid-column: 2;
+  grid-row: 2;
+  background: #ffffff;
+  overflow-y: auto;
 }
 
 .cl-main-inner {
@@ -357,92 +457,21 @@
   padding: 40px 48px;
 }
 
-/* Top header bar */
-.cl-main-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 32px;
-}
-
-.cl-main-header-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #0E4B43;
-  white-space: nowrap;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 260px;
-}
-
-.cl-progress-wrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.cl-progress-bar {
-  flex: 1;
-  height: 6px;
-  background: #E0E0DC;
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.cl-progress-fill {
-  height: 100%;
-  background: #A3C94A;
-  border-radius: 999px;
-  transition: width 0.4s ease-in-out;
-}
-
-.cl-progress-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #6B7280;
-  white-space: nowrap;
-}
-
-.cl-close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: #0E4B43;
-  border: none;
-  border-radius: 6px;
-  color: #FFFFFF;
-  cursor: pointer;
-  flex-shrink: 0;
-  text-decoration: none;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.cl-close-btn:hover {
-  opacity: 0.85;
-}
-
 /* Back link (error/not-found states) */
 .cl-back-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #0E4B43;
+  color: #1a4a42;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 24px;
-  transition: color 0.2s ease-in-out;
+  transition: color 0.2s;
 }
 
 .cl-back-link:hover {
-  color: #FF5A2F;
+  color: #e8512a;
 }
 
 /* Module title */
@@ -450,7 +479,7 @@
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 30px;
   font-weight: 600;
-  color: #0E4B43;
+  color: #1a4a42;
   margin: 0 0 24px 0;
   line-height: 1.25;
 }
@@ -462,7 +491,7 @@
   padding-bottom: 56.25%;
   border-radius: 8px;
   overflow: hidden;
-  background: #0E4B43;
+  background: #1a4a42;
   margin-bottom: 32px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
@@ -481,7 +510,7 @@
   width: 100%;
   border-radius: 8px;
   overflow: hidden;
-  background: #0E4B43;
+  background: #1a4a42;
   margin-bottom: 32px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
@@ -497,7 +526,7 @@
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 18px;
   font-weight: 700;
-  color: #0E4B43;
+  color: #1a4a42;
   margin: 0 0 12px 0;
 }
 
@@ -513,7 +542,6 @@
   color: #4B5563 !important;
 }
 
-/* Headings in content */
 .cl-content-html h1,
 .cl-content-html h2,
 .cl-content-html h3,
@@ -521,7 +549,7 @@
 .cl-content-html h5,
 .cl-content-html h6 {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #0E4B43 !important;
+  color: #1a4a42 !important;
   font-weight: 600;
   line-height: 1.3;
   margin: 24px 0 12px 0;
@@ -538,19 +566,16 @@
 .cl-content-html h5 { font-size: 16px; }
 .cl-content-html h6 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* Paragraphs */
 .cl-content-html p {
   margin: 0 0 16px 0;
 }
 
-/* Horizontal rules */
 .cl-content-html hr {
   border: none;
   border-top: 1px solid #E0E0DC;
   margin: 24px 0;
 }
 
-/* Unordered lists — orange square bullets */
 .cl-content-html ul {
   list-style: none;
   padding-left: 1.5rem;
@@ -563,36 +588,33 @@
 
 .cl-content-html ul > li::before {
   content: '\25AA';
-  color: #FF5A2F !important;
+  color: #e8512a !important;
   position: absolute;
   left: -1.2rem;
 }
 
-/* Ordered lists — orange markers */
 .cl-content-html ol {
   padding-left: 1.5rem;
 }
 
 .cl-content-html ol > li::marker {
-  color: #FF5A2F !important;
+  color: #e8512a !important;
 }
 
-/* Links */
 .cl-content-html a {
-  color: #FF5A2F !important;
+  color: #e8512a !important;
   text-decoration: none;
-  border-bottom: 1px solid rgba(255, 90, 47, 0.3);
-  transition: border-color 0.2s ease-in-out;
+  border-bottom: 1px solid rgba(232, 81, 42, 0.3);
+  transition: border-color 0.2s;
 }
 
 .cl-content-html a:hover {
-  border-bottom-color: #FF5A2F;
+  border-bottom-color: #e8512a;
 }
 
-/* Bold text */
 .cl-content-html strong,
 .cl-content-html b {
-  color: #0E4B43 !important;
+  color: #1a4a42 !important;
 }
 
 .cl-content-html img {
@@ -601,7 +623,6 @@
   border-radius: 8px;
 }
 
-/* Content divider */
 .cl-content-divider {
   border: none;
   border-top: 1px solid #E0E0DC;
@@ -612,7 +633,7 @@
 .cl-resources {
   margin-top: 28px;
   padding: 20px 24px;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid #E0E0DC;
   border-radius: 10px;
 }
@@ -624,12 +645,12 @@
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: #0E4B43;
+  color: #1a4a42;
   margin: 0 0 16px 0;
 }
 
 .cl-resources-title svg {
-  color: #FF5A2F;
+  color: #e8512a;
   flex-shrink: 0;
 }
 
@@ -646,39 +667,39 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #F5F5F3;
+  background: #f8f8f8;
   border: 1px solid #E0E0DC;
   border-radius: 8px;
   text-decoration: none;
   color: #4B5563;
   font-size: 14px;
-  transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .cl-resource-item:hover {
-  background: rgba(255, 90, 47, 0.04);
-  border-color: rgba(255, 90, 47, 0.25);
-  color: #FF5A2F;
+  background: rgba(232, 81, 42, 0.04);
+  border-color: rgba(232, 81, 42, 0.25);
+  color: #e8512a;
 }
 
 .cl-resource-item svg {
   color: #9CA3AF;
   flex-shrink: 0;
-  transition: color 0.2s ease-in-out;
+  transition: color 0.2s;
 }
 
 .cl-resource-item:hover svg {
-  color: #FF5A2F;
+  color: #e8512a;
 }
 
 .cl-resource-item.active {
-  background: rgba(255, 90, 47, 0.04);
-  border-color: rgba(255, 90, 47, 0.25);
-  color: #FF5A2F;
+  background: rgba(232, 81, 42, 0.04);
+  border-color: rgba(232, 81, 42, 0.25);
+  color: #e8512a;
 }
 
 .cl-resource-item.active svg {
-  color: #FF5A2F;
+  color: #e8512a;
 }
 
 .cl-resource-title {
@@ -701,7 +722,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #9CA3AF;
-  background: rgba(14, 75, 67, 0.06);
+  background: rgba(26, 74, 66, 0.06);
   padding: 2px 8px;
   border-radius: 4px;
   flex-shrink: 0;
@@ -710,7 +731,7 @@
 
 .cl-resource-chevron {
   flex-shrink: 0;
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s;
   color: #9CA3AF;
 }
 
@@ -724,11 +745,11 @@
   justify-content: center;
   flex-shrink: 0;
   color: #9CA3AF;
-  transition: color 0.2s ease-in-out;
+  transition: color 0.2s;
 }
 
 .cl-resource-download:hover {
-  color: #FF5A2F;
+  color: #e8512a;
 }
 
 .cl-resource-preview {
@@ -743,7 +764,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #0E4B43;
+  background: #0d2b27;
 }
 
 .cl-preview-btn {
@@ -758,13 +779,13 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   text-decoration: none;
-  transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .cl-preview-btn:hover {
-  background: rgba(255, 90, 47, 0.2);
-  border-color: rgba(255, 90, 47, 0.4);
-  color: #FFFFFF;
+  background: rgba(232, 81, 42, 0.2);
+  border-color: rgba(232, 81, 42, 0.4);
+  color: #ffffff;
 }
 
 .cl-resource-iframe {
@@ -788,7 +809,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: #0E4B43;
+  background: #0d2b27;
 }
 
 .cl-pdf-toolbar-btn {
@@ -803,13 +824,13 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   text-decoration: none;
-  transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .cl-pdf-toolbar-btn:hover {
-  background: rgba(255, 90, 47, 0.2);
-  border-color: rgba(255, 90, 47, 0.4);
-  color: #FFFFFF;
+  background: rgba(232, 81, 42, 0.2);
+  border-color: rgba(232, 81, 42, 0.4);
+  color: #ffffff;
 }
 
 /* ===== Completion tracking ===== */
@@ -821,18 +842,18 @@
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #0E4B43;
-  background: rgba(14, 75, 67, 0.06);
-  border: 1px solid rgba(14, 75, 67, 0.18);
+  color: #1a4a42;
+  background: rgba(26, 74, 66, 0.06);
+  border: 1px solid rgba(26, 74, 66, 0.18);
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  transition: background 0.2s, border-color 0.2s;
   margin-top: 24px;
 }
 
 .cl-mark-complete-btn:hover:not(:disabled) {
-  background: rgba(14, 75, 67, 0.12);
-  border-color: rgba(14, 75, 67, 0.3);
+  background: rgba(26, 74, 66, 0.12);
+  border-color: rgba(26, 74, 66, 0.3);
 }
 
 .cl-mark-complete-btn.completed {
@@ -840,6 +861,19 @@
   background: rgba(76, 175, 80, 0.06);
   border-color: rgba(76, 175, 80, 0.2);
   cursor: default;
+}
+
+.cl-mark-complete-btn.just-completed {
+  animation: cl-complete-pop 0.5s ease-out;
+  background: rgba(76, 175, 80, 0.12);
+  border-color: rgba(76, 175, 80, 0.35);
+  color: #4CAF50;
+}
+
+@keyframes cl-complete-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.08); }
+  100% { transform: scale(1); }
 }
 
 .cl-mark-complete-btn:disabled:not(.completed) {
@@ -854,8 +888,8 @@
   gap: 16px;
   margin-top: 24px;
   padding: 20px 24px;
-  background: rgba(255, 90, 47, 0.05);
-  border: 1px solid rgba(255, 90, 47, 0.18);
+  background: rgba(232, 81, 42, 0.05);
+  border: 1px solid rgba(232, 81, 42, 0.18);
   border-radius: 10px;
 }
 
@@ -871,7 +905,7 @@
 }
 
 .cl-certificate-banner-text strong {
-  color: #FF5A2F;
+  color: #e8512a;
 }
 
 .cl-certificate-download-btn {
@@ -879,7 +913,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: #FF5A2F;
+  background: #e8512a;
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -887,18 +921,53 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease-in-out;
+  transition: background 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .cl-certificate-download-btn:hover:not(:disabled) {
-  background: #E04A20;
+  background: #c9421f;
 }
 
 .cl-certificate-download-btn:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+.cl-evaluation-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 2px solid #FF5A2F;
+  background: transparent;
+  color: #FF5A2F;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cl-evaluation-btn:hover {
+  background: #FF5A2F;
+  color: #fff;
+}
+
+.cl-evaluation-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(163, 201, 74, 0.15);
+  color: #6b8e23;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 /* ===== Bottom navigation ===== */
@@ -915,15 +984,15 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #0E4B43;
+  color: #1a4a42;
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
-  transition: color 0.2s ease-in-out;
+  transition: color 0.2s;
 }
 
 .cl-nav-btn:hover {
-  color: #FF5A2F;
+  color: #e8512a;
 }
 
 .cl-nav-btn svg {
@@ -950,8 +1019,12 @@
 }
 
 /* ===== Responsive ===== */
-
 @media (max-width: 900px) {
+  .cl-page {
+    grid-template-columns: 1fr;
+    grid-template-rows: 50px 1fr;
+  }
+
   .cl-hamburger {
     display: flex;
   }
@@ -962,8 +1035,11 @@
 
   .cl-sidebar {
     position: fixed;
-    top: 0;
+    top: 50px;
     left: 0;
+    width: 380px;
+    height: calc(100vh - 50px);
+    height: calc(100dvh - 50px);
     z-index: 100;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
@@ -973,11 +1049,15 @@
     transform: translateX(0);
   }
 
-  .cl-main-inner {
-    padding: 60px 24px 40px;
+  .cl-main {
+    grid-column: 1;
   }
 
-  .cl-main-header-title {
+  .cl-main-inner {
+    padding: 40px 24px;
+  }
+
+  .cl-topbar-title {
     display: none;
   }
 }
@@ -985,15 +1065,18 @@
 @media (max-width: 600px) {
   .cl-sidebar {
     width: 280px;
-    min-width: 280px;
   }
 
   .cl-main-inner {
-    padding: 60px 16px 32px;
+    padding: 30px 16px;
   }
 
   .cl-title {
     font-size: 24px;
+  }
+
+  .cl-topbar-progress-bar {
+    width: 120px;
   }
 
   .cl-certificate-banner {

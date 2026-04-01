@@ -1,4 +1,4 @@
-const API_URL = 'https://api.academy.wepropel.org/api';
+const API_URL = '/api';
 export const MEDIA_URL = 'https://api.academy.wepropel.org';
 
 // Token management
@@ -105,7 +105,8 @@ const fetchAllPages = async (initialUrl: string): Promise<{ ok: boolean; data: u
 
     // Handle next page URL
     if (data.next) {
-      url = data.next.replace(API_URL, '');
+      // Strip any absolute API URL prefix to get relative path
+      url = data.next.replace(/^https?:\/\/[^/]+\/api/, '');
     } else {
       url = '';
     }
@@ -247,6 +248,31 @@ export const authApi = {
     return { ok: response.ok, data };
   },
 
+  updateProfile: async (profileData: {
+    first_name?: string;
+    last_name?: string;
+    bio?: string;
+    organization?: string;
+  }) => {
+    const response = await apiFetch('/users/profile/', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  changePassword: async (current_password: string, new_password: string, new_password_confirm: string) => {
+    const response = await apiFetch('/users/change-password/', {
+      method: 'POST',
+      body: JSON.stringify({ current_password, new_password, new_password_confirm }),
+    });
+    const data = await response.json();
+    if (response.ok && data.tokens) {
+      setTokens(data.tokens.access, data.tokens.refresh);
+    }
+    return { ok: response.ok, data };
+  },
+
   logout: () => {
     clearTokens();
     window.location.href = 'https://www.academy.wepropel.org/';
@@ -309,6 +335,25 @@ export const coursesApi = {
 
   markTopicComplete: async (topicId: number) => {
     const response = await apiFetch(`/courses/topics/${topicId}/complete/`, { method: 'POST' });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  // Evaluations
+  getEvaluationForm: async (slug: string) => {
+    const response = await apiFetch(`/courses/${slug}/evaluation/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  getEvaluationStatus: async (slug: string) => {
+    const response = await apiFetch(`/courses/${slug}/evaluation/status/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  submitEvaluation: async (slug: string, answers: { question_id: number; value: string }[]) => {
+    const response = await apiFetch(`/courses/${slug}/evaluation/submit/`, {
+      method: 'POST',
+      body: JSON.stringify({ answers }),
+    });
     return { ok: response.ok, data: await response.json() };
   },
 
@@ -384,7 +429,7 @@ export const adminApi = {
     email: string;
     first_name: string;
     last_name: string;
-    password: string;
+    password?: string;
     is_active?: boolean;
     is_superuser?: boolean;
   }) => {
@@ -432,26 +477,41 @@ export const adminApi = {
     slug: string;
     short_description?: string;
     description?: string;
+    subtitle?: string;
     level?: string;
     duration_hours?: number;
+    price?: string;
+    price_type?: string;
     category_id?: number;
+    instructor?: string;
+    instructor_title?: string;
+    instructor_bio?: string;
     is_featured?: boolean;
     is_published?: boolean;
-  }, thumbnail?: File) => {
+  }, thumbnail?: File, instructorAvatar?: File) => {
     const formData = new FormData();
     formData.append('title', courseData.title);
     formData.append('slug', courseData.slug);
     if (courseData.short_description) formData.append('short_description', courseData.short_description);
     if (courseData.description) formData.append('description', courseData.description);
+    if (courseData.subtitle) formData.append('subtitle', courseData.subtitle);
     if (courseData.level) formData.append('level', courseData.level);
     if (courseData.duration_hours) formData.append('duration_hours', String(courseData.duration_hours));
+    if (courseData.price) formData.append('price', courseData.price);
+    if (courseData.price_type) formData.append('price_type', courseData.price_type);
     if (courseData.category_id) formData.append('category_id', String(courseData.category_id));
+    if (courseData.instructor) formData.append('instructor', courseData.instructor);
+    if (courseData.instructor_title) formData.append('instructor_title', courseData.instructor_title);
+    if (courseData.instructor_bio) formData.append('instructor_bio', courseData.instructor_bio);
     formData.append('is_featured', String(courseData.is_featured || false));
     formData.append('is_published', String(courseData.is_published || false));
     if (thumbnail) formData.append('thumbnail', thumbnail);
+    if (instructorAvatar) formData.append('instructor_avatar', instructorAvatar);
 
     const response = await apiFetchFormData('/courses/admin/', formData, 'POST');
-    return { ok: response.ok, data: await response.json() };
+    let data;
+    try { data = await response.json(); } catch { data = { detail: `Error del servidor (${response.status})` }; }
+    return { ok: response.ok, data };
   },
 
   updateCourse: async (id: number, courseData: {
@@ -459,27 +519,42 @@ export const adminApi = {
     slug?: string;
     short_description?: string;
     description?: string;
+    subtitle?: string;
     level?: string;
     duration_hours?: number;
+    price?: string;
+    price_type?: string;
     category_id?: number;
+    instructor?: string;
+    instructor_title?: string;
+    instructor_bio?: string;
     is_featured?: boolean;
     is_published?: boolean;
-  }, thumbnail?: File, deleteThumbnail?: boolean) => {
+  }, thumbnail?: File, deleteThumbnail?: boolean, instructorAvatar?: File) => {
     const formData = new FormData();
     if (courseData.title) formData.append('title', courseData.title);
     if (courseData.slug) formData.append('slug', courseData.slug);
     if (courseData.short_description !== undefined) formData.append('short_description', courseData.short_description);
     if (courseData.description !== undefined) formData.append('description', courseData.description);
+    if (courseData.subtitle !== undefined) formData.append('subtitle', courseData.subtitle);
     if (courseData.level) formData.append('level', courseData.level);
     if (courseData.duration_hours) formData.append('duration_hours', String(courseData.duration_hours));
+    if (courseData.price !== undefined) formData.append('price', courseData.price);
+    if (courseData.price_type) formData.append('price_type', courseData.price_type);
     if (courseData.category_id) formData.append('category_id', String(courseData.category_id));
+    if (courseData.instructor !== undefined) formData.append('instructor', courseData.instructor);
+    if (courseData.instructor_title !== undefined) formData.append('instructor_title', courseData.instructor_title);
+    if (courseData.instructor_bio !== undefined) formData.append('instructor_bio', courseData.instructor_bio);
     if (courseData.is_featured !== undefined) formData.append('is_featured', String(courseData.is_featured));
     if (courseData.is_published !== undefined) formData.append('is_published', String(courseData.is_published));
     if (thumbnail) formData.append('thumbnail', thumbnail);
     if (deleteThumbnail) formData.append('delete_thumbnail', 'true');
+    if (instructorAvatar) formData.append('instructor_avatar', instructorAvatar);
 
     const response = await apiFetchFormData(`/courses/admin/${id}/`, formData, 'PUT');
-    return { ok: response.ok, data: await response.json() };
+    let data;
+    try { data = await response.json(); } catch { data = { detail: `Error del servidor (${response.status})` }; }
+    return { ok: response.ok, data };
   },
 
   deleteCourse: async (id: number) => {
@@ -536,15 +611,18 @@ export const adminApi = {
   createLesson: async (lessonData: {
     title: string;
     content?: string;
+    video_url?: string;
     course_id: number;
     order_index?: number;
-  }, thumbnail?: File) => {
+  }, thumbnail?: File, videoFile?: File) => {
     const formData = new FormData();
     formData.append('title', lessonData.title);
     formData.append('course_id', String(lessonData.course_id));
     if (lessonData.content) formData.append('content', lessonData.content);
+    if (lessonData.video_url) formData.append('video_url', lessonData.video_url);
     if (lessonData.order_index) formData.append('order_index', String(lessonData.order_index));
     if (thumbnail) formData.append('thumbnail', thumbnail);
+    if (videoFile) formData.append('video_file', videoFile);
 
     const response = await apiFetchFormData('/courses/admin/lessons/', formData, 'POST');
     return { ok: response.ok, data: await response.json() };
@@ -553,16 +631,19 @@ export const adminApi = {
   updateLesson: async (id: number, lessonData: {
     title?: string;
     content?: string;
+    video_url?: string;
     course_id?: number;
     order_index?: number;
-  }, thumbnail?: File, deleteThumbnail?: boolean) => {
+  }, thumbnail?: File, deleteThumbnail?: boolean, videoFile?: File) => {
     const formData = new FormData();
     if (lessonData.title) formData.append('title', lessonData.title);
     if (lessonData.content !== undefined) formData.append('content', lessonData.content);
+    if (lessonData.video_url !== undefined) formData.append('video_url', lessonData.video_url);
     if (lessonData.course_id) formData.append('course_id', String(lessonData.course_id));
     if (lessonData.order_index) formData.append('order_index', String(lessonData.order_index));
     if (thumbnail) formData.append('thumbnail', thumbnail);
     if (deleteThumbnail) formData.append('delete_thumbnail', 'true');
+    if (videoFile) formData.append('video_file', videoFile);
 
     const response = await apiFetchFormData(`/courses/admin/lessons/${id}/`, formData, 'PUT');
     return { ok: response.ok, data: await response.json() };
@@ -592,6 +673,7 @@ export const adminApi = {
   createTopic: async (topicData: {
     title: string;
     content?: string;
+    video_url?: string;
     course_id: number;
     lesson_id: number;
     order_index?: number;
@@ -606,6 +688,7 @@ export const adminApi = {
   updateTopic: async (id: number, topicData: {
     title?: string;
     content?: string;
+    video_url?: string;
     course_id?: number;
     lesson_id?: number;
     order_index?: number;
@@ -682,11 +765,13 @@ export const adminApi = {
   createResource: async (resourceData: {
     lesson_id: number;
     title: string;
+    resource_type?: string;
     file_url?: string;
   }, file?: File) => {
     const formData = new FormData();
     formData.append('lesson_id', String(resourceData.lesson_id));
     formData.append('title', resourceData.title);
+    if (resourceData.resource_type) formData.append('resource_type', resourceData.resource_type);
     if (file) formData.append('file', file);
     if (resourceData.file_url) formData.append('file_url', resourceData.file_url);
 
@@ -697,11 +782,13 @@ export const adminApi = {
   updateResource: async (id: number, resourceData: {
     lesson_id?: number;
     title?: string;
+    resource_type?: string;
     file_url?: string;
   }, file?: File) => {
     const formData = new FormData();
     if (resourceData.lesson_id) formData.append('lesson_id', String(resourceData.lesson_id));
     if (resourceData.title) formData.append('title', resourceData.title);
+    if (resourceData.resource_type) formData.append('resource_type', resourceData.resource_type);
     if (file) formData.append('file', file);
     if (resourceData.file_url) formData.append('file_url', resourceData.file_url);
 
@@ -714,5 +801,142 @@ export const adminApi = {
       method: 'DELETE',
     });
     return { ok: response.ok, data: response.ok ? null : await response.json() };
+  },
+
+  // Course Resources
+  getCourseResources: async (courseId?: number) => {
+    const params = courseId ? `?course_id=${courseId}` : '';
+    return fetchAllPages(`/courses/admin/course-resources/${params}`);
+  },
+
+  createCourseResource: async (resourceData: {
+    course_id: number;
+    title: string;
+    resource_type?: string;
+    file_url?: string;
+    order_index?: number;
+  }, file?: File) => {
+    const formData = new FormData();
+    formData.append('course_id', String(resourceData.course_id));
+    formData.append('title', resourceData.title);
+    if (resourceData.resource_type) formData.append('resource_type', resourceData.resource_type);
+    if (file) formData.append('file', file);
+    if (resourceData.file_url) formData.append('file_url', resourceData.file_url);
+    if (resourceData.order_index !== undefined) formData.append('order_index', String(resourceData.order_index));
+    const response = await apiFetchFormData('/courses/admin/course-resources/', formData, 'POST');
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  updateCourseResource: async (id: number, resourceData: {
+    course_id?: number;
+    title?: string;
+    resource_type?: string;
+    file_url?: string;
+    order_index?: number;
+  }, file?: File) => {
+    const formData = new FormData();
+    if (resourceData.course_id) formData.append('course_id', String(resourceData.course_id));
+    if (resourceData.title) formData.append('title', resourceData.title);
+    if (resourceData.resource_type) formData.append('resource_type', resourceData.resource_type);
+    if (file) formData.append('file', file);
+    if (resourceData.file_url) formData.append('file_url', resourceData.file_url);
+    if (resourceData.order_index !== undefined) formData.append('order_index', String(resourceData.order_index));
+    const response = await apiFetchFormData(`/courses/admin/course-resources/${id}/`, formData, 'PUT');
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  deleteCourseResource: async (id: number) => {
+    const response = await apiFetch(`/courses/admin/course-resources/${id}/`, {
+      method: 'DELETE',
+    });
+    return { ok: response.ok, data: response.ok ? null : await response.json() };
+  },
+
+  // Evaluations - /api/courses/admin/evaluations/
+  getEvaluationForms: async (courseId?: number) => {
+    const params = courseId ? `?course_id=${courseId}` : '';
+    return fetchAllPages(`/courses/admin/evaluations/${params}`);
+  },
+
+  createEvaluationForm: async (formData: {
+    course_id: number;
+    title: string;
+    description?: string;
+    is_active?: boolean;
+  }) => {
+    const response = await apiFetch('/courses/admin/evaluations/', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  updateEvaluationForm: async (id: number, formData: {
+    title?: string;
+    description?: string;
+    is_active?: boolean;
+    course_id?: number;
+  }) => {
+    const response = await apiFetch(`/courses/admin/evaluations/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(formData),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  deleteEvaluationForm: async (id: number) => {
+    const response = await apiFetch(`/courses/admin/evaluations/${id}/`, {
+      method: 'DELETE',
+    });
+    return { ok: response.ok, data: response.ok ? null : await response.json() };
+  },
+
+  // Evaluation Questions
+  getEvaluationQuestions: async (formId?: number) => {
+    const params = formId ? `?form_id=${formId}` : '';
+    return fetchAllPages(`/courses/admin/evaluation-questions/${params}`);
+  },
+
+  createEvaluationQuestion: async (questionData: {
+    form_id: number;
+    question_text: string;
+    question_type: string;
+    options?: string[];
+    is_required?: boolean;
+    order_index?: number;
+  }) => {
+    const response = await apiFetch('/courses/admin/evaluation-questions/', {
+      method: 'POST',
+      body: JSON.stringify(questionData),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  updateEvaluationQuestion: async (id: number, questionData: {
+    form_id?: number;
+    question_text?: string;
+    question_type?: string;
+    options?: string[];
+    is_required?: boolean;
+    order_index?: number;
+  }) => {
+    const response = await apiFetch(`/courses/admin/evaluation-questions/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(questionData),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  deleteEvaluationQuestion: async (id: number) => {
+    const response = await apiFetch(`/courses/admin/evaluation-questions/${id}/`, {
+      method: 'DELETE',
+    });
+    return { ok: response.ok, data: response.ok ? null : await response.json() };
+  },
+
+  // Evaluation Responses/Stats
+  getEvaluationResponses: async (formId: number) => {
+    const response = await apiFetch(`/courses/admin/evaluations/${formId}/responses/`);
+    return { ok: response.ok, data: await response.json() };
   },
 };
