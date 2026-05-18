@@ -1,6 +1,7 @@
 import './NotFound.css';
 
 const NotFound = () => {
+  console.log('[NotFound]');
   return (
     <div className="notfound-page">
       <div className="notfound-container">

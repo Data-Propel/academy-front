@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { isAuthenticated, isSuperuser, adminApi } from '../../services/api';
+import { isAuthenticated, authApi, adminApi } from '../../services/api';
 
 // ---- Exported types ----
 
@@ -9,8 +9,18 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  display_name?: string;
+  avatar?: string | null;
+  bio?: string;
+  organization?: string;
+  organization_type?: string;
+  country?: string;
+  email_verified?: boolean;
   is_active: boolean;
+  is_staff?: boolean;
   is_superuser: boolean;
+  date_joined?: string;
+  last_login?: string | null;
 }
 
 export interface Category {
@@ -18,6 +28,13 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  aliases?: string;
 }
 
 export interface Course {
@@ -32,6 +49,7 @@ export interface Course {
   price: string;
   price_type: string;
   category: Category | null;
+  tags?: Tag[];
   instructor: string;
   instructor_title: string;
   instructor_bio: string;
@@ -105,9 +123,11 @@ export interface CourseResource {
 interface AdminContextValue {
   courses: Course[];
   categories: Category[];
+  tags: Tag[];
   lessons: Lesson[];
   setCourses: React.Dispatch<React.SetStateAction<Course[]>>;
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  setTags: React.Dispatch<React.SetStateAction<Tag[]>>;
   setLessons: React.Dispatch<React.SetStateAction<Lesson[]>>;
   loading: boolean;
   refreshAll: () => Promise<void>;
@@ -140,6 +160,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState('');
@@ -163,15 +184,17 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const refreshAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [coursesRes, categoriesRes, lessonsRes] = await Promise.all([
+      const [coursesRes, categoriesRes, lessonsRes, tagsRes] = await Promise.all([
         adminApi.getCourses(),
         adminApi.getCategories(),
         adminApi.getLessons(),
+        adminApi.getTags(),
       ]);
 
       if (coursesRes.ok) setCourses(extractArray(coursesRes.data) as Course[]);
       if (categoriesRes.ok) setCategories(extractArray(categoriesRes.data) as Category[]);
       if (lessonsRes.ok) setLessons(extractArray(lessonsRes.data) as Lesson[]);
+      if (tagsRes.ok) setTags(extractArray(tagsRes.data) as Tag[]);
     } catch {
       showError('Error al cargar los datos del panel de administracion.');
     } finally {
@@ -179,17 +202,20 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }
   }, [showError]);
 
-  // Auth check + initial data load
+  // Auth check + initial data load — verify superuser from backend, not localStorage
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/login');
       return;
     }
-    if (!isSuperuser()) {
-      navigate('/');
-      return;
-    }
-    refreshAll();
+    authApi.getProfile().then(({ ok, data }) => {
+      const profile = data as { is_superuser?: boolean; is_admin?: boolean };
+      if (!ok || !(profile.is_admin || profile.is_superuser)) {
+        navigate('/');
+        return;
+      }
+      refreshAll();
+    });
   }, [navigate, refreshAll]);
 
   // Helper functions
@@ -219,9 +245,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const value: AdminContextValue = {
     courses,
     categories,
+    tags,
     lessons,
     setCourses,
     setCategories,
+    setTags,
     setLessons,
     loading,
     refreshAll,

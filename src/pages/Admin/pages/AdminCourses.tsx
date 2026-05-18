@@ -33,6 +33,7 @@ const initialForm = {
   price: '0',
   price_type: 'free',
   category_id: 0,
+  tag_ids: [] as number[],
   instructor: '',
   instructor_title: '',
   instructor_bio: '',
@@ -50,7 +51,7 @@ function slugify(text: string): string {
 }
 
 export default function AdminCourses() {
-  const { courses, categories, setCourses, loading, showSuccess, showError, clearMessages } = useAdmin();
+  const { courses, categories, tags, setCourses, loading, showSuccess, showError, clearMessages } = useAdmin();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -218,6 +219,7 @@ export default function AdminCourses() {
       price: course.price || '0',
       price_type: course.price_type || 'free',
       category_id: course.category?.id || 0,
+      tag_ids: (course.tags || []).map(t => t.id),
       instructor: course.instructor || '',
       instructor_title: course.instructor_title || '',
       instructor_bio: course.instructor_bio || '',
@@ -622,6 +624,33 @@ export default function AdminCourses() {
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label>Tags</label>
+                <div className="tag-checkbox-grid">
+                  {tags.length === 0 && <small>Crea tags en /admin/tags.</small>}
+                  {tags.map(tag => {
+                    const checked = form.tag_ids.includes(tag.id);
+                    return (
+                      <label key={tag.id} className="tag-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => {
+                            setForm({
+                              ...form,
+                              tag_ids: checked
+                                ? form.tag_ids.filter(id => id !== tag.id)
+                                : [...form.tag_ids, tag.id],
+                            });
+                          }}
+                        />
+                        <span>{tag.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="form-group">

@@ -127,21 +127,18 @@
 /* ===== Hamburger (mobile only) ===== */
 .cl-hamburger {
   display: none;
-  position: fixed;
-  top: 60px;
-  left: 16px;
-  z-index: 110;
-  background: #0d2b27;
+  align-items: center;
+  justify-content: center;
+  background: none;
   border: none;
-  border-radius: 8px;
-  padding: 10px;
+  padding: 4px;
   color: #ffffff;
   cursor: pointer;
   transition: opacity 0.2s;
 }
 
 .cl-hamburger:hover {
-  opacity: 0.85;
+  opacity: 0.7;
 }
 
 /* ===== Overlay ===== */
@@ -206,7 +203,7 @@
 }
 
 .cl-sidebar-lesson-header.active {
-  background: #225952;
+  background: #1a4a42;
 }
 
 .cl-sidebar-lesson-header.empty {
@@ -252,15 +249,21 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.4);
   font-size: 11px;
   font-weight: 600;
   margin-left: 12px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.cl-module-icon.active {
+  background: #FF5A2F;
+  color: #ffffff;
 }
 
 .cl-module-icon.completed {
-  background: #e8512a;
+  background: #A3C94A;
   color: #ffffff;
 }
 
@@ -339,45 +342,94 @@
   gap: 10px;
   padding: 9px 14px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   border-radius: 6px;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
   line-height: 1.4;
 }
 
 .cl-sidebar-topic-link svg {
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.3);
   transition: color 0.2s;
 }
 
 .cl-sidebar-topic-link:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .cl-sidebar-topic-link:hover svg {
-  color: #e8512a;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .cl-sidebar-topic-link.active {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 90, 47, 0.12);
+  font-weight: 500;
 }
 
 .cl-sidebar-topic-link.active svg {
-  color: #e8512a;
+  color: #FF5A2F;
+}
+
+.cl-sidebar-topic-link.completed {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Completed check */
 .cl-completed-check {
-  color: #e8512a;
+  color: #A3C94A;
   flex-shrink: 0;
 }
 
 .cl-sidebar-topic-link.completed svg.cl-completed-check {
-  color: #e8512a;
+  color: #A3C94A;
+}
+
+/* Locked items */
+.cl-sidebar-topic-link--locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cl-sidebar-lesson-link--locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Locked main content state */
+.cl-locked-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 5rem 2rem;
+  gap: 1rem;
+}
+
+.cl-locked-icon {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.cl-locked-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.cl-locked-desc {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.95rem;
+  margin: 0;
+  max-width: 360px;
 }
 
 /* ===== Materials section ===== */
@@ -443,18 +495,72 @@
   border-color: rgba(255, 255, 255, 0.5);
 }
 
+/* ===== Sidebar footer (global nav on mobile) ===== */
+.cl-sidebar-footer {
+  display: none;
+  flex-direction: column;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 12px 12px;
+  gap: 2px;
+}
+
+.cl-sidebar-footer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cl-sidebar-footer-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+}
+
+.cl-sidebar-footer-logout {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  margin-top: 4px;
+}
+
+.cl-sidebar-footer-item.cl-sidebar-footer-logout {
+  color: rgba(255, 100, 80, 0.75);
+}
+
+.cl-sidebar-footer-item.cl-sidebar-footer-logout:hover {
+  background: rgba(255, 90, 47, 0.1);
+  color: #FF5A2F;
+}
+
+@media (max-width: 900px) {
+  .cl-sidebar-footer {
+    display: flex;
+  }
+}
+
 /* ===== Main Content ===== */
 .cl-main {
   grid-column: 2;
   grid-row: 2;
   background: #ffffff;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .cl-main-inner {
   max-width: 960px;
   margin: 0 auto;
   padding: 40px 48px;
+  min-width: 0;
 }
 
 /* Back link (error/not-found states) */
@@ -536,10 +642,34 @@
   color: #4B5563;
   line-height: 1.7;
   max-width: 750px;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 .cl-content-html * {
   color: #4B5563 !important;
+  max-width: 100%;
+}
+
+.cl-content-html img,
+.cl-content-html video,
+.cl-content-html iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+.cl-content-html iframe {
+  width: 100%;
+}
+
+.cl-content-html table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.cl-content-html pre {
+  overflow-x: auto;
 }
 
 .cl-content-html h1,
@@ -988,6 +1118,11 @@
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
+  font-family: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   transition: color 0.2s;
 }
 
@@ -1007,6 +1142,15 @@
   margin-left: auto;
 }
 
+.cl-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cl-nav-btn:disabled:hover {
+  color: #1a4a42;
+}
+
 /* Not found */
 .cl-not-found {
   display: flex;
@@ -1016,6 +1160,93 @@
   padding: 80px 0;
   color: #6B7280;
   font-size: 16px;
+}
+
+/* ===== Video end popup ===== */
+.cl-video-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.cl-video-popup {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 36px 32px 28px;
+  max-width: 360px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.cl-video-popup-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.cl-video-popup-title {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.cl-video-popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.cl-video-popup-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.cl-video-popup-next {
+  background: #0E4B43;
+  color: #ffffff;
+}
+
+.cl-video-popup-next:hover {
+  background: #0a3830;
+}
+
+.cl-video-popup-stay {
+  background: rgba(26, 74, 66, 0.07);
+  color: #1a4a42;
+}
+
+.cl-video-popup-stay:hover {
+  background: rgba(26, 74, 66, 0.13);
 }
 
 /* ===== Responsive ===== */
@@ -1075,8 +1306,35 @@
     font-size: 24px;
   }
 
+  .cl-topbar {
+    gap: 10px;
+    padding: 0 12px;
+  }
+
+  .cl-topbar-back {
+    font-size: 0;
+    gap: 0;
+  }
+
+  .cl-topbar-back svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .cl-topbar-right {
+    gap: 8px;
+  }
+
+  .cl-topbar-progress {
+    gap: 6px;
+  }
+
   .cl-topbar-progress-bar {
-    width: 120px;
+    width: 80px;
+  }
+
+  .cl-topbar-progress-label {
+    font-size: 9px;
   }
 
   .cl-certificate-banner {
@@ -1085,13 +1343,124 @@
     gap: 12px;
   }
 
-  .cl-bottom-nav {
-    flex-direction: column;
-    gap: 12px;
-  }
-
   .cl-nav-prev,
   .cl-nav-next {
     margin: 0;
   }
+
+  .cl-mark-complete-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+    gap: 6px;
+    opacity: 0.7;
+    margin-top: 16px;
+  }
+
+  .cl-mark-complete-btn:hover:not(:disabled) {
+    opacity: 1;
+  }
+
+  .cl-mark-complete-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* ── Enroll prompt popup ── */
+.cl-enroll-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.cl-enroll-popup {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 36px 32px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+}
+
+.cl-enroll-popup-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f0f9f7;
+  color: #0E4B43;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.cl-enroll-popup-title {
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0E4B43;
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
+.cl-enroll-popup-subtitle {
+  font-size: 15px;
+  color: #555;
+  margin: 0 0 16px;
+}
+
+.cl-enroll-popup-error {
+  font-size: 14px;
+  color: #c0392b;
+  margin: 0 0 16px;
+}
+
+.cl-enroll-popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cl-enroll-popup-btn-primary {
+  background: #FF5A2F;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cl-enroll-popup-btn-primary:hover:not(:disabled) {
+  background: #e04d25;
+}
+
+.cl-enroll-popup-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cl-enroll-popup-btn-secondary {
+  background: none;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.cl-enroll-popup-btn-secondary:hover {
+  border-color: #0E4B43;
+  color: #0E4B43;
 }

@@ -4,6 +4,7 @@ import { authApi } from '../../services/api';
 import './ResetPassword.css';
 
 const ResetPassword = () => {
+  console.log('[ResetPassword]');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');

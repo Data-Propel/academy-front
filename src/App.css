@@ -11,6 +11,10 @@
   overflow-x: hidden;
 }
 
+html {
+  scroll-snap-type: y proximity;
+}
+
 body {
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;

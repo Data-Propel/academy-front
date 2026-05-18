@@ -3,6 +3,7 @@
   min-height: 60dvh;
   background: linear-gradient(135deg, #043A37 28%, #032220 95%);
   padding: 40px 0 60px;
+  overflow-x: hidden;
 }
 
 .profile-container {
@@ -88,6 +89,19 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.profile-stat-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #FD6A44;
+}
+
+.profile-stat-card:focus-visible {
+  outline: 2px solid #FD6A44;
+  outline-offset: 2px;
 }
 
 .profile-stat-number {
@@ -199,9 +213,7 @@ a.profile-course-card:hover {
 }
 
 .profile-course-badge-done {
-  position: absolute;
-  top: 4px;
-  left: 4px;
+  flex-shrink: 0;
   background: rgba(34, 197, 94, 0.9);
   color: #fff;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -211,6 +223,14 @@ a.profile-course-card:hover {
   border-radius: 2px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  align-self: center;
+}
+
+.profile-course-card-titlerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
 }
 
 .profile-course-card-body {
@@ -429,13 +449,14 @@ a.profile-course-card-title:hover {
 }
 
 .profile-field input,
-.profile-field textarea {
+.profile-field textarea,
+.profile-field select {
   width: 100%;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border: 1px solid #656565;
   border-radius: 0;
-  color: #F2F2F2;
+  color: #1a1a1a;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   outline: none;
@@ -443,8 +464,25 @@ a.profile-course-card-title:hover {
   box-sizing: border-box;
 }
 
+.profile-field select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231a1a1a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.profile-field select option {
+  background-color: #ffffff;
+  color: #1a1a1a;
+}
+
 .profile-field input:focus,
-.profile-field textarea:focus {
+.profile-field textarea:focus,
+.profile-field select:focus {
   border-color: #FD6A44;
 }
 

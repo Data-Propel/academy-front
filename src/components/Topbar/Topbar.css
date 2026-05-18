@@ -31,6 +31,20 @@
   align-items: center;
 }
 
+.topbar-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.topbar-link:hover {
+  color: #ffffff;
+}
+
 .topbar-login,
 .topbar-logout {
   background: transparent;
@@ -54,22 +68,22 @@
 }
 
 .topbar-profile {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: #FF5A2F;
+  border: 1px solid #FF5A2F;
   color: #ffffff;
   padding: 8px 20px;
   border-radius: 4px;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   transition: all 0.3s ease;
   white-space: nowrap;
 }
 
 .topbar-profile:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #ffffff;
+  background: #e04d26;
+  border-color: #e04d26;
 }
 
 .topbar-admin {
@@ -91,51 +105,128 @@
   border-color: #e55a36;
 }
 
+/* Hamburger button — hidden on desktop */
+.topbar-hamburger {
+  display: none;
+}
+
+/* Mobile drawer — hidden on desktop */
+.topbar-mobile-menu {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .topbar {
-    padding: 0.65rem 0.75rem;
+    padding: 0.65rem 1rem;
   }
 
   .topbar-logo-img {
     height: 24px;
   }
 
+  /* Hide desktop nav on mobile */
   .topbar-nav {
-    gap: 0.5rem;
+    display: none;
   }
 
-  .topbar-login,
-  .topbar-logout,
-  .topbar-profile {
-    padding: 6px 12px;
-    font-size: 0.78rem;
-    border-width: 1px;
+  /* Show hamburger */
+  .topbar-hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    width: 36px;
+    height: 36px;
   }
 
-  .topbar-admin {
-    padding: 6px 12px;
-    font-size: 0.78rem;
-  }
-}
-
-@media (max-width: 380px) {
-  .topbar {
-    padding: 0.5rem 0.5rem;
-  }
-
-  .topbar-logo-img {
-    height: 20px;
+  .topbar-hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    transform-origin: center;
   }
 
-  .topbar-nav {
-    gap: 0.35rem;
+  /* Animate to X when open */
+  .topbar-hamburger.is-open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .topbar-hamburger.is-open span:nth-child(2) {
+    opacity: 0;
+  }
+  .topbar-hamburger.is-open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
   }
 
-  .topbar-login,
-  .topbar-logout,
-  .topbar-admin,
-  .topbar-profile {
-    padding: 5px 8px;
-    font-size: 0.7rem;
+  /* Overlay */
+  .topbar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+  }
+
+  /* Mobile drawer */
+  .topbar-mobile-menu {
+    display: flex;
+    position: fixed;
+    top: 52px;
+    right: 0;
+    width: 240px;
+    background: #0E4B43;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .topbar-mobile-menu.is-open {
+    transform: translateX(0);
+  }
+
+  .mobile-menu-item {
+    display: block;
+    padding: 16px 24px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background 0.15s;
+  }
+
+  .mobile-menu-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+  }
+
+  .mobile-menu-cta {
+    color: #FF5A2F;
+    font-weight: 600;
+  }
+
+  .mobile-menu-logout {
+    color: rgba(255, 100, 80, 0.8);
+  }
+
+  .mobile-menu-logout:hover {
+    color: #FF5A2F;
+    background: rgba(255, 90, 47, 0.08);
   }
 }

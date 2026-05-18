@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /profile
+Disallow: /auto-login
+Disallow: /reset-password
+Disallow: /forms/
+
+Sitemap: https://propelacademy.org/sitemap.xml

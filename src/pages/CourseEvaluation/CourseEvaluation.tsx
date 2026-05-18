@@ -21,6 +21,7 @@ interface EvaluationFormData {
 
 export default function CourseEvaluation() {
   const { slug } = useParams<{ slug: string }>();
+  console.log('[CourseEvaluation]', slug);
   const [form, setForm] = useState<EvaluationFormData | null>(null);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -261,17 +262,23 @@ function RatingInput({ value, onChange }: { value: string; onChange: (v: string)
 
 function ScaleInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="eval-scale">
-      {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
-        <button
-          key={n}
-          type="button"
-          className={`eval-scale-btn${value === String(n) ? ' active' : ''}`}
-          onClick={() => onChange(String(n))}
-        >
-          {n}
-        </button>
-      ))}
+    <div>
+      <div className="eval-scale">
+        {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
+          <button
+            key={n}
+            type="button"
+            className={`eval-scale-btn${value === String(n) ? ' active' : ''}`}
+            onClick={() => onChange(String(n))}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+      <div className="eval-nps-labels">
+        <span>Muy bajo</span>
+        <span>Muy alta</span>
+      </div>
     </div>
   );
 }
@@ -288,7 +295,7 @@ function NpsInput({ value, onChange }: { value: string; onChange: (v: string) =>
   return (
     <div>
       <div className="eval-nps">
-        {Array.from({ length: 11 }, (_, i) => i).map(n => (
+        {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
           <button
             key={n}
             type="button"

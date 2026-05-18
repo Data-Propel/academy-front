@@ -1,57 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi, isAuthenticated } from '../../services/api';
-const logo = 'https://www.academy.wepropel.org/wp-content/uploads/2025/04/Logotipo_Propel_Horizontal-02-removebg-preview-e1745455801946.png';
 import './Login.css';
 
-type LoginStep = 'email' | 'password' | 'setup-password' | 'verify-email';
+type LoginStep = 'login' | 'setup-password' | 'verify-email';
 
 const Login = () => {
+  console.log('[Login]');
   const navigate = useNavigate();
-  const [step, setStep] = useState<LoginStep>('email');
+  const [step, setStep] = useState<LoginStep>('login');
 
   useEffect(() => {
     if (isAuthenticated()) {
       navigate('/');
     }
   }, [navigate]);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [setupToken, setSetupToken] = useState('');
   const [userName, setUserName] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState('');
-
-  const handleCheckAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const { ok, data } = await authApi.checkAccount(email);
-      if (ok) {
-        if (!data.exists) {
-          setError('No existe una cuenta con este correo.');
-        } else if (data.requires_password_setup) {
-          setSetupToken(data.setup_token);
-          setUserName(data.user?.first_name || '');
-          setStep('setup-password');
-        } else {
-          setUserName(data.user?.first_name || '');
-          setStep('password');
-        }
-      } else {
-        setError(data.detail || 'Error al verificar cuenta.');
-      }
-    } catch {
-      setError('Error de conexión. Intenta más tarde.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,13 +34,34 @@ const Login = () => {
     setLoading(true);
 
     try {
+      // First check if account exists and needs setup
+      const checkRes = await authApi.checkAccount(email);
+      if (checkRes.ok) {
+        if (!checkRes.data.exists) {
+          setError('No existe una cuenta con este correo.');
+          setLoading(false);
+          return;
+        }
+        if (checkRes.data.requires_password_setup) {
+          setSetupToken(checkRes.data.setup_token);
+          setUserName(checkRes.data.user?.first_name || '');
+          setStep('setup-password');
+          setPassword('');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Account exists and has password — attempt login
       const { ok, data } = await authApi.login(email, password);
       if (ok) {
         navigate('/');
       } else if (data.email?.[0]?.toLowerCase().includes('verificar')) {
         setStep('verify-email');
+        // Auto-resend verification email
+        authApi.resendVerification(email).catch(() => {});
       } else {
-        setError(data.detail || data.email?.[0] || 'Credenciales inválidas. Intenta de nuevo.');
+        setError('Correo o contraseña incorrectos.');
       }
     } catch {
       setError('Error de conexión. Intenta más tarde.');
@@ -124,28 +120,37 @@ const Login = () => {
   };
 
   const handleBack = () => {
-    setStep('email');
+    setStep('login');
     setPassword('');
     setConfirmPassword('');
     setError('');
   };
+
+  const EyeOpen = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+
+  const EyeClosed = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+    </svg>
+  );
 
   return (
     <div className="login-page">
       <div className="login-container">
         <div className="login-card">
           <div className="login-header">
-            <img src={logo} alt="Propel Logo" className="login-logo" />
-            {step === 'email' && (
+            {step === 'login' && (
               <>
                 <h2 className="login-title">Inicia sesión</h2>
                 <p className="login-subtitle">Continúa tu aprendizaje y escala con IA.</p>
-              </>
-            )}
-            {step === 'password' && (
-              <>
-                <h2 className="login-title">¡Hola, {userName}!</h2>
-                <p className="login-subtitle">Ingresa tu contraseña para continuar.</p>
               </>
             )}
             {step === 'setup-password' && (
@@ -160,12 +165,12 @@ const Login = () => {
                 <p className="login-subtitle">Tu cuenta aún no ha sido verificada.</p>
               </>
             )}
-            <div className="login-divider"></div>
+
           </div>
 
-          {/* Step 1: Email */}
-          {step === 'email' && (
-            <form className="login-form" onSubmit={handleCheckAccount}>
+          {/* Main Login */}
+          {step === 'login' && (
+            <form className="login-form" onSubmit={handleLogin}>
               {error && <div className="form-error">{error}</div>}
 
               <div className="form-group">
@@ -182,43 +187,28 @@ const Login = () => {
                 />
               </div>
 
-              <div className="button-divider"></div>
-
-              <button type="submit" className="submit-button" disabled={loading}>
-                <span className="button-text">{loading ? 'Verificando...' : 'Continuar'}</span>
-              </button>
-
-              <div className="forgot-password-container">
-                <a href="/reset-password" className="forgot-password">¿Olvidaste tu contraseña?</a>
-              </div>
-            </form>
-          )}
-
-          {/* Step 2: Password */}
-          {step === 'password' && (
-            <form className="login-form" onSubmit={handleLogin}>
-              {error && <div className="form-error">{error}</div>}
-
-              <div className="form-group">
-                <label className="email-display">{email}</label>
-                <button type="button" className="change-email" onClick={handleBack}>
-                  Cambiar
-                </button>
-              </div>
-
               <div className="form-group">
                 <label htmlFor="password">
                   Contraseña <span className="required">*</span>
                 </label>
-                <input
-                  type="password"
-                  id="password"
-                  className="form-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoFocus
-                />
+                <div className="password-wrapper">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    className="form-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="eye-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeClosed /> : <EyeOpen />}
+                  </button>
+                </div>
               </div>
 
               <div className="form-options">
@@ -233,15 +223,13 @@ const Login = () => {
                 <a href="/reset-password" className="forgot-password">¿Olvidaste tu contraseña?</a>
               </div>
 
-              <div className="button-divider"></div>
-
               <button type="submit" className="submit-button" disabled={loading}>
                 <span className="button-text">{loading ? 'Cargando...' : 'Inicia sesión'}</span>
               </button>
             </form>
           )}
 
-          {/* Step 3: Setup Password (Migrated Users) */}
+          {/* Setup Password (Migrated Users) */}
           {step === 'setup-password' && (
             <form className="login-form" onSubmit={handleSetupPassword}>
               {error && <div className="form-error">{error}</div>}
@@ -258,35 +246,53 @@ const Login = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="password">
+                <label htmlFor="setup-password">
                   Nueva contraseña <span className="required">*</span>
                 </label>
-                <input
-                  type="password"
-                  id="password"
-                  className="form-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoFocus
-                />
+                <div className="password-wrapper">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="setup-password"
+                    className="form-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className="eye-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeClosed /> : <EyeOpen />}
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
                 <label htmlFor="confirmPassword">
                   Confirmar contraseña <span className="required">*</span>
                 </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  className="form-input"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
+                <div className="password-wrapper">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    className="form-input"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="eye-toggle"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeClosed /> : <EyeOpen />}
+                  </button>
+                </div>
               </div>
-
-              <div className="button-divider"></div>
 
               <button type="submit" className="submit-button" disabled={loading}>
                 <span className="button-text">{loading ? 'Configurando...' : 'Configurar contraseña'}</span>
@@ -294,7 +300,7 @@ const Login = () => {
             </form>
           )}
 
-          {/* Step 4: Verify Email */}
+          {/* Verify Email */}
           {step === 'verify-email' && (
             <div className="verify-email-container">
               {error && <div className="form-error">{error}</div>}

@@ -115,27 +115,38 @@ const fetchAllPages = async (initialUrl: string): Promise<{ ok: boolean; data: u
   return { ok: true, data: allResults };
 };
 
-// Refresh token
+// Refresh token — singleton: concurrent 401s share one refresh attempt
+let _refreshPromise: Promise<boolean> | null = null;
 const refreshToken = async (): Promise<boolean> => {
-  const refresh = getRefreshToken();
-  if (!refresh) return false;
+  if (_refreshPromise) return _refreshPromise;
+
+  _refreshPromise = (async () => {
+    const refresh = getRefreshToken();
+    if (!refresh) return false;
+
+    try {
+      const response = await fetch(`${API_URL}/users/token/refresh/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTokens(data.access, data.refresh || refresh);
+        return true;
+      }
+    } catch {
+      // Refresh failed
+    }
+    return false;
+  })();
 
   try {
-    const response = await fetch(`${API_URL}/users/token/refresh/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      setTokens(data.access, data.refresh || refresh);
-      return true;
-    }
-  } catch {
-    // Refresh failed
+    return await _refreshPromise;
+  } finally {
+    _refreshPromise = null;
   }
-  return false;
 };
 
 // Auth API
@@ -158,7 +169,7 @@ export const authApi = {
     const data = await response.json();
     if (response.ok && data.tokens) {
       setTokens(data.tokens.access, data.tokens.refresh);
-      setSuperuser(data.is_superuser || data.is_admin || false);
+      setSuperuser(data.user?.is_admin || false);
     }
     return { ok: response.ok, data };
   },
@@ -183,6 +194,8 @@ export const authApi = {
     last_name: string;
     password: string;
     password_confirm: string;
+    organization_type?: string;
+    country?: string;
   }) => {
     const response = await fetch(`${API_URL}/users/register/`, {
       method: 'POST',
@@ -251,11 +264,14 @@ export const authApi = {
   updateProfile: async (profileData: {
     first_name?: string;
     last_name?: string;
+    display_name?: string;
     bio?: string;
     organization?: string;
+    organization_type?: string;
+    country?: string;
   }) => {
     const response = await apiFetch('/users/profile/', {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify(profileData),
     });
     return { ok: response.ok, data: await response.json() };
@@ -275,7 +291,7 @@ export const authApi = {
 
   logout: () => {
     clearTokens();
-    window.location.href = 'https://www.academy.wepropel.org/';
+    window.location.replace('https://propelacademy.org/');
   },
 };
 
@@ -378,10 +394,14 @@ export const coursesApi = {
       }
     }
 
-    if (!response.ok) return;
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      return { ok: false, detail: data.detail as string | undefined };
+    }
 
     const blob = await response.blob();
     triggerBlobDownload(blob, `certificado-${slug}.pdf`);
+    return { ok: true };
   },
 };
 
@@ -425,12 +445,24 @@ export const adminApi = {
     return { ok: response.ok, data: await response.json() };
   },
 
+  getAllUsers: async () => {
+    return fetchAllPages('/users/admin/?page_size=100');
+  },
+
   createUser: async (userData: {
     email: string;
     first_name: string;
     last_name: string;
     password?: string;
+    display_name?: string;
+    avatar?: string | null;
+    bio?: string;
+    organization?: string;
+    organization_type?: string;
+    country?: string;
+    email_verified?: boolean;
     is_active?: boolean;
+    is_staff?: boolean;
     is_superuser?: boolean;
   }) => {
     const response = await apiFetch('/users/admin/', {
@@ -445,11 +477,19 @@ export const adminApi = {
     first_name?: string;
     last_name?: string;
     password?: string;
+    display_name?: string;
+    avatar?: string | null;
+    bio?: string;
+    organization?: string;
+    organization_type?: string;
+    country?: string;
+    email_verified?: boolean;
     is_active?: boolean;
+    is_staff?: boolean;
     is_superuser?: boolean;
   }) => {
     const response = await apiFetch(`/users/admin/${id}/`, {
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify(userData),
     });
     return { ok: response.ok, data: await response.json() };
@@ -483,6 +523,7 @@ export const adminApi = {
     price?: string;
     price_type?: string;
     category_id?: number;
+    tag_ids?: number[];
     instructor?: string;
     instructor_title?: string;
     instructor_bio?: string;
@@ -500,6 +541,9 @@ export const adminApi = {
     if (courseData.price) formData.append('price', courseData.price);
     if (courseData.price_type) formData.append('price_type', courseData.price_type);
     if (courseData.category_id) formData.append('category_id', String(courseData.category_id));
+    if (courseData.tag_ids) {
+      for (const id of courseData.tag_ids) formData.append('tag_ids', String(id));
+    }
     if (courseData.instructor) formData.append('instructor', courseData.instructor);
     if (courseData.instructor_title) formData.append('instructor_title', courseData.instructor_title);
     if (courseData.instructor_bio) formData.append('instructor_bio', courseData.instructor_bio);
@@ -525,6 +569,7 @@ export const adminApi = {
     price?: string;
     price_type?: string;
     category_id?: number;
+    tag_ids?: number[];
     instructor?: string;
     instructor_title?: string;
     instructor_bio?: string;
@@ -542,6 +587,9 @@ export const adminApi = {
     if (courseData.price !== undefined) formData.append('price', courseData.price);
     if (courseData.price_type) formData.append('price_type', courseData.price_type);
     if (courseData.category_id) formData.append('category_id', String(courseData.category_id));
+    if (courseData.tag_ids) {
+      for (const id of courseData.tag_ids) formData.append('tag_ids', String(id));
+    }
     if (courseData.instructor !== undefined) formData.append('instructor', courseData.instructor);
     if (courseData.instructor_title !== undefined) formData.append('instructor_title', courseData.instructor_title);
     if (courseData.instructor_bio !== undefined) formData.append('instructor_bio', courseData.instructor_bio);
@@ -592,6 +640,34 @@ export const adminApi = {
 
   deleteCategory: async (id: number) => {
     const response = await apiFetch(`/courses/admin/categories/${id}/`, {
+      method: 'DELETE',
+    });
+    return { ok: response.ok, data: response.ok ? null : await response.json() };
+  },
+
+  // Tags - /api/courses/admin/tags/
+  getTags: async () => {
+    return fetchAllPages('/courses/admin/tags/');
+  },
+
+  createTag: async (data: { name: string; slug: string; aliases?: string }) => {
+    const response = await apiFetch('/courses/admin/tags/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  updateTag: async (id: number, data: { name?: string; slug?: string; aliases?: string }) => {
+    const response = await apiFetch(`/courses/admin/tags/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  deleteTag: async (id: number) => {
+    const response = await apiFetch(`/courses/admin/tags/${id}/`, {
       method: 'DELETE',
     });
     return { ok: response.ok, data: response.ok ? null : await response.json() };

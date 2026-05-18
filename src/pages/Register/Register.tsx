@@ -3,7 +3,48 @@ import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
 import './Register.css';
 
+const ORGANIZATION_TYPES = [
+  { value: '', label: 'Selecciona un tipo' },
+  { value: 'ong', label: 'ONG / Organización sin fines de lucro' },
+  { value: 'fundacion', label: 'Fundación' },
+  { value: 'asociacion', label: 'Asociación civil' },
+  { value: 'empresa_social', label: 'Empresa social' },
+  { value: 'cooperativa', label: 'Cooperativa' },
+  { value: 'educativa', label: 'Institución educativa' },
+  { value: 'gobierno', label: 'Organismo gubernamental' },
+  { value: 'internacional', label: 'Organismo internacional' },
+  { value: 'otro', label: 'Otro' },
+];
+
+const COUNTRIES = [
+  { value: '', label: 'Selecciona un país' },
+  { value: 'AR', label: 'Argentina' },
+  { value: 'BO', label: 'Bolivia' },
+  { value: 'BR', label: 'Brasil' },
+  { value: 'CL', label: 'Chile' },
+  { value: 'CO', label: 'Colombia' },
+  { value: 'CR', label: 'Costa Rica' },
+  { value: 'CU', label: 'Cuba' },
+  { value: 'DO', label: 'República Dominicana' },
+  { value: 'EC', label: 'Ecuador' },
+  { value: 'SV', label: 'El Salvador' },
+  { value: 'GT', label: 'Guatemala' },
+  { value: 'HN', label: 'Honduras' },
+  { value: 'MX', label: 'México' },
+  { value: 'NI', label: 'Nicaragua' },
+  { value: 'PA', label: 'Panamá' },
+  { value: 'PY', label: 'Paraguay' },
+  { value: 'PE', label: 'Perú' },
+  { value: 'PR', label: 'Puerto Rico' },
+  { value: 'ES', label: 'España' },
+  { value: 'US', label: 'Estados Unidos' },
+  { value: 'UY', label: 'Uruguay' },
+  { value: 'VE', label: 'Venezuela' },
+  { value: 'OTHER', label: 'Otro' },
+];
+
 const Register = () => {
+  console.log('[Register]');
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -11,12 +52,14 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    organizationType: '',
+    country: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -39,6 +82,8 @@ const Register = () => {
         last_name: formData.lastName,
         password: formData.password,
         password_confirm: formData.confirmPassword,
+        organization_type: formData.organizationType,
+        country: formData.country,
       });
 
       if (ok) {
@@ -144,6 +189,38 @@ const Register = () => {
                 onChange={handleChange}
                 required
               />
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="organizationType">Tipo de organización</label>
+                <select
+                  id="organizationType"
+                  name="organizationType"
+                  className="form-input"
+                  value={formData.organizationType}
+                  onChange={handleChange}
+                >
+                  {ORGANIZATION_TYPES.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="country">País</label>
+                <select
+                  id="country"
+                  name="country"
+                  className="form-input"
+                  value={formData.country}
+                  onChange={handleChange}
+                >
+                  {COUNTRIES.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="form-group">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi, isAuthenticated, coursesApi, MEDIA_URL } from '../../services/api';
 import './Profile.css';
@@ -8,8 +8,11 @@ interface User {
   email: string;
   first_name: string;
   last_name: string;
+  display_name: string;
   bio: string;
   organization: string;
+  organization_type: string;
+  country: string;
   created_at: string;
   avatar: string | null;
 }
@@ -47,12 +50,12 @@ const localThumbnails: Record<string, string> = {
   'guia-de-procesos-internos': '/thumbnails/Portadas-cursos.webp',
   'introduccion-a-chatgpt-para-organizaciones-sociale': '/thumbnails/Introduccion-a-CHATGPT.webp',
   'define-tus-metas-con-okrs': '/thumbnails/okr.webp',
-  'atrae-mas-vistas-con-seo': '/thumbnails/002.webp',
+  'atrae-mas-vistas-con-seo': '/thumbnails/alcanzamasvistasconseo.png',
   'lean-data-para-impacto-social': '/thumbnails/Imagen-destacada-10-1.webp',
   'construye-indicadores-para-medir-impacto': '/thumbnails/Imagen-destacada-14.webp',
-  'convierte-tus-ideas-en-un-pitch-ganador': '/thumbnails/001-1.webp',
+  'convierte-tus-ideas-en-un-pitch-ganador': '/thumbnails/conviertetusideasenunpitchganador.png',
   'potencia-tu-teoria-de-cambio': '/thumbnails/Imagen-destacada-11.webp',
-  'aplica-a-tu-siguiente-grant-con-ia': '/thumbnails/003.webp',
+  'aplica-a-tu-siguiente-grant-con-ia': '/thumbnails/aplicaatusiguientegrantconia.png',
   'identifica-a-tu-donante-ideal': '/thumbnails/Imagen-destacada-13-1.webp',
   'crea-tu-asistente-ia': '/thumbnails/Asistente-IA-portada.webp',
 };
@@ -104,16 +107,21 @@ const getThumbnail = (slug: string, thumbnailUrl: string | null) => {
 };
 
 const Profile = () => {
+  console.log('[Profile]');
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<ProfileTab>('learning');
+  const tabContentRef = useRef<HTMLDivElement>(null);
 
   // Profile form
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [organization, setOrganization] = useState('');
+  const [organizationType, setOrganizationType] = useState('');
+  const [country, setCountry] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [profileError, setProfileError] = useState('');
@@ -130,6 +138,8 @@ const Profile = () => {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [evalStatuses, setEvalStatuses] = useState<Record<string, { has_evaluation_form: boolean; has_submitted: boolean }>>({});
+  const [downloadingCertSlug, setDownloadingCertSlug] = useState<string | null>(null);
+  const [certError, setCertError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -153,8 +163,11 @@ const Profile = () => {
         setUser(u);
         setFirstName(u.first_name || '');
         setLastName(u.last_name || '');
+        setDisplayName(u.display_name || '');
         setBio(u.bio || '');
         setOrganization(u.organization || '');
+        setOrganizationType(u.organization_type || '');
+        setCountry(u.country || '');
       }
       if (enrollRes.ok) {
         setEnrollments(enrollRes.data);
@@ -198,8 +211,11 @@ const Profile = () => {
       const res = await authApi.updateProfile({
         first_name: firstName.trim(),
         last_name: lastName.trim(),
+        display_name: displayName.trim(),
         bio: bio.trim(),
         organization: organization.trim(),
+        organization_type: organizationType,
+        country: country,
       });
 
       if (res.ok) {
@@ -276,6 +292,15 @@ const Profile = () => {
 
   const inProgress = enrollments.filter((e) => !e.completed_at && e.progress < 100);
   const completed = enrollments.filter((e) => e.completed_at || e.progress === 100);
+  const certificatesCount = completed.filter((e) =>
+    !evalStatuses[e.course.slug]?.has_evaluation_form ||
+    evalStatuses[e.course.slug]?.has_submitted
+  ).length;
+
+  const switchTab = (tab: ProfileTab) => {
+    setActiveTab(tab);
+    setTimeout(() => tabContentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
   const passwordStrength = getPasswordStrength(newPassword);
 
   if (loading) {
@@ -320,7 +345,7 @@ const Profile = () => {
           </div>
           <div className="profile-hero-info">
             <h1 className="profile-hero-name">
-              {user?.first_name} {user?.last_name}
+              {user?.display_name || `${user?.first_name} ${user?.last_name}`}
             </h1>
             {user?.organization && (
               <p className="profile-hero-org">{user.organization}</p>
@@ -334,18 +359,18 @@ const Profile = () => {
 
         {/* Stats */}
         <div className="profile-stats">
-          <div className="profile-stat-card">
+          <button className="profile-stat-card" onClick={() => switchTab('learning')}>
             <span className="profile-stat-number">{enrollments.length}</span>
             <span className="profile-stat-label">Cursos inscritos</span>
-          </div>
-          <div className="profile-stat-card">
+          </button>
+          <button className="profile-stat-card" onClick={() => switchTab('learning')}>
             <span className="profile-stat-number">{completed.length}</span>
             <span className="profile-stat-label">Completados</span>
-          </div>
-          <div className="profile-stat-card">
-            <span className="profile-stat-number">{completed.length}</span>
+          </button>
+          <button className="profile-stat-card" onClick={() => switchTab('learning')}>
+            <span className="profile-stat-number">{certificatesCount}</span>
             <span className="profile-stat-label">Certificados</span>
-          </div>
+          </button>
         </div>
 
         {/* Tabs */}
@@ -360,7 +385,7 @@ const Profile = () => {
             className={`profile-tab${activeTab === 'list' ? ' active' : ''}`}
             onClick={() => setActiveTab('list')}
           >
-            Mi Lista
+            Favoritos
           </button>
           <button
             className={`profile-tab${activeTab === 'settings' ? ' active' : ''}`}
@@ -371,7 +396,7 @@ const Profile = () => {
         </div>
 
         {/* Tab content */}
-        <div className="profile-tab-content">
+        <div className="profile-tab-content" ref={tabContentRef}>
           {/* Mi Aprendizaje */}
           {activeTab === 'learning' && (
             <div className="profile-learning">
@@ -431,6 +456,9 @@ const Profile = () => {
               {/* Completed */}
               <section className="profile-section">
                 <h2 className="profile-section-title">Completados</h2>
+                {certError && (
+                  <p style={{ color: '#e53e3e', fontSize: '0.9rem', marginBottom: '0.75rem' }}>{certError}</p>
+                )}
                 {completed.length > 0 ? (
                   <div className="profile-course-cards">
                     {completed.map((enrollment) => {
@@ -448,24 +476,40 @@ const Profile = () => {
                                 </svg>
                               </div>
                             )}
-                            <span className="profile-course-badge-done">Completado</span>
                           </div>
                           <div className="profile-course-card-body">
-                            <Link to={`/courses/${enrollment.course.slug}`} className="profile-course-card-title">
-                              {enrollment.course.title}
-                            </Link>
+                            <div className="profile-course-card-titlerow">
+                              <Link to={`/courses/${enrollment.course.slug}`} className="profile-course-card-title">
+                                {enrollment.course.title}
+                              </Link>
+                              <span className="profile-course-badge-done">Completado</span>
+                            </div>
                             <div className="profile-course-actions">
-                              <button
-                                className="profile-certificate-btn"
-                                onClick={() => coursesApi.downloadCertificate(enrollment.course.slug)}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                  <polyline points="7 10 12 15 17 10" />
-                                  <line x1="12" y1="15" x2="12" y2="3" />
-                                </svg>
-                                Certificado
-                              </button>
+                              {(!evalStatuses[enrollment.course.slug]?.has_evaluation_form || evalStatuses[enrollment.course.slug]?.has_submitted) && (
+                                <button
+                                  className="profile-certificate-btn"
+                                  disabled={downloadingCertSlug === enrollment.course.slug}
+                                  onClick={async () => {
+                                    setDownloadingCertSlug(enrollment.course.slug);
+                                    setCertError(null);
+                                    try {
+                                      const result = await coursesApi.downloadCertificate(enrollment.course.slug);
+                                      if (result && !result.ok) {
+                                        setCertError(result.detail || 'No se pudo descargar el certificado.');
+                                      }
+                                    } finally {
+                                      setDownloadingCertSlug(null);
+                                    }
+                                  }}
+                                >
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="7 10 12 15 17 10" />
+                                    <line x1="12" y1="15" x2="12" y2="3" />
+                                  </svg>
+                                  {downloadingCertSlug === enrollment.course.slug ? 'Descargando...' : 'Certificado'}
+                                </button>
+                              )}
                               {evalStatuses[enrollment.course.slug]?.has_evaluation_form && !evalStatuses[enrollment.course.slug]?.has_submitted && (
                                 <Link to={`/courses/${enrollment.course.slug}/evaluate`} className="profile-evaluate-btn">
                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -503,7 +547,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Mi Lista */}
+          {/* Favoritos */}
           {activeTab === 'list' && (
             <div className="profile-list">
               {favorites.length > 0 ? (
@@ -531,7 +575,7 @@ const Profile = () => {
                           <button
                             className="profile-remove-btn"
                             onClick={() => handleRemoveFavorite(fav.course.slug)}
-                            title="Quitar de Mi Lista"
+                            title="Quitar de Favoritos"
                           >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="18" y1="6" x2="6" y2="18" />
@@ -548,7 +592,7 @@ const Profile = () => {
                   <svg className="profile-empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
-                  <p className="profile-empty-text">Tu lista está vacía. Guarda cursos para verlos después.</p>
+                  <p className="profile-empty-text">No tienes cursos favoritos aún.</p>
                   <Link to="/" className="profile-empty-cta">Explorar cursos</Link>
                 </div>
               )}
@@ -584,6 +628,17 @@ const Profile = () => {
                       />
                     </div>
                     <div className="profile-field">
+                      <label htmlFor="displayName">Nombre visible</label>
+                      <input
+                        id="displayName"
+                        type="text"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="Ej: Juan Pérez, Dr. García..."
+                      />
+                      <span className="profile-field-hint">Se muestra en tu perfil en lugar de nombre y apellido</span>
+                    </div>
+                    <div className="profile-field">
                       <label htmlFor="organization">Organización</label>
                       <input
                         id="organization"
@@ -591,6 +646,58 @@ const Profile = () => {
                         value={organization}
                         onChange={(e) => setOrganization(e.target.value)}
                       />
+                    </div>
+                    <div className="profile-field">
+                      <label htmlFor="organizationType">Tipo de organización</label>
+                      <select
+                        id="organizationType"
+                        value={organizationType}
+                        onChange={(e) => setOrganizationType(e.target.value)}
+                      >
+                        <option value="">Selecciona un tipo</option>
+                        <option value="ong">ONG / Organización sin fines de lucro</option>
+                        <option value="fundacion">Fundación</option>
+                        <option value="asociacion">Asociación civil</option>
+                        <option value="empresa_social">Empresa social</option>
+                        <option value="cooperativa">Cooperativa</option>
+                        <option value="educativa">Institución educativa</option>
+                        <option value="gobierno">Organismo gubernamental</option>
+                        <option value="internacional">Organismo internacional</option>
+                        <option value="otro">Otro</option>
+                      </select>
+                    </div>
+                    <div className="profile-field">
+                      <label htmlFor="country">País</label>
+                      <select
+                        id="country"
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                      >
+                        <option value="">Selecciona un país</option>
+                        <option value="AR">Argentina</option>
+                        <option value="BO">Bolivia</option>
+                        <option value="BR">Brasil</option>
+                        <option value="CL">Chile</option>
+                        <option value="CO">Colombia</option>
+                        <option value="CR">Costa Rica</option>
+                        <option value="CU">Cuba</option>
+                        <option value="DO">República Dominicana</option>
+                        <option value="EC">Ecuador</option>
+                        <option value="SV">El Salvador</option>
+                        <option value="GT">Guatemala</option>
+                        <option value="HN">Honduras</option>
+                        <option value="MX">México</option>
+                        <option value="NI">Nicaragua</option>
+                        <option value="PA">Panamá</option>
+                        <option value="PY">Paraguay</option>
+                        <option value="PE">Perú</option>
+                        <option value="PR">Puerto Rico</option>
+                        <option value="ES">España</option>
+                        <option value="US">Estados Unidos</option>
+                        <option value="UY">Uruguay</option>
+                        <option value="VE">Venezuela</option>
+                        <option value="OTHER">Otro</option>
+                      </select>
                     </div>
                     <div className="profile-field">
                       <label htmlFor="bio">Bio</label>

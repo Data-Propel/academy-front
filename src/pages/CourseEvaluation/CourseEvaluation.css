@@ -387,9 +387,14 @@
     font-size: 0.85rem;
   }
 
+  .eval-nps {
+    gap: 2px;
+  }
+
   .eval-nps-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 0.85rem;
+    width: 30px;
+    height: 36px;
+    font-size: 0.8rem;
+    flex: 0 0 auto;
   }
 }

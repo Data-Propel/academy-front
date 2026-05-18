@@ -1,14 +1,381 @@
 .dashboard-page {
   min-height: 60vh;
   min-height: 60dvh;
-  background: linear-gradient(135deg, #043A37 28%, #032220 95%);
-  padding: 40px 0;
+  background: linear-gradient(to bottom, #032220, #021a18);
+  padding: 0 0 40px;
+  overflow-x: hidden;
+}
+
+/* Hero Banner */
+.dashboard-hero {
+  position: relative;
+  width: 100%;
+  height: 65vh;
+  height: 65dvh;
+  overflow: hidden;
+  margin-bottom: 0;
+  scroll-snap-align: start;
+}
+
+.dashboard-hero--logged-in {
+  height: 40vh;
+  height: 40dvh;
+}
+
+.dashboard-hero-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+}
+
+.dashboard-hero-fade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #043A37 0%, rgba(4, 58, 55, 0.85) 30%, rgba(4, 58, 55, 0.4) 60%, transparent 100%);
+}
+
+.dashboard-hero-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 32px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .dashboard-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 30px;
+  padding: 0 32px 64px;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  scroll-snap-align: start;
+}
+
+.testimonials-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.testimonials-title {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
+  font-size: 34px;
+  font-weight: 600;
+  color: #F2F2F2;
+  margin: 0 0 16px;
+  line-height: 1.2;
+}
+
+.testimonials-carousel {
+  position: relative;
+}
+
+.testimonial-card {
+  background: #144A46;
+  display: flex;
+  flex-direction: row;
+  min-height: 300px;
+  transition: opacity 0.5s ease;
+}
+
+.testimonial-card--enter {
+  opacity: 1;
+}
+
+.testimonial-card--exit {
+  opacity: 0;
+}
+
+.testimonial-card-img {
+  width: 42%;
+  flex-shrink: 0;
+  background-color: #0e3d3a;
+  background-size: contain;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+
+.testimonial-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px;
+}
+
+.testimonial-card-top {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.testimonial-quote-mark {
+  flex-shrink: 0;
+}
+
+.testimonial-quote {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #F2F2F2;
+  margin: 0;
+  line-height: 1.65;
+}
+
+.testimonial-card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 24px;
+  gap: 16px;
+}
+
+.testimonial-person {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.testimonial-name {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #F2F2F2;
+  line-height: 1.2;
+}
+
+.testimonial-role {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(242, 242, 242, 0.75);
+  line-height: 1.4;
+}
+
+.testimonial-linkedin {
+  color: #F2F2F2;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+  line-height: 0;
+}
+
+.testimonial-linkedin:hover {
+  color: #FD6A44;
+}
+
+.testimonials-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.testimonials-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(242, 242, 242, 0.3);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.testimonials-dot--active {
+  background: #FD6A44;
+  transform: scale(1.3);
+}
+
+/* FAQ Section */
+.faq-section {
+  background: #043A37;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  scroll-snap-align: start;
+  position: relative;
+}
+
+.faq-inner {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.faq-title {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
+  font-size: 34px;
+  font-weight: 600;
+  color: #F2F2F2;
+  margin: 0 0 48px;
+  line-height: 1.2;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-item {
+  border-bottom: 1px solid rgba(242, 242, 242, 0.2);
+}
+
+.faq-item:first-child {
+  border-top: 1px solid rgba(242, 242, 242, 0.2);
+}
+
+.faq-question {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: none;
+  border: none;
+  padding: 24px 0;
+  cursor: pointer;
+  color: #F2F2F2;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  text-align: left;
+  line-height: 1.4;
+  transition: color 0.2s ease;
+}
+
+.faq-question:hover {
+  color: #FD6A44;
+}
+
+.faq-chevron {
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.faq-item--open .faq-chevron {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+
+.faq-item--open .faq-answer {
+  max-height: 200px;
+}
+
+.faq-answer p {
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(242, 242, 242, 0.85);
+  margin: 0 0 24px;
+  line-height: 1.7;
+}
+
+/* Features Section */
+.features-section {
+  position: relative;
+  padding: 80px 32px 80px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  scroll-snap-align: start;
+}
+
+.features-decoration {
+  position: absolute;
+  top: 0;
+  right: 0;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.features-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.features-title {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
+  font-size: 34px;
+  font-weight: 600;
+  color: #F2F2F2;
+  line-height: 1.25;
+  margin: 0 0 48px;
+}
+
+.features-grid {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.feature-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.feature-card-img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.feature-card-body {
+  background: #F2F2F2;
+  padding: 16px;
+  transform: translateY(-60px);
+  margin-bottom: -64px;
+  margin-right: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.feature-card-title {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #043A37;
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+
+.feature-card-text {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #043A37;
+  margin: 0;
+  line-height: 1.55;
 }
 
 /* Skeleton loading */
@@ -27,7 +394,7 @@
 .skeleton-title {
   height: 48px;
   width: 340px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .skeleton-subtitle {
@@ -54,10 +421,10 @@
 }
 
 .skeleton-card-body {
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .skeleton-line-sm {
@@ -92,7 +459,7 @@
   font-size: 48px;
   font-weight: 600;
   color: #F2F2F2;
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   line-height: 1.2;
 }
 
@@ -103,10 +470,44 @@
   margin: 0;
 }
 
+.dashboard-hero-cta {
+  display: inline-block;
+  align-self: flex-start;
+  width: fit-content;
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #FF5A2F;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 0;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.dashboard-hero-cta:hover {
+  background: #e04a22;
+}
+
+.section-subtitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  color: rgba(242, 242, 242, 0.7);
+  margin: -16px 0 24px 0;
+}
+
 /* Courses Section */
 .courses-section {
-  margin-top: 20px;
-  margin-bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px 0;
+  position: relative;
+}
+
+.courses-section--featured {
+  scroll-snap-align: start;
 }
 
 .section-title {
@@ -117,11 +518,30 @@
   margin: 0 0 24px 0;
 }
 
+.courses-section--featured .section-title {
+  font-size: 36px;
+  text-align: center;
+}
+
+.courses-section--featured .section-subtitle {
+  text-align: center;
+  margin-top: -16px;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: #F2F2F2;
+}
+
+
+.text-orange {
+  color: #FF5A2F;
+}
+
 /* Section title with icon */
 .section-title-with-icon {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Catalog Search */
@@ -132,7 +552,7 @@
 
 .catalog-search-icon {
   position: absolute;
-  left: 14px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
   color: rgba(242, 242, 242, 0.4);
@@ -141,7 +561,7 @@
 
 .catalog-search-input {
   width: 100%;
-  padding: 12px 42px 12px 42px;
+  padding: 16px 40px 16px 40px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid #656565;
   border-radius: 0;
@@ -163,7 +583,7 @@
 
 .catalog-search-clear {
   position: absolute;
-  right: 10px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -181,16 +601,26 @@
 }
 
 /* Enrolled Badge */
-.course-enrolled-badge {
-  display: inline-block;
-  background: rgba(34, 197, 94, 0.2);
-  color: #22c55e;
+.course-status-tag {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  padding: 4px 8px;
   font-size: 0.7rem;
   font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 0;
-  margin-bottom: 8px;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  border-radius: 0;
+  z-index: 1;
+}
+
+.status-in-progress {
+  background: rgba(253, 106, 68, 0.9);
+  color: #ffffff;
+}
+
+.status-completed {
+  background: rgba(34, 197, 94, 0.9);
+  color: #ffffff;
 }
 
 .course-button-enrolled {
@@ -204,16 +634,86 @@
 /* Catalog Filters */
 .catalog-filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 24px;
+}
+
+.catalog-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.catalog-filters-label {
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(242, 242, 242, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  min-width: 72px;
+}
+
+/* Status dropdown */
+.catalog-status-dropdown-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.catalog-status-dropdown {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 1px solid #656565;
+  color: rgba(242, 242, 242, 0.7);
+  padding: 8px 32px 8px 16px;
+  border-radius: 0;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  outline: none;
+}
+
+.catalog-status-dropdown option {
+  background: #0E4B43;
+  color: #F2F2F2;
+}
+
+.catalog-status-dropdown:hover,
+.catalog-status-dropdown:focus {
+  border-color: #F2F2F2;
+  color: #F2F2F2;
+}
+
+.catalog-status-dropdown--active {
+  background: #FD6A44;
+  border-color: #FD6A44;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.catalog-status-dropdown-chevron {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: rgba(242, 242, 242, 0.5);
+  transition: color 0.2s;
+}
+
+.catalog-status-dropdown--active + .catalog-status-dropdown-chevron {
+  color: #ffffff;
 }
 
 .filter-button {
   background: transparent;
   border: 1px solid #656565;
   color: rgba(242, 242, 242, 0.7);
-  padding: 8px 18px;
+  padding: 8px 16px;
   border-radius: 0;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
@@ -239,7 +739,7 @@
   display: flex;
   gap: 24px;
   overflow-x: auto;
-  padding-bottom: 12px;
+  padding-bottom: 16px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
@@ -265,7 +765,7 @@
 .no-courses {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid #656565;
-  padding: 60px 40px;
+  padding: 64px 40px;
   text-align: center;
 }
 
@@ -334,11 +834,40 @@
   to { opacity: 1; }
 }
 
+/* Card favorite button (heart) */
+.card-fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(0, 0, 0, 0.55);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.card-fav-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.card-fav-btn--active {
+  color: #FD6A44;
+  background: rgba(0, 0, 0, 0.65);
+}
+
 /* Remove favorite button */
 .remove-favorite-button {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 8px;
+  right: 8px;
   z-index: 2;
   display: flex;
   align-items: center;
@@ -374,7 +903,7 @@
 }
 
 .course-content {
-  padding: 20px;
+  padding: 16px;
   background: #043A37;
   flex: 1;
   display: flex;
@@ -384,12 +913,30 @@
 .course-category {
   display: inline-block;
   background: rgba(253, 106, 68, 0.2);
-  color: #FD6A44;
+  color: #ffffff;
   font-size: 0.75rem;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-radius: 0;
-  margin-bottom: 12px;
+  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.course-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.course-tag-chip {
+  display: inline-block;
+  background: rgba(163, 201, 74, 0.18);
+  color: #A3C94A;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -398,16 +945,22 @@ h3.course-title {
   font-size: 1.4rem;
   font-weight: 600;
   color: #F2F2F2;
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   line-height: 1.3;
+  min-height: 3.64rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .course-description {
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   color: rgba(242, 242, 242, 0.7);
-  margin: 0 0 15px 0;
+  margin: 0 0 16px 0;
   line-height: 1.5;
+  min-height: 2.7rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -416,9 +969,9 @@ h3.course-title {
 
 .course-meta {
   display: flex;
-  gap: 15px;
+  gap: 16px;
   margin-top: auto;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 .course-level,
@@ -428,9 +981,28 @@ h3.course-title {
   color: rgba(242, 242, 242, 0.6);
 }
 
+.course-card-instructor {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(242, 242, 242, 0.6);
+  margin: -4px 0 8px 0;
+  min-height: 1.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.course-card-subtitle {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  color: rgba(242, 242, 242, 0.75);
+  margin: 8px 0 8px 0;
+  line-height: 1.4;
+}
+
 /* Progress Indicator */
 .course-progress {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .course-progress-bar {
@@ -453,7 +1025,7 @@ h3.course-title {
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.75rem;
   color: rgba(242, 242, 242, 0.5);
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 /* Certificate download button on completed cards */
@@ -461,19 +1033,19 @@ h3.course-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
   background: transparent;
   color: #FD6A44;
   border: 1.5px solid #FD6A44;
-  padding: 8px 12px;
+  padding: 8px 16px;
   border-radius: 4px;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .course-certificate-btn:hover:not(:disabled) {
@@ -492,7 +1064,7 @@ h3.course-title {
   background: #FD6A44;
   border: none;
   color: #ffffff;
-  padding: 12px;
+  padding: 16px;
   border-radius: 4px;
   font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
@@ -505,11 +1077,86 @@ h3.course-title {
   background: #e55a36;
 }
 
+.catalog-view-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.catalog-view-more-btn {
+  background: transparent;
+  border: 2px solid #FF5A2F;
+  color: #FF5A2F;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 32px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.catalog-view-more-btn:hover {
+  background: #FF5A2F;
+  color: #ffffff;
+}
+
 /* Responsive */
+@media (max-width: 900px) {
+  .faq-title {
+    font-size: 26px;
+  }
+
+  .testimonials-title {
+    font-size: 26px;
+  }
+
+  .testimonial-card {
+    flex-direction: column;
+  }
+
+  .testimonial-card-img {
+    width: 100%;
+    min-height: 220px;
+  }
+
+  .features-grid {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .feature-card-img {
+    height: 220px;
+  }
+
+  .features-title {
+    font-size: 26px;
+  }
+}
+
 @media (max-width: 768px) {
+  .features-section {
+    padding: 0 16px 64px;
+  }
+
+  .features-decoration {
+    display: none;
+  }
+
+  .dashboard-hero {
+    height: 260px;
+  }
+
+  .dashboard-hero-content {
+    padding: 0 16px;
+  }
+
+  .dashboard-container {
+    padding: 0 16px;
+  }
+
   .dashboard-header {
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
   }
 
   .dashboard-title {
@@ -532,19 +1179,63 @@ h3.course-title {
 }
 
 @media (max-width: 480px) {
+  .dashboard-hero {
+    height: calc(100dvh - 52px);
+    margin-bottom: 24px;
+  }
+
+  .dashboard-hero-fade {
+    background: linear-gradient(to top, rgba(4,58,55,0.97) 0%, rgba(4,58,55,0.7) 35%, rgba(4,58,55,0.2) 65%, transparent 100%);
+  }
+
+  .dashboard-hero-content {
+    justify-content: flex-end;
+    padding: 0 16px 32px;
+  }
+
+  .dashboard-hero-img {
+    object-position: center center;
+  }
+
+  /* Logged-in on mobile: no image, text at top */
+  .dashboard-hero--logged-in {
+    height: auto;
+    margin-bottom: 8px;
+    background: transparent;
+  }
+
+  .dashboard-hero--logged-in .dashboard-hero-img,
+  .dashboard-hero--logged-in .dashboard-hero-fade {
+    display: none;
+  }
+
+  .dashboard-hero--logged-in .dashboard-hero-content {
+    position: static;
+    justify-content: flex-start;
+    padding: 32px 16px 16px;
+  }
+
   .dashboard-page {
-    padding: 20px 0;
+    padding: 0 0 16px;
   }
 
   .dashboard-container {
-    padding: 0 15px;
+    padding: 0 16px;
   }
 
   .dashboard-title {
-    font-size: 28px;
+    font-size: 26px;
+  }
+
+  .dashboard-subtitle {
+    font-size: 15px;
   }
 
   .section-title {
+    font-size: 22px;
+  }
+
+  .courses-section--featured .section-subtitle {
     font-size: 22px;
   }
 
@@ -561,7 +1252,7 @@ h3.course-title {
   }
 
   .filter-button {
-    padding: 8px 14px;
+    padding: 8px 16px;
     font-size: 0.8rem;
   }
 }

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import DOMPurify from 'dompurify';
 import { coursesApi, isAuthenticated } from '../../services/api';
 import './CourseDetail.css';
 
@@ -14,12 +16,12 @@ const localThumbnails: Record<string, string> = {
   'guia-de-procesos-internos': '/thumbnails/Portadas-cursos.webp',
   'introduccion-a-chatgpt-para-organizaciones-sociale': '/thumbnails/Introduccion-a-CHATGPT.webp',
   'define-tus-metas-con-okrs': '/thumbnails/okr.webp',
-  'atrae-mas-vistas-con-seo': '/thumbnails/002.webp',
+  'atrae-mas-vistas-con-seo': '/thumbnails/alcanzamasvistasconseo.png',
   'lean-data-para-impacto-social': '/thumbnails/Imagen-destacada-10-1.webp',
   'construye-indicadores-para-medir-impacto': '/thumbnails/Imagen-destacada-14.webp',
-  'convierte-tus-ideas-en-un-pitch-ganador': '/thumbnails/001-1.webp',
+  'convierte-tus-ideas-en-un-pitch-ganador': '/thumbnails/conviertetusideasenunpitchganador.png',
   'potencia-tu-teoria-de-cambio': '/thumbnails/Imagen-destacada-11.webp',
-  'aplica-a-tu-siguiente-grant-con-ia': '/thumbnails/003.webp',
+  'aplica-a-tu-siguiente-grant-con-ia': '/thumbnails/aplicaatusiguientegrantconia.png',
   'identifica-a-tu-donante-ideal': '/thumbnails/Imagen-destacada-13-1.webp',
   'crea-tu-asistente-ia': '/thumbnails/Asistente-IA-portada.webp',
 };
@@ -30,6 +32,11 @@ function localizeUrl(url: string): string {
     /^https?:\/\/(?:www\.)?academy\.wepropel\.org\/wp-content\/uploads\//,
     '/pdfs/'
   );
+}
+
+/** Strip WordPress "Descripción del curso / programa" headings from description HTML */
+function stripDescriptionHeading(html: string): string {
+  return html.replace(/<h[1-6][^>]*>\s*Descripci[oó]n\s+del\s+(curso|programa)[^<]*<\/h[1-6]>\s*/gi, '');
 }
 
 /** Replace [pdfjs-viewer url="..."] shortcodes with embedded PDF.js viewer */
@@ -76,11 +83,15 @@ interface CourseMaterial {
 }
 
 /** Parse course-level materials HTML into a list of links */
+function decodeHtmlEntities(str: string): string {
+  return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+}
+
 function parseMaterialsHtml(html: string): CourseMaterial[] {
   const materials: CourseMaterial[] = [];
   const linkPattern = /<a\s[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   for (const match of html.matchAll(linkPattern)) {
-    const url = match[1];
+    const url = decodeHtmlEntities(match[1]);
     const title = match[2].replace(/<[^>]*>/g, '').trim();
     if (url && title) {
       materials.push({ url, title });
@@ -102,6 +113,7 @@ interface Lesson {
   order_index: number;
   video_url?: string;
   content?: string;
+  excerpt?: string;
   topics?: Topic[];
   resources?: LessonResource[];
 }
@@ -139,6 +151,7 @@ interface Course {
   level: string;
   duration_hours: number;
   duration_minutes?: number;
+  duration_display?: string;
   category: {
     id: number;
     name: string;
@@ -169,6 +182,7 @@ const formatFileSize = (bytes: number): string => {
 
 const CourseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
+  console.log('[CourseDetail]', slug);
   const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
@@ -176,42 +190,62 @@ const CourseDetail = () => {
   const [enrolling, setEnrolling] = useState(false);
   const [togglingFavorite, setTogglingFavorite] = useState(false);
   const [previewResourceId, setPreviewResourceId] = useState<number | null>(null);
+  const [materialsOpen, setMaterialsOpen] = useState(true);
   const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set());
   const [completedLessons, setCompletedLessons] = useState<Set<number>>(new Set());
   const [completedTopics, setCompletedTopics] = useState<Set<number>>(new Set());
   const [downloadingCert, setDownloadingCert] = useState(false);
+  const [certError, setCertError] = useState<string | null>(null);
+  const [showEnrollPrompt, setShowEnrollPrompt] = useState(false);
+  const [evalStatus, setEvalStatus] = useState<{ has_evaluation_form: boolean; has_submitted: boolean } | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate('/login');
-      return;
-    }
-
     const fetchCourse = async () => {
       if (!slug) return;
+      const loggedIn = isAuthenticated();
 
       try {
-        const [courseRes, enrollmentsRes, progressRes] = await Promise.all([
-          coursesApi.getBySlug(slug),
-          coursesApi.getMyEnrollments(),
-          coursesApi.getCourseProgress(slug),
-        ]);
+        const courseRes = await coursesApi.getBySlug(slug);
 
         if (courseRes.ok) {
           const courseData = courseRes.data;
 
-          // Check enrollment status
-          if (enrollmentsRes.ok) {
-            const enrolledSlugs = enrollmentsRes.data.map(
-              (e: { course?: { slug?: string }; slug?: string }) => e.course?.slug || e.slug || ''
-            );
-            courseData.is_enrolled = enrolledSlugs.includes(slug);
-          }
+          if (loggedIn) {
+            const [enrollmentsRes, progressRes] = await Promise.all([
+              coursesApi.getMyEnrollments(),
+              coursesApi.getCourseProgress(slug),
+            ]);
 
-          // Set progress data
-          if (progressRes.ok) {
-            setCompletedLessons(new Set(progressRes.data.completed_lessons));
-            setCompletedTopics(new Set(progressRes.data.completed_topics));
+            // Check enrollment status
+            if (enrollmentsRes.ok) {
+              const enrolledSlugs = enrollmentsRes.data.map(
+                (e: { course?: { slug?: string }; slug?: string }) => e.course?.slug || e.slug || ''
+              );
+              courseData.is_enrolled = enrolledSlugs.includes(slug);
+            }
+
+            // Set progress data
+            if (progressRes.ok) {
+              const doneLessons = new Set<number>(progressRes.data.completed_lessons);
+              const doneTopics = new Set<number>(progressRes.data.completed_topics);
+              setCompletedLessons(doneLessons);
+              setCompletedTopics(doneTopics);
+
+              // Fetch evaluation status if course is fully completed
+              if (courseData.is_enrolled) {
+                const allLessons = (courseData.lessons || []).filter((l: Lesson) => l.video_url || l.content);
+                const allTopics = (courseData.lessons || []).flatMap((l: Lesson) => l.topics || []);
+                const totalItems = allLessons.length + allTopics.length;
+                const allDone = totalItems > 0 &&
+                  allLessons.every((l: Lesson) => doneLessons.has(l.id)) &&
+                  allTopics.every((t: Topic) => doneTopics.has(t.id));
+                if (allDone) {
+                  coursesApi.getEvaluationStatus(slug).then(res => {
+                    if (res.ok) setEvalStatus(res.data);
+                  });
+                }
+              }
+            }
           }
 
           setCourse(courseData);
@@ -238,7 +272,7 @@ const CourseDetail = () => {
     };
 
     fetchCourse();
-  }, [slug, navigate]);
+  }, [slug]);
 
   // Scroll to hash target after course loads
   useEffect(() => {
@@ -262,12 +296,35 @@ const CourseDetail = () => {
 
   const handleEnroll = async () => {
     if (!course) return;
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
 
     setEnrolling(true);
     try {
       const response = await coursesApi.enroll(course.slug);
       if (response.ok) {
-        setCourse({ ...course, is_enrolled: true });
+        const sortedLessons = [...(course.lessons || [])].sort((a, b) => a.order_index - b.order_index);
+        // Content is stripped for unenrolled users, so navigate by ID order:
+        // prefer first topic (always present), fall back to first lesson
+        let navigated = false;
+        for (const lesson of sortedLessons) {
+          const sortedTopics = [...(lesson.topics || [])].sort((a, b) => a.order_index - b.order_index);
+          if (sortedTopics.length > 0) {
+            navigate(`/courses/${course.slug}/topics/${sortedTopics[0].id}`);
+            navigated = true;
+            break;
+          }
+        }
+        if (!navigated) {
+          const firstLesson = sortedLessons[0];
+          if (firstLesson) {
+            navigate(`/courses/${course.slug}/lessons/${firstLesson.id}`);
+          } else {
+            setCourse({ ...course, is_enrolled: true });
+          }
+        }
       } else {
         setError('No se pudo inscribir en el curso');
       }
@@ -281,6 +338,10 @@ const CourseDetail = () => {
 
   const handleToggleFavorite = async () => {
     if (!course) return;
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
 
     setTogglingFavorite(true);
     try {
@@ -300,14 +361,16 @@ const CourseDetail = () => {
       const newSet = new Set(prev);
       if (newSet.has(lessonId)) {
         newSet.delete(lessonId);
-        // Clear hash when collapsing
-        history.replaceState(null, '', window.location.pathname + window.location.search);
+        if (course?.is_enrolled) {
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
       } else {
         newSet.add(lessonId);
-        // Update hash when expanding
-        history.replaceState(null, '', `#lesson-${lessonId}`);
-        if (slug) {
-          localStorage.setItem(`lastLesson:${slug}`, String(lessonId));
+        if (course?.is_enrolled) {
+          history.replaceState(null, '', `#lesson-${lessonId}`);
+          if (slug) {
+            localStorage.setItem(`lastLesson:${slug}`, String(lessonId));
+          }
         }
       }
       return newSet;
@@ -320,9 +383,11 @@ const CourseDetail = () => {
       newSet.add(lessonId);
       return newSet;
     });
-    history.replaceState(null, '', `#lesson-${lessonId}`);
-    if (slug) {
-      localStorage.setItem(`lastLesson:${slug}`, String(lessonId));
+    if (course?.is_enrolled) {
+      history.replaceState(null, '', `#lesson-${lessonId}`);
+      if (slug) {
+        localStorage.setItem(`lastLesson:${slug}`, String(lessonId));
+      }
     }
     setTimeout(() => {
       const el = document.getElementById(`lesson-${lessonId}`);
@@ -333,7 +398,8 @@ const CourseDetail = () => {
   };
 
 
-  const formatDuration = (hours?: number, minutes?: number) => {
+  const formatDuration = (hours?: number, minutes?: number, display?: string) => {
+    if (display) return display;
     if (minutes) return `${minutes} min`;
     if (hours) {
       if (hours < 1) return `${Math.round(hours * 60)} min`;
@@ -371,8 +437,55 @@ const CourseDetail = () => {
       }
     : null;
 
+  const seoDescription = (course.short_description || course.description || '')
+    .replace(/<[^>]*>/g, '')
+    .trim()
+    .slice(0, 200);
+  const seoImage = course.thumbnail_url || (course.slug && localThumbnails[course.slug]) || '';
+  const absoluteImage = seoImage.startsWith('http') ? seoImage : `https://propelacademy.org${seoImage}`;
+  const courseUrl = `https://propelacademy.org/courses/${course.slug}`;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Course',
+    name: course.title,
+    description: seoDescription,
+    url: courseUrl,
+    inLanguage: 'es',
+    image: absoluteImage || undefined,
+    provider: {
+      '@type': 'Organization',
+      name: 'Propel Academy',
+      sameAs: 'https://propelacademy.org',
+    },
+    ...(course.instructor?.name
+      ? {
+          instructor: {
+            '@type': 'Person',
+            name: course.instructor.name,
+          },
+        }
+      : {}),
+    hasCourseInstance: {
+      '@type': 'CourseInstance',
+      courseMode: 'online',
+      inLanguage: 'es',
+    },
+  };
+
   return (
     <div className="course-detail-page">
+      <Helmet>
+        <title>{`${course.title} — Propel Academy`}</title>
+        <meta name="description" content={seoDescription} />
+        <link rel="canonical" href={courseUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={course.title} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:url" content={courseUrl} />
+        {absoluteImage && <meta property="og:image" content={absoluteImage} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
       <div className="course-detail-container">
         {/* Back Navigation */}
         <div className="course-detail-nav">
@@ -416,7 +529,7 @@ const CourseDetail = () => {
             <div className="course-section">
               <div
                 className="course-description-text"
-                dangerouslySetInnerHTML={{ __html: course.description || course.short_description }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(stripDescriptionHeading(course.description || course.short_description)) }}
               />
             </div>
 
@@ -460,40 +573,6 @@ const CourseDetail = () => {
               </div>
             )}
 
-            {/* Course Materials */}
-            {(() => {
-              const mats = course.resources && course.resources.length > 0
-                ? course.resources.map(r => ({ url: r.url, title: r.title }))
-                : course.materials && course.materials.length > 0
-                  ? course.materials.map(m => ({ url: m.url, title: m.title }))
-                  : course.materials_html
-                    ? parseMaterialsHtml(course.materials_html)
-                    : [];
-              if (mats.length === 0) return null;
-              return (
-                <div className="course-section">
-                  <h2 className="section-title">Materiales del curso</h2>
-                  <div className="materials-list">
-                    {mats.map((material, i) => (
-                      <a
-                        key={i}
-                        href={material.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="material-item"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-                          <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-                        </svg>
-                        <span>{material.title}</span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
             {/* Course Content / Modules */}
             {course.lessons && course.lessons.length > 0 && (
               <div className="course-section">
@@ -531,21 +610,13 @@ const CourseDetail = () => {
 
                         {expandedModules.has(lesson.id) && (
                           <div className="module-expanded-content">
-                            {lesson.video_url && (
-                              <Link to={course.is_enrolled ? `/courses/${slug}/lessons/${lesson.id}` : '#'} className="module-video-placeholder" onClick={(e) => {
-                                if (!course.is_enrolled) { e.preventDefault(); }
-                              }}>
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)" stroke="none">
-                                  <polygon points="5 3 19 12 5 21 5 3"/>
-                                </svg>
-                                <span>{course.is_enrolled ? 'Ver lección' : 'Inscríbete para ver'}</span>
-                              </Link>
+                            {!course.is_enrolled && lesson.excerpt && (
+                              <p className="module-excerpt">{lesson.excerpt}</p>
                             )}
-
                             {lesson.content && (
                               <div
                                 className="module-content-html"
-                                dangerouslySetInnerHTML={{ __html: processContent(lesson.content) }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(processContent(lesson.content)) }}
                               />
                             )}
 
@@ -556,8 +627,9 @@ const CourseDetail = () => {
                                   .map((topic) => (
                                     <div key={topic.id} className="topic-item-wrapper">
                                       <Link
-                                        to={`/courses/${slug}/topics/${topic.id}`}
+                                        to={course.is_enrolled ? `/courses/${slug}/topics/${topic.id}` : '#'}
                                         className={`topic-item ${completedTopics.has(topic.id) ? 'completed' : ''}`}
+                                        onClick={(e) => { if (!course.is_enrolled) { e.preventDefault(); setShowEnrollPrompt(true); } }}
                                       >
                                         {completedTopics.has(topic.id) ? (
                                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5">
@@ -689,6 +761,59 @@ const CourseDetail = () => {
               </div>
             )}
 
+            {/* Course Materials */}
+            {(() => {
+              if (!isAuthenticated()) return null;
+              const mats = course.resources && course.resources.length > 0
+                ? course.resources.map(r => ({ url: r.url, title: r.title }))
+                : course.materials && course.materials.length > 0
+                  ? course.materials.map(m => ({ url: m.url, title: m.title }))
+                  : course.materials_html
+                    ? parseMaterialsHtml(course.materials_html)
+                    : [];
+              if (mats.length === 0) return null;
+              return (
+                <div className="course-section">
+                  <button
+                    className={`materials-toggle ${materialsOpen ? 'expanded' : ''}`}
+                    onClick={() => setMaterialsOpen(o => !o)}
+                  >
+                    <span>Materiales del curso</span>
+                    <svg
+                      className={`materials-chevron ${materialsOpen ? 'expanded' : ''}`}
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+                  {materialsOpen && (
+                    <div className="materials-list">
+                      {mats.map((material, i) => (
+                        <a
+                          key={i}
+                          href={material.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="material-item"
+                        >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                          </svg>
+                          <span>{material.title}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* Instructor Section */}
             {instructor && (
               <div className="course-section instructor-section">
@@ -752,7 +877,7 @@ const CourseDetail = () => {
 
                   <div className="sidebar-row">
                     <span className="sidebar-label">Duración:</span>
-                    <span className="sidebar-value">{formatDuration(course.duration_hours, course.duration_minutes)}</span>
+                    <span className="sidebar-value">{formatDuration(course.duration_hours, course.duration_minutes, course.duration_display)}</span>
                   </div>
 
                   {course.lessons && (
@@ -768,7 +893,7 @@ const CourseDetail = () => {
                   </div>
                 </div>
 
-                {course.lessons && course.lessons.length > 0 && (
+                {course.is_enrolled && course.lessons && course.lessons.length > 0 && (
                   <div className="sidebar-toc">
                     <h4 className="sidebar-toc-title">Navegación rápida</h4>
                     <nav className="sidebar-toc-nav">
@@ -777,7 +902,7 @@ const CourseDetail = () => {
                         .map((lesson, index) => (
                           <button
                             key={lesson.id}
-                            className={`sidebar-toc-item ${expandedModules.has(lesson.id) ? 'active' : ''} ${completedLessons.has(lesson.id) ? 'completed' : ''}`}
+                            className={`sidebar-toc-item ${course.is_enrolled && expandedModules.has(lesson.id) ? 'active' : ''} ${completedLessons.has(lesson.id) ? 'completed' : ''}`}
                             onClick={() => handleTocClick(lesson.id)}
                           >
                             {completedLessons.has(lesson.id) ? (
@@ -803,25 +928,45 @@ const CourseDetail = () => {
                   return allLessons.every(l => completedLessons.has(l.id)) &&
                     allTopics.every(t => completedTopics.has(t.id));
                 })() && (
-                  <button
-                    className="sidebar-certificate-btn"
-                    disabled={downloadingCert}
-                    onClick={async () => {
-                      setDownloadingCert(true);
-                      try {
-                        await coursesApi.downloadCertificate(course.slug);
-                      } finally {
-                        setDownloadingCert(false);
-                      }
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
-                  </button>
+                  <>
+                    {evalStatus?.has_evaluation_form && !evalStatus.has_submitted ? (
+                      <a
+                        href={`/courses/${slug}/evaluate`}
+                        className="sidebar-certificate-btn"
+                        style={{ textDecoration: 'none', textAlign: 'center' }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                        </svg>
+                        Completar evaluación
+                      </a>
+                    ) : (
+                      <button
+                        className="sidebar-certificate-btn"
+                        disabled={downloadingCert}
+                        onClick={async () => {
+                          setDownloadingCert(true);
+                          setCertError(null);
+                          try {
+                            const result = await coursesApi.downloadCertificate(course.slug);
+                            if (result && !result.ok) {
+                              setCertError(result.detail || 'No se pudo descargar el certificado.');
+                            }
+                          } finally {
+                            setDownloadingCert(false);
+                          }
+                        }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                          <polyline points="7 10 12 15 17 10" />
+                          <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
+                      </button>
+                    )}
+                    {certError && <p style={{ color: '#e53e3e', fontSize: '0.85rem', marginTop: '0.5rem' }}>{certError}</p>}
+                  </>
                 )}
 
                 {course.is_enrolled ? (() => {
@@ -889,6 +1034,37 @@ const CourseDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Enroll prompt popup */}
+      {showEnrollPrompt && (
+        <div className="cd-enroll-overlay" onClick={() => setShowEnrollPrompt(false)}>
+          <div className="cd-enroll-popup" onClick={e => e.stopPropagation()}>
+            <div className="cd-enroll-popup-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+                <path d="M12 11V7M12 15h.01"/>
+              </svg>
+            </div>
+            <h3 className="cd-enroll-popup-title">¿Quieres explorar el contenido?</h3>
+            <p className="cd-enroll-popup-subtitle">Te invito a inscribirte</p>
+            <div className="cd-enroll-popup-actions">
+              <button
+                className="cd-enroll-popup-btn-primary"
+                onClick={() => { setShowEnrollPrompt(false); handleEnroll(); }}
+                disabled={enrolling}
+              >
+                {enrolling ? 'Inscribiendo...' : 'Inscribirme'}
+              </button>
+              <button
+                className="cd-enroll-popup-btn-secondary"
+                onClick={() => setShowEnrollPrompt(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { authApi } from '../../services/api';
 import './AutoLogin.css';
 
 const AutoLogin = () => {
+  console.log('[AutoLogin]');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
