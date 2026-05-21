@@ -1,310 +1,382 @@
-.register-page {
-  min-height: 60vh;
-  min-height: 60dvh;
-  background: linear-gradient(135deg, #043A37 28%, #032220 95%);
+.reg2-page {
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8% 0;
-}
-
-.register-container {
-  width: 60%;
-  max-width: none;
-}
-
-.register-header {
-  text-align: center;
-  padding: 40px 30px 0;
-}
-
-.register-title {
-  color: #F2F2F2;
-  font-size: 34px;
-  font-weight: 600;
+  background: #f2f2f2;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin: 0 0 1.25rem 0;
-  line-height: 100%;
 }
 
-.register-subtitle {
-  color: #F2F2F2;
-  font-size: 24px;
-  font-weight: 600;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin: 0 0 0 0;
-  line-height: 100%;
-}
+/* ---------- Left brand panel ---------- */
 
-.register-divider {
-  width: 61%;
-  height: 1px;
-  background: #656565;
-  margin: 2.5rem auto 0;
-}
-
-.register-card {
-  background: transparent;
-  border: 1px solid #656565;
-  border-radius: 0;
-  box-shadow: none;
+.reg2-brand {
+  flex: 0 0 48%;
+  position: relative;
+  padding: 64px 48px 140px;
+  text-align: center;
+  background: #f2f2f2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   overflow: hidden;
 }
 
-.register-form {
-  padding: 0 30px 40px;
+.reg2-brand__welcome {
+  margin: 24px 0 32px;
+  font-weight: 300;
+  font-size: 32px;
+  color: #003b37;
 }
 
-.form-error {
-  background: rgba(253, 106, 68, 0.2);
-  border: 1px solid #FD6A44;
-  color: #FD6A44;
+.reg2-brand__logo {
+  width: min(560px, 80%);
+  height: auto;
+  display: block;
+}
+
+.reg2-brand__tagline {
+  margin-top: 28px;
+  font-size: 20px;
+  color: #144a46;
+  max-width: 440px;
+}
+
+.reg2-tiles {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 200px));
+  gap: 16px 12px;
+  justify-content: center;
+}
+
+.reg2-tiles img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+
+.reg2-support {
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.reg2-support__label {
+  font-size: 14px;
+  color: #144a46;
+}
+
+.reg2-support img {
+  width: 160px;
+  height: auto;
+}
+
+.reg2-brand__corner {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: 96px;
+  background: #f4945c;
+  display: flex;
+  align-items: stretch;
+}
+
+.reg2-brand__corner img {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+
+/* ---------- Right form panel ---------- */
+
+.reg2-formSide {
+  flex: 1 1 auto;
+  position: relative;
+  background: #fff;
+  padding: 64px 80px;
+  display: flex;
+  align-items: center;
+}
+
+.reg2-form {
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+}
+
+.reg2-error {
+  background: rgba(252, 92, 58, 0.1);
+  border: 1px solid #fc5c3a;
+  color: #fc5c3a;
   padding: 12px 16px;
   border-radius: 4px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin-bottom: 20px;
+  font-size: 14px;
 }
 
-.form-row {
+.reg2-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px 32px;
+}
+
+.reg2-field {
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.form-row .form-group {
-  flex: 1;
+.reg2-field label {
+  font-size: 16px;
+  color: #144a46;
+  font-weight: 400;
 }
 
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #F2F2F2;
-  font-size: 0.95rem;
-  font-weight: 500;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-.required {
-  color: #fd6a44;
-  font-weight: 600;
-}
-
-.register-form .form-input,
-.register-form input[type="text"],
-.register-form input[type="email"],
-.register-form input[type="password"],
-.register-form select {
-  width: 100%;
-  height: 50px;
-  padding: 0 1rem;
-  border: 1px solid #656565;
-  border-radius: 4px;
+.reg2-field input,
+.reg2-field select {
+  height: 48px;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 5px;
+  padding: 0 16px;
   font-size: 15px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  transition: border-color 0.3s ease, background-color 0.3s ease;
+  color: #144a46;
+  font-family: inherit;
   box-sizing: border-box;
-  background-color: #ffffff;
-  color: #1a1a1a;
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  appearance: none;
 }
 
-.register-form select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231a1a1a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+.reg2-field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23144a46' d='M3 5l4 4 4-4z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 1rem center;
-  padding-right: 2.5rem;
+  background-position: right 14px center;
+  padding-right: 38px;
   cursor: pointer;
 }
 
-.register-form select option {
-  background-color: #ffffff;
-  color: #1a1a1a;
+.reg2-field input:focus,
+.reg2-field select:focus {
+  outline: 2px solid #fc5c3a;
+  outline-offset: 0;
 }
 
-.register-form .form-input::placeholder,
-.register-form input::placeholder {
-  color: rgba(0, 0, 0, 0.4);
+.reg2-required-note {
+  margin: 14px 0 18px;
+  font-size: 14px;
+  color: #656565;
 }
 
-.register-form .form-input:focus,
-.register-form input:focus,
-.register-form select:focus {
-  outline: none;
-  border-color: #FD6A44;
-  background-color: #ffffff;
-}
-
-.button-divider {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(to right, transparent, #656565, transparent);
-  margin: 1.5rem 0;
-}
-
-.submit-button {
-  display: block;
-  width: auto;
-  margin: 0 auto;
-  padding: 12px 40px;
+.reg2-google {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  height: 54px;
+  padding: 0 20px;
+  background: #f5f5f5;
   border: none;
   border-radius: 4px;
-  background: #FD6A44;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 17px;
+  color: #144a46;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-family: inherit;
 }
 
-.button-text {
-  display: block;
+.reg2-google img {
+  width: 22px;
+  height: 22px;
 }
 
-.submit-button:hover {
-  background: #e55a36;
+.reg2-google:hover {
+  background: #ebebeb;
 }
 
-.submit-button:active {
-  transform: translateY(0);
-}
-
-.submit-button:disabled {
-  background: #ccc;
+.reg2-google:disabled {
   cursor: not-allowed;
   opacity: 0.7;
 }
 
-.register-footer {
-  padding: 1.5rem 30px;
-  text-align: center;
-  background: transparent;
-  border-top: 1px solid #656565;
-  font-size: 0.95rem;
-  color: #F2F2F2;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-.login-link {
-  color: #FD6A44;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.login-link:hover {
-  color: #f8b81f;
-  text-decoration: underline;
-}
-
-/* Confirm email message */
-.confirm-email-message {
-  padding: 40px 30px;
-  text-align: center;
-}
-
-.confirm-email-icon {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 24px;
-  background: rgba(17, 109, 102, 0.3);
-  border-radius: 50%;
+.reg2-checkbox {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 26px 0 12px;
+  font-size: 15px;
+  color: #144a46;
+  cursor: pointer;
+}
+
+.reg2-checkbox input {
+  width: 20px;
+  height: 20px;
+  accent-color: #fc5c3a;
+  cursor: pointer;
+}
+
+.reg2-terms {
+  font-size: 13px;
+  color: #144a46;
+  line-height: 1.5;
+  max-width: 590px;
+  margin: 0 0 24px;
+}
+
+.reg2-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.reg2-btn {
+  height: 56px;
+  padding: 0 28px;
+  border-radius: 0;
+  font-size: 17px;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.reg2-btn--primary {
+  background: #fc5c3a;
+  color: #fff;
+  border-color: #fc5c3a;
+  min-width: 170px;
+}
+
+.reg2-btn--primary:hover {
+  background: #e54a2b;
+  border-color: #e54a2b;
+}
+
+.reg2-btn--primary:disabled {
+  background: #f0a18d;
+  border-color: #f0a18d;
+  cursor: not-allowed;
+}
+
+.reg2-btn--outline {
+  background: transparent;
+  color: #fc5c3a;
+  border-color: #fc5c3a;
+}
+
+.reg2-btn--outline:hover {
+  background: #fff5f1;
+}
+
+.reg2-help {
+  position: absolute;
+  right: 28px;
+  bottom: 24px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: #ebebeb;
+  color: #144a46;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.confirm-email-icon svg {
-  width: 40px;
-  height: 40px;
-  color: #4ecdc4;
+.reg2-help:hover {
+  background: #dcdcdc;
 }
 
-.confirm-email-text {
-  color: #F2F2F2;
-  font-size: 1.1rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin: 0 0 12px 0;
+/* ---------- Confirm-email state ---------- */
+
+.reg2-confirm {
+  margin: auto;
+  background: #fff;
+  padding: 56px 48px;
+  max-width: 520px;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.reg2-confirm__title {
+  color: #003b37;
+  margin: 0 0 24px;
+  font-weight: 300;
+  font-size: 28px;
+}
+
+.reg2-confirm__text {
+  color: #144a46;
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.reg2-confirm__text strong {
+  color: #fc5c3a;
+}
+
+.reg2-confirm__sub {
+  color: #656565;
+  font-size: 14px;
+  margin: 0 0 32px;
   line-height: 1.5;
 }
 
-.confirm-email-text strong {
-  color: #FD6A44;
-}
+/* ---------- Responsive ---------- */
 
-.confirm-email-subtext {
-  color: rgba(242, 242, 242, 0.7);
-  font-size: 0.95rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin: 0 0 30px 0;
-  line-height: 1.5;
-}
-
-/* Laptop (1920px) */
-@media (min-width: 1920px) {
-  .register-container {
-    width: 53%;
+@media (max-width: 1280px) {
+  .reg2-formSide {
+    padding: 56px 56px;
   }
 }
 
-/* Tablet (768px) */
-@media (max-width: 768px) {
-  .register-page {
-    padding: 10% 5%;
-  }
-
-  .register-container {
-    width: 100%;
-  }
-
-  .register-form {
-    padding: 30px 30px 20px;
-  }
-
-  .register-footer {
-    padding: 1.5rem;
-  }
-
-  .form-row {
+@media (max-width: 1024px) {
+  .reg2-page {
     flex-direction: column;
-    gap: 0;
+  }
+  .reg2-brand {
+    flex-basis: auto;
+    padding: 48px 32px 120px;
+  }
+  .reg2-formSide {
+    padding: 48px 32px 80px;
   }
 }
 
-/* Mobile (480px) */
-@media (max-width: 480px) {
-  .register-page {
-    padding: 8% 4%;
+@media (max-width: 640px) {
+  .reg2-brand {
+    padding: 32px 20px 100px;
   }
-
-  .register-title {
+  .reg2-brand__welcome {
     font-size: 26px;
+    margin-top: 8px;
   }
-
-  .register-subtitle {
-    font-size: 18px;
+  .reg2-brand__tagline {
+    font-size: 17px;
   }
-
-  .register-header {
-    padding: 24px 16px 0;
+  .reg2-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 360px;
   }
-
-  .register-form {
-    padding: 24px 16px 20px;
+  .reg2-formSide {
+    padding: 32px 20px 64px;
   }
-
-  .register-divider {
-    margin: 1.5rem auto 0;
+  .reg2-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
-
-  .submit-button {
+  .reg2-actions {
+    flex-direction: column;
+  }
+  .reg2-btn {
     width: 100%;
-    padding: 14px 20px;
+  }
+  .reg2-help {
+    right: 16px;
+    bottom: 16px;
   }
 }
