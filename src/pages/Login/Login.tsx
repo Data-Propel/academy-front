@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi, isAuthenticated } from '../../services/api';
+import PageHead from '../../utils/PageHead';
 import './Login.css';
 
 type LoginStep = 'login' | 'setup-password' | 'verify-email';
@@ -144,6 +145,10 @@ const Login = () => {
 
   return (
     <div className="login-page">
+      <PageHead
+        title="Iniciar sesión"
+        description="Accede a tu cuenta de Propel Academy y continúa con tus cursos para organizaciones sin fines de lucro."
+      />
       <div className="login-container">
         <div className="login-card">
           <div className="login-header">

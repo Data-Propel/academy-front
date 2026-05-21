@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAdmin } from './AdminContext';
+import { isSuperuser, isMarketingAdmin } from '../../services/api';
 import './AdminLayout.css';
 
 const SIDEBAR_STORAGE_KEY = 'admin_sidebar_open';
@@ -79,11 +80,47 @@ const navItems: NavSection[] = [
     ],
   },
   {
+    group: 'Marketing',
+    items: [
+      {
+        label: 'Campañas',
+        path: '/admin/campaigns',
+        icon: (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 11l18-8-3 18-6-7-9-3z" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Analítica',
+        path: '/admin/analytics',
+        icon: (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 3v18h18" />
+            <path d="M7 14l4-4 4 4 5-5" />
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
     group: 'Personas',
     items: [
       {
-        label: 'Usuarios',
+        label: 'Usuarios Admin',
         path: '/admin/usuarios',
+        icon: (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 00-3-3.87" />
+            <path d="M16 3.13a4 4 0 010 7.75" />
+          </svg>
+        ),
+      },
+      {
+        label: 'Usuarios Legacy',
+        path: '/admin/usuarios-legacy',
         icon: (
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
@@ -100,6 +137,19 @@ const navItems: NavSection[] = [
 export default function AdminLayout() {
   const { error, success } = useAdmin();
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(getInitialSidebarOpen);
+  const fullAdmin = isSuperuser();
+  const marketing = !fullAdmin && isMarketingAdmin();
+  const allowedPaths = marketing
+    ? new Set(['/admin/campaigns', '/admin/analytics'])
+    : new Set(['/admin/usuarios']);
+  const visibleNavItems: NavSection[] = fullAdmin
+    ? navItems
+    : navItems
+        .map((section) => ({
+          ...section,
+          items: section.items.filter((item) => allowedPaths.has(item.path)),
+        }))
+        .filter((section) => section.items.length > 0);
 
   useEffect(() => {
     window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarOpen));
@@ -136,7 +186,7 @@ export default function AdminLayout() {
         </div>
 
         <nav className="admin-nav">
-          {navItems.map((section, sectionIdx) => (
+          {visibleNavItems.map((section, sectionIdx) => (
             <div className="admin-nav-group" key={sectionIdx}>
               {section.group && (
                 <div className="admin-nav-group-label">{section.group}</div>

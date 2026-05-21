@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { coursesApi, isAuthenticated } from '../../services/api';
+import PageHead from '../../utils/PageHead';
 import './CourseEvaluation.css';
 
 interface EvaluationQuestion {
@@ -155,6 +156,7 @@ export default function CourseEvaluation() {
 
   return (
     <div className="eval-page">
+      <PageHead title="Evaluación del curso" noIndex />
       <div className="eval-container">
         <Link to={`/courses/${slug}`} className="eval-back-link">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

@@ -6,6 +6,7 @@ import GradualBlur from './components/GradualBlur/GradualBlur';
 import Login from './pages/Login/Login';
 import NotFound from './pages/NotFound/NotFound';
 import { isAuthenticated } from './services/api';
+import { captureAttribution } from './utils/attribution';
 
 const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const CourseDetail = lazy(() => import('./pages/CourseDetail/CourseDetail'));
@@ -22,6 +23,10 @@ import './App.css';
 
 export function AppContent() {
   const location = useLocation();
+
+  useEffect(() => {
+    captureAttribution();
+  }, []);
 
   useEffect(() => {
     const handlePageShow = (e: PageTransitionEvent) => {

@@ -39,6 +39,9 @@ const initialForm = {
   instructor_bio: '',
   is_featured: false,
   is_published: false,
+  seo_title: '',
+  seo_description: '',
+  seo_image_url: '',
 };
 
 function slugify(text: string): string {
@@ -225,6 +228,9 @@ export default function AdminCourses() {
       instructor_bio: course.instructor_bio || '',
       is_featured: course.is_featured,
       is_published: course.is_published,
+      seo_title: course.seo_title || '',
+      seo_description: course.seo_description || '',
+      seo_image_url: course.seo_image_url || '',
     });
     setThumbnail(null);
     setThumbnailPreview(course.thumbnail || '');
@@ -520,6 +526,66 @@ export default function AdminCourses() {
                   onChange={handleAvatarChange}
                   className="file-input"
                 />
+              </div>
+            </div>
+
+            {/* Section: SEO */}
+            <div className="form-section">
+              <h3 className="form-section-title">SEO</h3>
+              <p className="label-hint" style={{ marginTop: -8, marginBottom: 16 }}>
+                Estos campos sobrescriben el título y descripción que aparecen en Google y al compartir el link.
+                Si los dejas en blanco, se usan el título y la descripción corta del curso.
+              </p>
+
+              <div className="form-group">
+                <label>
+                  Meta title <span className="label-hint">(máx. 60–70 caracteres recomendado)</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.seo_title}
+                  onChange={e => setForm({ ...form, seo_title: e.target.value })}
+                  maxLength={70}
+                  placeholder={form.title ? `${form.title} — Propel Academy` : 'Ej: Curso de IA generativa para ONGs — Propel Academy'}
+                />
+                <span className={`char-counter ${form.seo_title.length > 60 ? 'warn' : ''}`}>
+                  {form.seo_title.length}/70
+                </span>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Meta description <span className="label-hint">(máx. 150–160 caracteres recomendado)</span>
+                </label>
+                <textarea
+                  value={form.seo_description}
+                  onChange={e => setForm({ ...form, seo_description: e.target.value })}
+                  rows={3}
+                  maxLength={200}
+                  placeholder="Resumen del curso optimizado para resultados de búsqueda."
+                />
+                <span className={`char-counter ${form.seo_description.length > 160 ? 'warn' : ''}`}>
+                  {form.seo_description.length}/200
+                </span>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Imagen para redes sociales (URL absoluta) <span className="label-hint">(1200×630 recomendado)</span>
+                </label>
+                <input
+                  type="url"
+                  value={form.seo_image_url}
+                  onChange={e => setForm({ ...form, seo_image_url: e.target.value })}
+                  placeholder="https://..."
+                />
+                {form.seo_image_url && (
+                  <img
+                    src={form.seo_image_url}
+                    alt="Vista previa OG"
+                    style={{ marginTop: 8, maxWidth: 320, width: '100%', borderRadius: 4, border: '1px solid #ddd' }}
+                  />
+                )}
               </div>
             </div>
           </div>

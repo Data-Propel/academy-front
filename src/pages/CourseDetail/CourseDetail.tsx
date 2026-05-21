@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
 import { coursesApi, isAuthenticated } from '../../services/api';
+import { getCurrentAttribution } from '../../utils/attribution';
 import './CourseDetail.css';
 
 const localThumbnails: Record<string, string> = {
@@ -166,6 +167,9 @@ interface Course {
   }>;
   materials?: Material[];
   materials_html?: string;
+  seo_title?: string;
+  seo_description?: string;
+  seo_image_url?: string;
   instructor?: Instructor;
   what_you_learn?: string[];
   what_you_get?: string[];
@@ -303,7 +307,7 @@ const CourseDetail = () => {
 
     setEnrolling(true);
     try {
-      const response = await coursesApi.enroll(course.slug);
+      const response = await coursesApi.enroll(course.slug, getCurrentAttribution());
       if (response.ok) {
         const sortedLessons = [...(course.lessons || [])].sort((a, b) => a.order_index - b.order_index);
         // Content is stripped for unenrolled users, so navigate by ID order:
@@ -437,11 +441,18 @@ const CourseDetail = () => {
       }
     : null;
 
-  const seoDescription = (course.short_description || course.description || '')
-    .replace(/<[^>]*>/g, '')
-    .trim()
-    .slice(0, 200);
-  const seoImage = course.thumbnail_url || (course.slug && localThumbnails[course.slug]) || '';
+  const seoTitle = course.seo_title || `${course.title} — Propel Academy`;
+  const seoDescription =
+    course.seo_description ||
+    (course.short_description || course.description || '')
+      .replace(/<[^>]*>/g, '')
+      .trim()
+      .slice(0, 200);
+  const seoImage =
+    course.seo_image_url ||
+    course.thumbnail_url ||
+    (course.slug && localThumbnails[course.slug]) ||
+    '';
   const absoluteImage = seoImage.startsWith('http') ? seoImage : `https://propelacademy.org${seoImage}`;
   const courseUrl = `https://propelacademy.org/courses/${course.slug}`;
   const jsonLd = {
@@ -475,15 +486,20 @@ const CourseDetail = () => {
   return (
     <div className="course-detail-page">
       <Helmet>
-        <title>{`${course.title} — Propel Academy`}</title>
+        <title>{seoTitle}</title>
         <meta name="description" content={seoDescription} />
         <link rel="canonical" href={courseUrl} />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={course.title} />
+        <meta property="og:site_name" content="Propel Academy" />
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={seoDescription} />
         <meta property="og:url" content={courseUrl} />
+        <meta property="og:locale" content="es_ES" />
         {absoluteImage && <meta property="og:image" content={absoluteImage} />}
-        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:card" content={absoluteImage ? 'summary_large_image' : 'summary'} />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDescription} />
+        {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <div className="course-detail-container">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
+import PageHead from '../../utils/PageHead';
 import './ResetPassword.css';
 
 const ResetPassword = () => {
@@ -151,6 +152,7 @@ const ResetPassword = () => {
   // Default: show request reset form
   return (
     <div className="reset-page">
+      <PageHead title="Restablecer contraseña" noIndex />
       <div className="reset-container">
         <div className="reset-card">
           <div className="reset-header">

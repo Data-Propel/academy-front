@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
+import { getAttribution } from '../../utils/attribution';
 import './Register.css';
 
 const ORGANIZATION_TYPES = [
@@ -84,6 +85,7 @@ const Register = () => {
         password_confirm: formData.confirmPassword,
         organization_type: formData.organizationType,
         country: formData.country,
+        ...getAttribution(),
       });
 
       if (ok) {

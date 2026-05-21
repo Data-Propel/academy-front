@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
+import PageHead from '../../utils/PageHead';
 import './AutoLogin.css';
 
 const AutoLogin = () => {
@@ -40,6 +41,7 @@ const AutoLogin = () => {
   if (loading) {
     return (
       <div className="autologin-page">
+        <PageHead title="Iniciando sesión" noIndex />
         <div className="autologin-container">
           <div className="autologin-card">
             <div className="autologin-loading">
@@ -54,6 +56,7 @@ const AutoLogin = () => {
 
   return (
     <div className="autologin-page">
+      <PageHead title="Error de acceso" noIndex />
       <div className="autologin-container">
         <div className="autologin-card">
           <div className="autologin-header">

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi, isAuthenticated, coursesApi, MEDIA_URL } from '../../services/api';
+import PageHead from '../../utils/PageHead';
 import './Profile.css';
 
 interface User {
@@ -332,6 +333,7 @@ const Profile = () => {
 
   return (
     <div className="profile-page">
+      <PageHead title="Mi perfil" noIndex />
       <div className="profile-container">
         {/* Hero */}
         <div className="profile-hero">

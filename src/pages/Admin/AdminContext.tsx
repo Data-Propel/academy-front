@@ -19,8 +19,16 @@ export interface User {
   is_active: boolean;
   is_staff?: boolean;
   is_superuser: boolean;
+  is_users_readonly?: boolean;
   date_joined?: string;
   last_login?: string | null;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
+  referrer?: string;
+  landing_page?: string;
 }
 
 export interface Category {
@@ -56,6 +64,9 @@ export interface Course {
   instructor_avatar?: string;
   is_featured: boolean;
   is_published: boolean;
+  seo_title?: string;
+  seo_description?: string;
+  seo_image_url?: string;
   thumbnail?: string;
   lessons_count?: number;
   enrollments_count?: number;

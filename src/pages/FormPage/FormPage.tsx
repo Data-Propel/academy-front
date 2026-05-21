@@ -1,5 +1,6 @@
 import { useParams, useSearchParams } from 'react-router-dom';
 import FormRenderer from '../../components/FormRenderer/FormRenderer';
+import PageHead from '../../utils/PageHead';
 
 export default function FormPage() {
   const { slug } = useParams();
@@ -14,5 +15,10 @@ export default function FormPage() {
 
   if (!slug) return null;
 
-  return <FormRenderer slug={slug} hiddenFields={hiddenFields} />;
+  return (
+    <>
+      <PageHead title="Formulario" noIndex />
+      <FormRenderer slug={slug} hiddenFields={hiddenFields} />
+    </>
+  );
 }

@@ -1,9 +1,11 @@
+import PageHead from '../../utils/PageHead';
 import './NotFound.css';
 
 const NotFound = () => {
   console.log('[NotFound]');
   return (
     <div className="notfound-page">
+      <PageHead title="Página no encontrada" noIndex />
       <div className="notfound-container">
         <h1 className="notfound-code">¡Ups!</h1>
         <h2 className="notfound-title">Parece que esta página no existe</h2>

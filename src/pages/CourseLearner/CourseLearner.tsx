@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { coursesApi, isAuthenticated, isSuperuser, authApi } from '../../services/api';
+import PageHead from '../../utils/PageHead';
 import CourseCompletionModal from './CourseCompletionModal';
 import './CourseLearner.css';
 
@@ -685,6 +686,7 @@ const CourseLearner = () => {
 
   return (
     <div className="cl-page">
+      <PageHead title={course.title} noIndex />
       {/* Top bar — unified dark bar */}
       <div className="cl-topbar">
         <button

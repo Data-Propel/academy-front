@@ -4,7 +4,7 @@ import { useAdmin } from '../AdminContext';
 import { type User } from '../AdminContext';
 import PageHeader from '../components/PageHeader';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { adminApi } from '../../../services/api';
+import { adminApi, isSuperuser, isUsersReadonly } from '../../../services/api';
 
 // ---- Constants ----
 
@@ -72,6 +72,11 @@ const COLUMNS: ColumnDef[] = [
   { key: 'email_verified',    label: 'Verificado', type: 'checkbox',        width: '90px' },
   { key: 'is_staff',          label: 'Staff',      type: 'checkbox',        width: '70px' },
   { key: 'is_superuser',      label: 'Admin',      type: 'checkbox',        width: '70px' },
+  { key: 'utm_source',        label: 'UTM Source',   type: 'text',          width: '140px' },
+  { key: 'utm_medium',        label: 'UTM Medium',   type: 'text',          width: '120px' },
+  { key: 'utm_campaign',      label: 'UTM Campaign', type: 'text',          width: '160px' },
+  { key: 'referrer',          label: 'Referrer',     type: 'text',          width: '200px' },
+  { key: 'landing_page',      label: 'Landing',      type: 'text',          width: '200px' },
   { key: 'date_joined',       label: 'Registrado', type: 'readonly-date',   width: '120px' },
 ];
 
@@ -511,9 +516,10 @@ interface RowProps {
   edits: RowEdits | undefined;
   onCellChange: (id: number, field: EditableField, value: unknown) => void;
   onDelete: (user: User) => void;
+  readOnly?: boolean;
 }
 
-const EditableRow = memo(function EditableRow({ user, edits, onCellChange, onDelete }: RowProps) {
+const EditableRow = memo(function EditableRow({ user, edits, onCellChange, onDelete, readOnly }: RowProps) {
   const getValue = (field: EditableField): unknown => {
     if (edits && field in edits) return edits[field];
     return user[field];
@@ -539,6 +545,7 @@ const EditableRow = memo(function EditableRow({ user, edits, onCellChange, onDel
                 type="checkbox"
                 className="grid-checkbox"
                 checked={Boolean(getValue(field))}
+                disabled={readOnly}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => onCellChange(user.id, field, e.target.checked)}
               />
             </td>
@@ -550,6 +557,7 @@ const EditableRow = memo(function EditableRow({ user, edits, onCellChange, onDel
               <select
                 className="grid-input"
                 value={String(getValue(field) ?? '')}
+                disabled={readOnly}
                 onChange={(e) => onCellChange(user.id, field, e.target.value)}
               >
                 <option value="">—</option>
@@ -566,6 +574,7 @@ const EditableRow = memo(function EditableRow({ user, edits, onCellChange, onDel
               <textarea
                 className="grid-input grid-textarea"
                 value={String(getValue(field) ?? '')}
+                readOnly={readOnly}
                 onChange={(e) => onCellChange(user.id, field, e.target.value)}
                 rows={2}
               />
@@ -579,23 +588,27 @@ const EditableRow = memo(function EditableRow({ user, edits, onCellChange, onDel
               type="text"
               className="grid-input"
               value={String(getValue(field) ?? '')}
+              readOnly={readOnly}
               onChange={(e) => onCellChange(user.id, field, e.target.value)}
             />
           </td>
         );
       })}
       <td className="grid-cell actions-cell">
-        <button className="action-btn delete" onClick={() => onDelete(user)}>Eliminar</button>
+        {!readOnly && (
+          <button className="action-btn delete" onClick={() => onDelete(user)}>Eliminar</button>
+        )}
       </td>
     </tr>
   );
-}, (prev, next) => prev.user === next.user && prev.edits === next.edits);
+}, (prev, next) => prev.user === next.user && prev.edits === next.edits && prev.readOnly === next.readOnly);
 
 // ---- Main component ----
 
 export default function AdminUsers() {
   const { showSuccess, showError } = useAdmin();
   const location = useLocation();
+  const readOnly = !isSuperuser() && isUsersReadonly();
 
   const [view, setView] = useState<'list' | 'create'>('list');
 
@@ -979,7 +992,7 @@ export default function AdminUsers() {
     <>
       <PageHeader
         title="Usuarios"
-        action={{ label: '+ Crear Usuario', onClick: () => { setView('create'); setCreateForm(emptyCreateForm); } }}
+        action={readOnly ? undefined : { label: '+ Crear Usuario', onClick: () => { setView('create'); setCreateForm(emptyCreateForm); } }}
       />
 
       <div className="admin-content">
@@ -1012,30 +1025,34 @@ export default function AdminUsers() {
           <div className="grid-save-bar">
             <span className="grid-count">
               {filteredSorted.length} / {users.length}
-              {dirtyCount > 0 && <span className="grid-dirty-count"> · {dirtyCount} con cambios</span>}
+              {!readOnly && dirtyCount > 0 && <span className="grid-dirty-count"> · {dirtyCount} con cambios</span>}
             </span>
-            <button
-              className="btn-suggestions"
-              disabled={totalSuggestions === 0}
-              onClick={() => setShowSuggestions(true)}
-              title="Sugerencias automáticas de limpieza"
-            >
-              ✨ Sugerencias{totalSuggestions > 0 ? ` (${totalSuggestions})` : ''}
-            </button>
-            <button
-              className="btn-cancel"
-              disabled={dirtyCount === 0 || saving}
-              onClick={handleDiscard}
-            >
-              Descartar
-            </button>
-            <button
-              className="btn-submit"
-              disabled={dirtyCount === 0 || saving}
-              onClick={handleSave}
-            >
-              {saving ? 'Guardando...' : `Guardar cambios${dirtyCount > 0 ? ` (${dirtyCount})` : ''}`}
-            </button>
+            {!readOnly && (
+              <>
+                <button
+                  className="btn-suggestions"
+                  disabled={totalSuggestions === 0}
+                  onClick={() => setShowSuggestions(true)}
+                  title="Sugerencias automáticas de limpieza"
+                >
+                  ✨ Sugerencias{totalSuggestions > 0 ? ` (${totalSuggestions})` : ''}
+                </button>
+                <button
+                  className="btn-cancel"
+                  disabled={dirtyCount === 0 || saving}
+                  onClick={handleDiscard}
+                >
+                  Descartar
+                </button>
+                <button
+                  className="btn-submit"
+                  disabled={dirtyCount === 0 || saving}
+                  onClick={handleSave}
+                >
+                  {saving ? 'Guardando...' : `Guardar cambios${dirtyCount > 0 ? ` (${dirtyCount})` : ''}`}
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -1090,6 +1107,7 @@ export default function AdminUsers() {
                     edits={edits[user.id]}
                     onCellChange={handleCellChange}
                     onDelete={(u) => setDeleteTarget(u)}
+                    readOnly={readOnly}
                   />
                 ))}
               </tbody>

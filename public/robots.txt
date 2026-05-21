@@ -5,5 +5,8 @@ Disallow: /profile
 Disallow: /auto-login
 Disallow: /reset-password
 Disallow: /forms/
+Disallow: /courses/*/lessons/
+Disallow: /courses/*/topics/
+Disallow: /courses/*/evaluate
 
 Sitemap: https://propelacademy.org/sitemap.xml

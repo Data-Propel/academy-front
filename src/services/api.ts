@@ -12,6 +12,8 @@ export const clearTokens = () => {
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
   localStorage.removeItem('is_superuser');
+  localStorage.removeItem('is_users_readonly');
+  localStorage.removeItem('is_marketing_admin');
 };
 
 // Superuser management
@@ -19,6 +21,20 @@ export const setSuperuser = (isSuperuser: boolean) => {
   localStorage.setItem('is_superuser', String(isSuperuser));
 };
 export const isSuperuser = () => localStorage.getItem('is_superuser') === 'true';
+
+// Users-readonly role (can view /admin/usuarios only)
+export const setUsersReadonly = (flag: boolean) => {
+  localStorage.setItem('is_users_readonly', String(flag));
+};
+export const isUsersReadonly = () => localStorage.getItem('is_users_readonly') === 'true';
+
+// Marketing admin role (can manage /admin/campaigns and /admin/analytics)
+export const setMarketingAdmin = (flag: boolean) => {
+  localStorage.setItem('is_marketing_admin', String(flag));
+};
+export const isMarketingAdmin = () => localStorage.getItem('is_marketing_admin') === 'true';
+
+export const canAccessAdmin = () => isSuperuser() || isUsersReadonly() || isMarketingAdmin();
 
 // API fetch wrapper for FormData (file uploads)
 const apiFetchFormData = async (endpoint: string, formData: FormData, method: string = 'POST') => {
@@ -170,6 +186,8 @@ export const authApi = {
     if (response.ok && data.tokens) {
       setTokens(data.tokens.access, data.tokens.refresh);
       setSuperuser(data.user?.is_admin || false);
+      setUsersReadonly(data.user?.is_users_readonly || false);
+      setMarketingAdmin(data.user?.is_marketing_admin || false);
     }
     return { ok: response.ok, data };
   },
@@ -184,6 +202,8 @@ export const authApi = {
     if (response.ok) {
       setTokens(data.access, data.refresh);
       setSuperuser(data.is_superuser || data.is_admin || false);
+      setUsersReadonly(data.is_users_readonly || false);
+      setMarketingAdmin(data.is_marketing_admin || false);
     }
     return { ok: response.ok, data };
   },
@@ -194,8 +214,17 @@ export const authApi = {
     last_name: string;
     password: string;
     password_confirm: string;
+    organization?: string;
     organization_type?: string;
     country?: string;
+    newsletter_opt_in?: boolean;
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_term?: string;
+    utm_content?: string;
+    referrer?: string;
+    landing_page?: string;
   }) => {
     const response = await fetch(`${API_URL}/users/register/`, {
       method: 'POST',
@@ -203,6 +232,34 @@ export const authApi = {
       body: JSON.stringify(userData),
     });
     return { ok: response.ok, data: await response.json() };
+  },
+
+  googleAuth: async (credential: string, extras?: {
+    organization?: string;
+    organization_type?: string;
+    country?: string;
+    newsletter_opt_in?: boolean;
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_term?: string;
+    utm_content?: string;
+    referrer?: string;
+    landing_page?: string;
+  }) => {
+    const response = await fetch(`${API_URL}/users/google-auth/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential, ...(extras || {}) }),
+    });
+    const data = await response.json();
+    if (response.ok) {
+      setTokens(data.access, data.refresh);
+      setSuperuser(data.is_superuser || false);
+      setUsersReadonly(data.is_users_readonly || false);
+      setMarketingAdmin(data.is_marketing_admin || false);
+    }
+    return { ok: response.ok, data };
   },
 
   resetPassword: async (email: string) => {
@@ -224,6 +281,8 @@ export const authApi = {
     if (response.ok && data.tokens) {
       setTokens(data.tokens.access, data.tokens.refresh);
       setSuperuser(data.user?.is_admin || false);
+      setUsersReadonly(data.user?.is_users_readonly || false);
+      setMarketingAdmin(data.user?.is_marketing_admin || false);
     }
     return { ok: response.ok, data };
   },
@@ -247,6 +306,8 @@ export const authApi = {
     if (response.ok && data.tokens) {
       setTokens(data.tokens.access, data.tokens.refresh);
       setSuperuser(data.user?.is_admin || false);
+      setUsersReadonly(data.user?.is_users_readonly || false);
+      setMarketingAdmin(data.user?.is_marketing_admin || false);
     }
     return { ok: response.ok, data };
   },
@@ -257,6 +318,8 @@ export const authApi = {
     if (response.ok) {
       const isAdmin = data.is_superuser || data.is_admin || false;
       setSuperuser(isAdmin);
+      setUsersReadonly(data.is_users_readonly || false);
+      setMarketingAdmin(data.is_marketing_admin || false);
     }
     return { ok: response.ok, data };
   },
@@ -319,8 +382,20 @@ export const coursesApi = {
     return { ok: response.ok, data: await response.json() };
   },
 
-  enroll: async (slug: string) => {
-    const response = await apiFetch(`/courses/${slug}/enroll/`, { method: 'POST' });
+  enroll: async (slug: string, attribution?: {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_term?: string;
+    utm_content?: string;
+    referrer?: string;
+    landing_page?: string;
+  }) => {
+    const response = await apiFetch(`/courses/${slug}/enroll/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(attribution || {}),
+    });
     return { ok: response.ok, data: await response.json() };
   },
 
@@ -1013,6 +1088,59 @@ export const adminApi = {
   // Evaluation Responses/Stats
   getEvaluationResponses: async (formId: number) => {
     const response = await apiFetch(`/courses/admin/evaluations/${formId}/responses/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  // ---- Marketing / Campaigns ----
+  listCampaigns: async () => {
+    const response = await apiFetch('/marketing/campaigns/');
+    return { ok: response.ok, data: await response.json() };
+  },
+  createCampaign: async (payload: {
+    name: string;
+    utm_source: string;
+    utm_medium?: string;
+    utm_campaign: string;
+    utm_term?: string;
+    utm_content?: string;
+    target_path?: string;
+    notes?: string;
+  }) => {
+    const response = await apiFetch('/marketing/campaigns/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  updateCampaign: async (id: number, payload: Partial<{
+    name: string;
+    utm_source: string;
+    utm_medium: string;
+    utm_campaign: string;
+    utm_term: string;
+    utm_content: string;
+    target_path: string;
+    notes: string;
+  }>) => {
+    const response = await apiFetch(`/marketing/campaigns/${id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  deleteCampaign: async (id: number) => {
+    const response = await apiFetch(`/marketing/campaigns/${id}/`, { method: 'DELETE' });
+    return { ok: response.ok, data: response.ok ? null : await response.json() };
+  },
+  getUtmStats: async (params?: { start?: string; end?: string; limit?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.start) qs.append('start', params.start);
+    if (params?.end) qs.append('end', params.end);
+    if (params?.limit) qs.append('limit', String(params.limit));
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    const response = await apiFetch(`/marketing/utm-stats/${suffix}`);
     return { ok: response.ok, data: await response.json() };
   },
 };
