@@ -213,19 +213,33 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }
   }, [showError]);
 
-  // Auth check + initial data load — verify superuser from backend, not localStorage
+  // Auth check + initial data load — verify any admin role from backend.
+  // Full admins (is_superuser) get all data. Marketing / users-readonly admins
+  // are allowed in but don't need (and don't have permission for) the
+  // courses/lessons/categories/tags datasets.
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/login');
       return;
     }
     authApi.getProfile().then(({ ok, data }) => {
-      const profile = data as { is_superuser?: boolean; is_admin?: boolean };
-      if (!ok || !(profile.is_admin || profile.is_superuser)) {
+      const profile = data as {
+        is_superuser?: boolean;
+        is_admin?: boolean;
+        is_users_readonly?: boolean;
+        is_marketing_admin?: boolean;
+      };
+      const fullAdmin = !!(profile.is_admin || profile.is_superuser);
+      const limitedAdmin = !!(profile.is_users_readonly || profile.is_marketing_admin);
+      if (!ok || (!fullAdmin && !limitedAdmin)) {
         navigate('/');
         return;
       }
-      refreshAll();
+      if (fullAdmin) {
+        refreshAll();
+      } else {
+        setLoading(false);
+      }
     });
   }, [navigate, refreshAll]);
 
