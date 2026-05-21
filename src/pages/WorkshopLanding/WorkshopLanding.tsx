@@ -63,7 +63,7 @@ const WorkshopLanding = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/workshops/register/', {
+      const res = await fetch('/api/workshops/lidera-ia/register/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
