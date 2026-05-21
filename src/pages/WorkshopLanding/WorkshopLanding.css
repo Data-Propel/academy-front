@@ -56,7 +56,7 @@
   font-size: 15px;
   font-weight: 600;
   padding: 6px 20px;
-  border-radius: 24px;
+  border-radius: 0;
   margin-bottom: 24px;
   width: fit-content;
 }
@@ -141,7 +141,7 @@
   border: 1px solid #fc5c3a;
   color: #fc5c3a;
   padding: 10px 14px;
-  border-radius: 4px;
+  border-radius: 0;
   margin-bottom: 16px;
   font-size: 14px;
 }
@@ -173,7 +173,7 @@
 .ws-select select {
   height: 54px;
   border: 1.24px solid #007066;
-  border-radius: 4px;
+  border-radius: 0;
   padding: 0 12px;
   font-size: 15px;
   color: #1a1a1a;
@@ -256,7 +256,7 @@
   font-weight: 500;
   cursor: pointer;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   text-decoration: none;
   transition: background 0.15s;
 }
@@ -309,47 +309,93 @@
 
 .ws-help:hover { background: #f0faf9; }
 
-/* ── Success state ── */
+/* ── Success modal ── */
 
-.ws-success {
-  width: 100%;
-  text-align: center;
-  padding: 48px 0;
-}
-
-.ws-success__icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: rgba(163, 201, 74, 0.15);
+.ws-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 95, 183, 0.50);
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  padding: 20px;
 }
 
-.ws-success__icon svg {
-  width: 32px;
-  height: 32px;
-  color: #a3c94a;
+.ws-modal {
+  background: #f2f2f2;
+  width: 900px;
+  max-width: 100%;
+  padding: 56px 68px 64px;
+  position: relative;
 }
 
-.ws-success h2 {
-  font-size: 26px;
-  font-weight: 600;
-  color: #003b37;
-  margin: 0 0 14px;
+.ws-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: rgba(0, 0, 0, 0.78);
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+  padding: 0;
 }
 
-.ws-success p {
-  font-size: 15px;
+.ws-modal__close:hover { color: #000; }
+
+.ws-modal__title {
+  font-size: 40px;
+  font-weight: 500;
   color: #144a46;
-  margin: 0 0 8px;
-  line-height: 1.5;
+  margin: 0 0 24px;
+  line-height: normal;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
 }
 
-.ws-success p strong { color: #fc5c3a; }
-.ws-success__sub { font-size: 13px; color: #888; }
+.ws-modal__body {
+  font-size: 27px;
+  color: #144a46;
+  line-height: 1.53;
+  margin-bottom: 40px;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+}
+
+.ws-modal__body p { margin: 0; }
+
+.ws-modal__actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ws-btn--modal-primary {
+  height: 66px;
+  min-width: 260px;
+  background: #fa693c;
+  color: #fff;
+  font-size: 27px;
+  font-weight: 400;
+  padding: 0 40px;
+}
+
+.ws-btn--modal-primary:hover { background: #e55930; }
+
+.ws-btn--modal-secondary {
+  height: 66px;
+  min-width: 259px;
+  background: transparent;
+  color: #fc5c3a;
+  font-size: 27px;
+  font-weight: 400;
+  border: 1px solid #ff5c26 !important;
+  padding: 0 40px;
+}
+
+.ws-btn--modal-secondary:hover { background: rgba(252, 92, 58, 0.05); }
 
 /* ── Courses ── */
 
@@ -383,7 +429,7 @@
 .ws-card {
   background: #fff;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
 }
 
@@ -413,7 +459,7 @@
   margin-bottom: 6px;
   background: #f2f2f2;
   padding: 2px 8px;
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 .ws-card__title {
@@ -512,14 +558,59 @@
 }
 
 @media (max-width: 640px) {
-  .ws-hero__left { padding: 36px 20px; }
+  .ws-hero__left { padding: 28px 20px 24px; }
   .ws-hero__title { font-size: 36px; }
-  .ws-hero__subtitle { font-size: 18px; }
-  .ws-hero__right { padding: 28px 20px; }
-  .ws-form__row { grid-template-columns: 1fr; }
-  .ws-courses { padding: 48px 20px; }
-  .ws-courses__title { font-size: 32px; }
-  .ws-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .ws-benefits { padding: 48px 20px; }
-  .ws-benefits__left h2 { font-size: 30px; }
+  .ws-hero__subtitle { font-size: 17px; margin-bottom: 20px; }
+  .ws-hero__right { padding: 24px 20px 56px; }
+  .ws-badge { font-size: 13px; padding: 4px 14px; margin-bottom: 16px; }
+
+  .ws-field label { font-size: 12px; }
+  .ws-field input,
+  .ws-select select { height: 38px; font-size: 13px; }
+  .ws-form__row { gap: 8px; margin-bottom: 10px; }
+  .ws-field--full { margin-bottom: 10px; }
+  .ws-form__note { font-size: 11px; }
+  .ws-checkbox { font-size: 12px; }
+  .ws-form__legal { font-size: 10px; }
+  .ws-btn--submit { height: 43px; min-width: 128px; font-size: 13px; }
+
+  .ws-detail-line { font-size: 14px; }
+  .ws-hero__detail svg { width: 16px; height: 16px; }
+  .ws-hero__google { width: 140px; }
+  .ws-hero__support { padding-top: 24px; }
+
+  .ws-courses { padding: 40px 20px; }
+  .ws-courses__title { font-size: 22px; }
+  .ws-courses__desc { font-size: 15px; margin-bottom: 24px; }
+  .ws-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 12px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px;
+    margin-bottom: 32px;
+    grid-template-columns: unset;
+  }
+  .ws-card {
+    flex: 0 0 80%;
+    scroll-snap-align: start;
+  }
+  .ws-card__title { font-size: 19px; }
+  .ws-btn--cta { height: 43px; font-size: 15px; }
+
+  .ws-benefits { padding: 40px 20px; gap: 20px; }
+  .ws-benefits__left h2 { font-size: 20px; line-height: 1.5; }
+  .ws-benefits__label { font-size: 15px; margin-bottom: 14px; }
+  .ws-benefits__list li { font-size: 15px; padding-left: 20px; }
+  .ws-benefits__list li::before { width: 9px; height: 9px; top: 5px; }
+  .ws-benefits__list { gap: 12px; }
+
+  .ws-modal { padding: 40px 28px 48px; }
+  .ws-modal__title { font-size: 26px; }
+  .ws-modal__body { font-size: 18px; }
+  .ws-btn--modal-primary,
+  .ws-btn--modal-secondary { height: 52px; min-width: 0; width: 100%; font-size: 18px; }
+  .ws-modal__actions { flex-direction: column; }
 }

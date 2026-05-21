@@ -88,6 +88,24 @@ const WorkshopLanding = () => {
         description="Aprende a usar IA en tu organización social. Regístrate gratis al workshop virtual del 18 de junio."
       />
 
+      {/* ── Success modal ── */}
+      {success && (
+        <div className="ws-modal-overlay">
+          <div className="ws-modal">
+            <button className="ws-modal__close" onClick={() => setSuccess(false)}>×</button>
+            <h2 className="ws-modal__title">¡Estás dentro!</h2>
+            <div className="ws-modal__body">
+              <p>Gracias por registrarte al workshop: Lidera con un IA mindset. </p>
+              <p><strong>Para iniciar tu certificación, crea tu cuenta en la Nonprofit Academy.</strong></p>
+            </div>
+            <div className="ws-modal__actions">
+              <a href="/register" className="ws-btn ws-btn--modal-primary">Crear cuenta</a>
+              <a href="/login" className="ws-btn ws-btn--modal-secondary">Ya tengo cuenta</a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Hero ── */}
       <section className="ws-hero">
 
@@ -131,90 +149,77 @@ const WorkshopLanding = () => {
 
         {/* Right: white form panel */}
         <div className="ws-hero__right">
-          {success ? (
-            <div className="ws-success">
-              <div className="ws-success__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+          <form className="ws-form" onSubmit={handleSubmit} noValidate>
+            {error && <div className="ws-form__error">{error}</div>}
+
+            <div className="ws-form__row">
+              <div className="ws-field">
+                <label htmlFor="ws-nombre">Nombre*</label>
+                <input id="ws-nombre" name="nombre" type="text" value={form.nombre} onChange={handleChange} required />
               </div>
-              <h2>¡Registro completado!</h2>
-              <p>Te enviaremos el enlace de Zoom a <strong>{form.email}</strong> antes del evento.</p>
-              <p className="ws-success__sub">Revisa tu bandeja de entrada (y la carpeta de spam).</p>
+              <div className="ws-field">
+                <label htmlFor="ws-apellido">Apellido*</label>
+                <input id="ws-apellido" name="apellido" type="text" value={form.apellido} onChange={handleChange} required />
+              </div>
             </div>
-          ) : (
-            <form className="ws-form" onSubmit={handleSubmit} noValidate>
-              {error && <div className="ws-form__error">{error}</div>}
 
-              <div className="ws-form__row">
-                <div className="ws-field">
-                  <label htmlFor="ws-nombre">Nombre*</label>
-                  <input id="ws-nombre" name="nombre" type="text" value={form.nombre} onChange={handleChange} required />
-                </div>
-                <div className="ws-field">
-                  <label htmlFor="ws-apellido">Apellido*</label>
-                  <input id="ws-apellido" name="apellido" type="text" value={form.apellido} onChange={handleChange} required />
-                </div>
+            <div className="ws-form__row">
+              <div className="ws-field">
+                <label htmlFor="ws-email">Correo electrónico*</label>
+                <input id="ws-email" name="email" type="email" value={form.email} onChange={handleChange} required />
               </div>
-
-              <div className="ws-form__row">
-                <div className="ws-field">
-                  <label htmlFor="ws-email">Correo electrónico*</label>
-                  <input id="ws-email" name="email" type="email" value={form.email} onChange={handleChange} required />
-                </div>
-                <div className="ws-field">
-                  <label htmlFor="ws-pais">País*</label>
-                  <div className="ws-select">
-                    <select id="ws-pais" name="pais" value={form.pais} onChange={handleChange} required>
-                      <option value="" disabled />
-                      {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="ws-form__row">
-                <div className="ws-field">
-                  <label htmlFor="ws-org">Organización*</label>
-                  <input id="ws-org" name="organizacion" type="text" value={form.organizacion} onChange={handleChange} required />
-                </div>
-                <div className="ws-field">
-                  <label htmlFor="ws-tipo">Tipo de organización*</label>
-                  <div className="ws-select">
-                    <select id="ws-tipo" name="tipoOrganizacion" value={form.tipoOrganizacion} onChange={handleChange} required>
-                      <option value="" disabled />
-                      {TIPOS_ORG.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="ws-field ws-field--full">
-                <label htmlFor="ws-como">¿Cómo te enteraste del workshop? *</label>
+              <div className="ws-field">
+                <label htmlFor="ws-pais">País*</label>
                 <div className="ws-select">
-                  <select id="ws-como" name="comoTeEnteraste" value={form.comoTeEnteraste} onChange={handleChange} required>
+                  <select id="ws-pais" name="pais" value={form.pais} onChange={handleChange} required>
                     <option value="" disabled />
-                    {COMO_TE_ENTERASTE.map(o => <option key={o} value={o}>{o}</option>)}
+                    {PAISES.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
               </div>
+            </div>
 
-              <p className="ws-form__note">*Los campos son obligatorios</p>
+            <div className="ws-form__row">
+              <div className="ws-field">
+                <label htmlFor="ws-org">Organización*</label>
+                <input id="ws-org" name="organizacion" type="text" value={form.organizacion} onChange={handleChange} required />
+              </div>
+              <div className="ws-field">
+                <label htmlFor="ws-tipo">Tipo de organización*</label>
+                <div className="ws-select">
+                  <select id="ws-tipo" name="tipoOrganizacion" value={form.tipoOrganizacion} onChange={handleChange} required>
+                    <option value="" disabled />
+                    {TIPOS_ORG.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
 
-              <label className="ws-checkbox">
-                <input type="checkbox" name="newsletter" checked={form.newsletter} onChange={handleChange} />
-                <span>¿Quieres suscribirte al newsletter de Propel?*</span>
-              </label>
+            <div className="ws-field ws-field--full">
+              <label htmlFor="ws-como">¿Cómo te enteraste del workshop? *</label>
+              <div className="ws-select">
+                <select id="ws-como" name="comoTeEnteraste" value={form.comoTeEnteraste} onChange={handleChange} required>
+                  <option value="" disabled />
+                  {COMO_TE_ENTERASTE.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+            </div>
 
-              <p className="ws-form__legal">
-                En Propel, respetamos tu privacidad. Al aceptar este formulario aceptas nuestros términos y condiciones, política de privacidad y recibir correos de nuestros cursos y eventos.
-              </p>
+            <p className="ws-form__note">*Los campos son obligatorios</p>
 
-              <button type="submit" className="ws-btn ws-btn--submit" disabled={loading}>
-                {loading ? 'Registrando...' : 'Registrarme'}
-              </button>
-            </form>
-          )}
+            <label className="ws-checkbox">
+              <input type="checkbox" name="newsletter" checked={form.newsletter} onChange={handleChange} />
+              <span>¿Quieres suscribirte al newsletter de Propel?*</span>
+            </label>
+
+            <p className="ws-form__legal">
+              En Propel, respetamos tu privacidad. Al aceptar este formulario aceptas nuestros términos y condiciones, política de privacidad y recibir correos de nuestros cursos y eventos.
+            </p>
+
+            <button type="submit" className="ws-btn ws-btn--submit" disabled={loading}>
+              {loading ? 'Registrando...' : 'Registrarme'}
+            </button>
+          </form>
 
           <button
             type="button"
