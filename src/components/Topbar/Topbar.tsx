@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { isAuthenticated, isSuperuser, authApi } from '../../services/api';
+import { isAuthenticated, canAccessAdmin, setUsersReadonly, setMarketingAdmin, authApi } from '../../services/api';
 import logo from '../../assets/logoacademyblanco.webp';
 import logo2x from '../../assets/logoacademyblanco@2x.webp';
 import './Topbar.css';
@@ -8,21 +8,20 @@ import './Topbar.css';
 const Topbar = ({ hideHamburger = false }: { hideHamburger?: boolean }) => {
   const location = useLocation();
   const [loggedIn, setLoggedIn] = useState(isAuthenticated());
-  const [isAdmin, setIsAdmin] = useState(isSuperuser());
+  const [isAdmin, setIsAdmin] = useState(canAccessAdmin());
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const authenticated = isAuthenticated();
     setLoggedIn(authenticated);
-
-    const superuserFlag = localStorage.getItem('is_superuser');
-    setIsAdmin(superuserFlag === 'true');
+    setIsAdmin(canAccessAdmin());
 
     if (authenticated) {
       authApi.getProfile().then((res) => {
         if (res.ok) {
-          const adminStatus = res.data.is_superuser || res.data.is_admin || false;
-          setIsAdmin(adminStatus);
+          setUsersReadonly(res.data.is_users_readonly || false);
+          setMarketingAdmin(res.data.is_marketing_admin || false);
+          setIsAdmin(canAccessAdmin());
         }
       }).catch(() => {});
     }
