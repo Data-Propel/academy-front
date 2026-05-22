@@ -1,0 +1,616 @@
+/* ws-* — WorkshopLanding */
+
+.ws-page {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #003b37;
+  min-height: 100vh;
+}
+
+/* ── Hero ── */
+
+.ws-hero {
+  display: flex;
+  min-height: 620px;
+}
+
+/* Left: blue info panel */
+.ws-hero__left {
+  flex: 0 0 49.3%;
+  background: #2c59b7;
+  padding: 56px 64px 56px;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+}
+
+/* Centre strip */
+.ws-hero__strip {
+  flex: 0 0 8.16%;
+  background: #618ece;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ws-hero__strip-img {
+  width: 100%;
+  display: block;
+}
+
+/* Right: white form panel */
+.ws-hero__right {
+  flex: 1 1 auto;
+  background: #fff;
+  padding: 40px 52px 52px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ── Badge ── */
+
+.ws-badge {
+  display: inline-block;
+  background: #fc5c3a;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 6px 20px;
+  border-radius: 0;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+
+/* ── Hero title ── */
+
+.ws-hero__title {
+  font-size: 78px;
+  font-weight: 400;
+  line-height: 1.0;
+  margin: 0 0 20px;
+  color: #fff;
+  white-space: pre-line;
+}
+
+.ws-hero__title-light {
+  font-weight: 300;
+}
+
+.ws-hero__title-medium {
+  font-weight: 500;
+}
+
+.ws-hero__subtitle {
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0 0 40px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+/* ── Hero details (date / zoom) ── */
+
+.ws-hero__details {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ws-hero__detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ws-hero__detail svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  margin-top: 3px;
+  opacity: 0.85;
+}
+
+.ws-detail-line {
+  font-size: 20px;
+  color: #fff;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Google.org support ── */
+
+.ws-hero__support {
+  margin-top: auto;
+  padding-top: 40px;
+}
+
+.ws-hero__google {
+  width: 200px;
+  height: auto;
+  display: block;
+}
+
+/* ── Form ── */
+
+.ws-form {
+  width: 100%;
+}
+
+.ws-form__error {
+  background: rgba(252, 92, 58, 0.08);
+  border: 1px solid #fc5c3a;
+  color: #fc5c3a;
+  padding: 10px 14px;
+  border-radius: 0;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.ws-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.ws-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ws-field--full {
+  margin-bottom: 14px;
+}
+
+.ws-field label {
+  font-size: 17px;
+  color: #144a46;
+  font-weight: 400;
+}
+
+.ws-field input,
+.ws-select select {
+  height: 54px;
+  border: 1.24px solid #007066;
+  border-radius: 0;
+  padding: 0 12px;
+  font-size: 15px;
+  color: #1a1a1a;
+  font-family: inherit;
+  background: #fff;
+  box-sizing: border-box;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.ws-field input:focus,
+.ws-select select:focus {
+  outline: 2px solid #2b5aa8;
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.ws-select {
+  position: relative;
+}
+
+.ws-select::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #007066;
+  pointer-events: none;
+}
+
+.ws-select select {
+  padding-right: 32px;
+}
+
+.ws-form__note {
+  font-size: 12px;
+  color: #888;
+  margin: 2px 0 12px;
+}
+
+.ws-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.ws-checkbox input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: #fc5c3a;
+  cursor: pointer;
+}
+
+.ws-form__legal {
+  font-size: 11px;
+  color: #aaa;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* ── Buttons ── */
+
+.ws-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  font-size: 16px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.ws-btn--submit {
+  height: 55px;
+  min-width: 147px;
+  background: #fc5c3a;
+  color: #fff;
+}
+
+.ws-btn--submit:hover { background: #e54a2b; }
+
+.ws-btn--submit:disabled {
+  background: #f0a18d;
+  cursor: not-allowed;
+}
+
+.ws-btn--cta {
+  height: 68px;
+  padding: 0 56px;
+  background: #fd6a44;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.ws-btn--cta:hover { background: #e55a36; }
+
+/* ── Help button ── */
+
+.ws-help {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid #007066;
+  background: transparent;
+  color: #007066;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.ws-help:hover { background: #f0faf9; }
+
+/* ── Success modal ── */
+
+.ws-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 95, 183, 0.50);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ws-modal {
+  background: #f2f2f2;
+  width: 900px;
+  max-width: 100%;
+  padding: 56px 68px 64px;
+  position: relative;
+}
+
+.ws-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: rgba(0, 0, 0, 0.78);
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+  padding: 0;
+}
+
+.ws-modal__close:hover { color: #000; }
+
+.ws-modal__title {
+  font-size: 40px;
+  font-weight: 500;
+  color: #144a46;
+  margin: 0 0 24px;
+  line-height: normal;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+}
+
+.ws-modal__body {
+  font-size: 27px;
+  color: #144a46;
+  line-height: 1.53;
+  margin-bottom: 40px;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+}
+
+.ws-modal__body p { margin: 0; }
+
+.ws-modal__actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ws-btn--modal-primary {
+  height: 66px;
+  min-width: 260px;
+  background: #fa693c;
+  color: #fff;
+  font-size: 27px;
+  font-weight: 400;
+  padding: 0 40px;
+}
+
+.ws-btn--modal-primary:hover { background: #e55930; }
+
+.ws-btn--modal-secondary {
+  height: 66px;
+  min-width: 259px;
+  background: transparent;
+  color: #fc5c3a;
+  font-size: 27px;
+  font-weight: 400;
+  border: 1px solid #ff5c26 !important;
+  padding: 0 40px;
+}
+
+.ws-btn--modal-secondary:hover { background: rgba(252, 92, 58, 0.05); }
+
+/* ── Courses ── */
+
+.ws-courses {
+  background: #6c98d8;
+  padding: 72px 80px;
+}
+
+.ws-courses__title {
+  font-size: 43px;
+  font-weight: 400;
+  color: #fff;
+  margin: 0 0 12px;
+}
+
+.ws-courses__desc {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.5;
+  margin: 0 0 48px;
+  max-width: 560px;
+}
+
+.ws-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 56px;
+}
+
+.ws-card {
+  background: #fff;
+  overflow: hidden;
+  border-radius: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+}
+
+.ws-card__img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.ws-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ws-card__body {
+  padding: 14px 16px 18px;
+}
+
+.ws-card__tag {
+  display: inline-block;
+  font-size: 11.67px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  background: #f2f2f2;
+  padding: 2px 8px;
+  border-radius: 0;
+}
+
+.ws-card__title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #043a37;
+  margin: 6px 0 8px;
+  line-height: 1.25;
+}
+
+.ws-card__meta {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+  line-height: 1.6;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ws-courses__cta {
+  text-align: center;
+}
+
+/* ── Benefits ── */
+
+.ws-benefits {
+  background: #5478ce;
+  padding: 80px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.ws-benefits__left h2 {
+  font-size: 57px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.ws-benefits__label {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 24px;
+}
+
+.ws-benefits__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ws-benefits__list li {
+  font-size: 18px;
+  color: #fff;
+  padding-left: 28px;
+  position: relative;
+}
+
+.ws-benefits__list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  background: #f4945c;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 1280px) {
+  .ws-hero__title { font-size: 60px; }
+  .ws-hero__subtitle { font-size: 22px; }
+  .ws-hero__left { padding: 48px 48px; }
+  .ws-courses { padding: 56px 48px; }
+  .ws-benefits { padding: 64px 48px; }
+}
+
+@media (max-width: 1024px) {
+  .ws-hero { flex-direction: column; }
+  .ws-hero__left { flex: unset; padding: 48px 32px; }
+  .ws-hero__strip { display: none; }
+  .ws-hero__right { flex: unset; padding: 36px 32px; }
+  .ws-hero__title { font-size: 46px; }
+  .ws-hero__subtitle { font-size: 20px; }
+  .ws-grid { grid-template-columns: repeat(2, 1fr); }
+  .ws-benefits { grid-template-columns: 1fr; gap: 36px; padding: 56px 32px; }
+  .ws-benefits__left h2 { font-size: 40px; }
+}
+
+@media (max-width: 640px) {
+  .ws-hero__left { padding: 28px 20px 24px; }
+  .ws-hero__title { font-size: 36px; }
+  .ws-hero__subtitle { font-size: 17px; margin-bottom: 20px; }
+  .ws-hero__right { padding: 24px 20px 56px; }
+  .ws-badge { font-size: 13px; padding: 4px 14px; margin-bottom: 16px; }
+
+  .ws-field label { font-size: 12px; }
+  .ws-field input,
+  .ws-select select { height: 38px; font-size: 13px; }
+  .ws-form__row { gap: 8px; margin-bottom: 10px; }
+  .ws-field--full { margin-bottom: 10px; }
+  .ws-form__note { font-size: 11px; }
+  .ws-checkbox { font-size: 12px; }
+  .ws-form__legal { font-size: 10px; }
+  .ws-btn--submit { height: 43px; min-width: 128px; font-size: 13px; }
+
+  .ws-detail-line { font-size: 14px; }
+  .ws-hero__detail svg { width: 16px; height: 16px; }
+  .ws-hero__google { width: 140px; }
+  .ws-hero__support { padding-top: 24px; }
+
+  .ws-courses { padding: 40px 20px; }
+  .ws-courses__title { font-size: 22px; }
+  .ws-courses__desc { font-size: 15px; margin-bottom: 24px; }
+  .ws-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 12px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px;
+    margin-bottom: 32px;
+    grid-template-columns: unset;
+  }
+  .ws-card {
+    flex: 0 0 80%;
+    scroll-snap-align: start;
+  }
+  .ws-card__title { font-size: 19px; }
+  .ws-btn--cta { height: 43px; font-size: 15px; }
+
+  .ws-benefits { padding: 40px 20px; gap: 20px; }
+  .ws-benefits__left h2 { font-size: 20px; line-height: 1.5; }
+  .ws-benefits__label { font-size: 15px; margin-bottom: 14px; }
+  .ws-benefits__list li { font-size: 15px; padding-left: 20px; }
+  .ws-benefits__list li::before { width: 9px; height: 9px; top: 5px; }
+  .ws-benefits__list { gap: 12px; }
+
+  .ws-modal { padding: 40px 28px 48px; }
+  .ws-modal__title { font-size: 26px; }
+  .ws-modal__body { font-size: 18px; }
+  .ws-btn--modal-primary,
+  .ws-btn--modal-secondary { height: 52px; min-width: 0; width: 100%; font-size: 18px; }
+  .ws-modal__actions { flex-direction: column; }
+}

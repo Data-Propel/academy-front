@@ -18,6 +18,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword/ResetPassword'));
 const AutoLogin = lazy(() => import('./pages/AutoLogin/AutoLogin'));
 const FormPage = lazy(() => import('./pages/FormPage/FormPage'));
 const CourseEvaluation = lazy(() => import('./pages/CourseEvaluation/CourseEvaluation'));
+const WorkshopLanding = lazy(() => import('./pages/WorkshopLanding/WorkshopLanding'));
 
 import './App.css';
 
@@ -58,6 +59,7 @@ export function AppContent() {
     /^\/courses\/[^/]+\/topics\/\d+/.test(location.pathname);
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isFormRoute = location.pathname.startsWith('/forms/');
+  const isWorkshopRoute = location.pathname === '/workshop';
 
   return (
     <div className="app">
@@ -86,12 +88,13 @@ export function AppContent() {
           <Route path="/auto-login" element={<AutoLogin />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/forms/:slug" element={<FormPage />} />
+          <Route path="/workshop" element={<WorkshopLanding />} />
           <Route path="/admin/*" element={isAuthenticated() ? <Admin /> : <Navigate to="/login" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-      {!isLearnerRoute && !isAdminRoute && !isFormRoute && <Footer />}
-      {!isAdminRoute && !isFormRoute && (
+      {!isLearnerRoute && !isAdminRoute && !isFormRoute && !isWorkshopRoute && <Footer />}
+      {!isAdminRoute && !isFormRoute && !isWorkshopRoute && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '3rem', pointerEvents: 'none', zIndex: 9999 }}>
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <GradualBlur position="bottom" height="3rem" strength={2} divCount={6} curve="bezier" />
