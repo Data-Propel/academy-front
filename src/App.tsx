@@ -59,7 +59,7 @@ export function AppContent() {
     /^\/courses\/[^/]+\/topics\/\d+/.test(location.pathname);
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isFormRoute = location.pathname.startsWith('/forms/');
-  const isWorkshopRoute = location.pathname === '/workshop';
+  const isWorkshopRoute = location.pathname === '/lidera-con-ia-mindset';
 
   return (
     <div className="app">
@@ -88,7 +88,7 @@ export function AppContent() {
           <Route path="/auto-login" element={<AutoLogin />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/forms/:slug" element={<FormPage />} />
-          <Route path="/workshop" element={<WorkshopLanding />} />
+          <Route path="/lidera-con-ia-mindset" element={<WorkshopLanding />} />
           <Route path="/admin/*" element={isAuthenticated() ? <Admin /> : <Navigate to="/login" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
