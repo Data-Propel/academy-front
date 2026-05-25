@@ -93,28 +93,34 @@
 .ws-hero__details {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 28px;
 }
 
 .ws-hero__detail {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
 }
 
 .ws-hero__detail svg {
-  width: 22px;
-  height: 22px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
-  margin-top: 3px;
-  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.ws-hero__detail-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .ws-detail-line {
-  font-size: 20px;
+  font-size: 22px;
   color: #fff;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.35;
+  font-weight: 300;
 }
 
 /* ── Google.org support ── */

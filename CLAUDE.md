@@ -11,7 +11,7 @@ Propel Nonprofit Academy LMS frontend. Rebuilt from WordPress/Elementor to React
 - **Frontend**: React 19 + TypeScript + Vite (this repo)
 - **Backend**: Django 4.2 + DRF with JWT auth (`/home/ec2-user/academy-back`)
 - **Live frontend**: `https://propelacademy.org`
-- **Live API**: `https://api.academy.wepropel.org/api/`
+- **Live API**: `https://propelacademy.org/api/`
 - **GitHub**: `https://github.com/Data-Propel/academy-front.git`
 
 ## Architecture
@@ -23,7 +23,7 @@ Propel Nonprofit Academy LMS frontend. Rebuilt from WordPress/Elementor to React
 - **PostgreSQL** database
 - **SSL**: Let's Encrypt certificates
 - Frontend domain: `propelacademy.org`
-- API domain: `api.academy.wepropel.org`
+- API domain: `propelacademy.org` (nginx proxies `/api/` to gunicorn)
 
 ### Frontend Structure
 

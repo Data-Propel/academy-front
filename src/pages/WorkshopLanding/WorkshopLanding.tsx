@@ -52,6 +52,7 @@ const WorkshopLanding = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [zoomJoinUrl, setZoomJoinUrl] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -66,9 +67,20 @@ const WorkshopLanding = () => {
       const res = await fetch('/api/workshops/lidera-ia/register/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          nombre: form.nombre,
+          apellido: form.apellido,
+          email: form.email,
+          pais: form.pais,
+          organizacion: form.organizacion,
+          tipo_organizacion: form.tipoOrganizacion,
+          como_te_enteraste: form.comoTeEnteraste,
+          newsletter: form.newsletter,
+        }),
       });
       if (res.ok) {
+        const data = await res.json().catch(() => ({})) as { zoom_join_url?: string | null };
+        setZoomJoinUrl(data.zoom_join_url ?? null);
         setSuccess(true);
       } else {
         const data = await res.json().catch(() => ({})) as { detail?: string };
@@ -95,7 +107,13 @@ const WorkshopLanding = () => {
             <button className="ws-modal__close" onClick={() => setSuccess(false)}>×</button>
             <h2 className="ws-modal__title">¡Estás dentro!</h2>
             <div className="ws-modal__body">
-              <p>Gracias por registrarte al workshop: Lidera con un IA mindset. </p>
+              <p>Gracias por registrarte al workshop: Lidera con un IA mindset.</p>
+              {zoomJoinUrl && (
+                <p>
+                  <strong>Tu enlace de Zoom:</strong>{' '}
+                  <a href={zoomJoinUrl} target="_blank" rel="noopener noreferrer">{zoomJoinUrl}</a>
+                </p>
+              )}
               <p><strong>Para iniciar tu certificación, crea tu cuenta en la Nonprofit Academy.</strong></p>
             </div>
             <div className="ws-modal__actions">
@@ -121,16 +139,16 @@ const WorkshopLanding = () => {
 
           <div className="ws-hero__details">
             <div className="ws-hero__detail">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
               </svg>
-              <div>
+              <div className="ws-hero__detail-text">
                 <p className="ws-detail-line">18 de junio</p>
                 <p className="ws-detail-line">11 AM AR/UR | 10 AM CH</p>
               </div>
             </div>
             <div className="ws-hero__detail">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" />
               </svg>
               <p className="ws-detail-line">Vía Zoom</p>
