@@ -53,12 +53,13 @@
   display: inline-block;
   background: #fc5c3a;
   color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 6px 20px;
+  font-size: 25px;
+  font-weight: 400;
+  padding: 6px 24px;
   border-radius: 0;
-  margin-bottom: 24px;
+  margin-bottom: 29px;
   width: fit-content;
+  line-height: normal;
 }
 
 /* ── Hero title ── */
@@ -66,26 +67,28 @@
 .ws-hero__title {
   font-size: 78px;
   font-weight: 400;
-  line-height: 1.0;
-  margin: 0 0 20px;
+  line-height: 1.06;
+  margin: 0 0 47px;
   color: #fff;
   white-space: pre-line;
 }
 
 .ws-hero__title-light {
   font-weight: 300;
+  color: #fff;
 }
 
 .ws-hero__title-medium {
-  font-weight: 500;
+  font-weight: 600;
+  color: #fff;
 }
 
 .ws-hero__subtitle {
-  font-size: 28px;
-  color: rgba(255, 255, 255, 0.88);
-  margin: 0 0 40px;
+  font-size: 32px;
+  color: #fff;
+  margin: 0 0 32px;
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1.31;
 }
 
 /* ── Hero details (date / zoom) ── */
@@ -93,7 +96,7 @@
 .ws-hero__details {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 0;
 }
 
 .ws-hero__detail {
@@ -102,25 +105,26 @@
   gap: 16px;
 }
 
-.ws-hero__detail svg {
-  width: 32px;
-  height: 32px;
+.ws-hero__detail-icon {
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 8px;
+  object-fit: contain;
+  object-position: center;
 }
 
 .ws-hero__detail-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
 .ws-detail-line {
-  font-size: 22px;
+  font-size: 20.5px;
   color: #fff;
   margin: 0;
-  line-height: 1.35;
-  font-weight: 300;
+  line-height: 2;
+  font-weight: 400;
 }
 
 /* ── Google.org support ── */
@@ -367,9 +371,20 @@
   line-height: 1.53;
   margin-bottom: 40px;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+  overflow-wrap: anywhere;
 }
 
-.ws-modal__body p { margin: 0; }
+.ws-modal__body p { margin: 0 0 14px; }
+.ws-modal__body p:last-child { margin-bottom: 0; }
+
+.ws-modal__zoom-link {
+  color: #fa693c;
+  font-weight: 600;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+.ws-modal__zoom-link:hover { color: #d94f24; }
 
 .ws-modal__actions {
   display: flex;
@@ -501,18 +516,19 @@
 }
 
 .ws-benefits__left h2 {
-  font-size: 57px;
-  font-weight: 700;
+  font-size: 56.83px;
+  font-weight: 400;
   color: #fff;
-  line-height: 1.2;
+  line-height: 68px;
   margin: 0;
 }
 
 .ws-benefits__label {
-  font-size: 18px;
+  font-size: 32px;
   font-weight: 600;
   color: #fff;
-  margin: 0 0 24px;
+  line-height: 42px;
+  margin: 0 0 42px;
 }
 
 .ws-benefits__list {
@@ -521,13 +537,14 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 41px;
 }
 
 .ws-benefits__list li {
-  font-size: 18px;
+  font-size: 32px;
+  line-height: 42px;
   color: #fff;
-  padding-left: 28px;
+  padding-left: 39px;
   position: relative;
 }
 
@@ -535,7 +552,7 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 4px;
+  top: 13px;
   width: 16px;
   height: 16px;
   background: #f4945c;
