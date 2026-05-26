@@ -153,8 +153,8 @@ export default function AdminCourses() {
         URL.revokeObjectURL(blobUrl);
         return;
       }
-      if (Math.abs(ratio - 16 / 9) > 0.25) {
-        setThumbnailError(`La imagen debe ser 16:9 (ej: 1280x720). Tu imagen: ${w}x${h}px`);
+      if (Math.abs(ratio - 16 / 9) > 0.5) {
+        setThumbnailError(`Se recomienda proporción 16:9 (ej: 1280x720). Tu imagen: ${w}x${h}px`);
         URL.revokeObjectURL(blobUrl);
         return;
       }
