@@ -358,6 +358,23 @@ export const authApi = {
   },
 };
 
+// Short-lived cache of `/courses/<slug>/` so hover-prefetch warms the data that
+// the preview modal, course detail, and learner pages all load via getBySlug.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type CourseBySlugResult = { ok: boolean; data: any };
+const COURSE_BY_SLUG_TTL = 60_000;
+const courseBySlugCache = new Map<string, { ts: number; promise: Promise<CourseBySlugResult> }>();
+
+const cloneCourseResult = (r: CourseBySlugResult): CourseBySlugResult => {
+  // Return a fresh copy so callers that mutate `.data` (e.g. is_enrolled) don't
+  // corrupt the shared cached object.
+  try {
+    return { ok: r.ok, data: structuredClone(r.data) };
+  } catch {
+    return { ok: r.ok, data: r.data };
+  }
+};
+
 // Courses API
 export const coursesApi = {
   list: async (params?: { category?: string; level?: string; search?: string; featured?: boolean }) => {
@@ -372,9 +389,26 @@ export const coursesApi = {
     return { ok: response.ok, data: await response.json() };
   },
 
-  getBySlug: async (slug: string) => {
-    const response = await apiFetch(`/courses/${slug}/`);
-    return { ok: response.ok, data: await response.json() };
+  getBySlug: async (slug: string): Promise<CourseBySlugResult> => {
+    const cached = courseBySlugCache.get(slug);
+    if (cached && Date.now() - cached.ts < COURSE_BY_SLUG_TTL) {
+      return cloneCourseResult(await cached.promise);
+    }
+    const promise = (async () => {
+      const response = await apiFetch(`/courses/${slug}/`);
+      return { ok: response.ok, data: await response.json() };
+    })();
+    courseBySlugCache.set(slug, { ts: Date.now(), promise });
+    // Don't cache failures — evict so the next call retries.
+    promise.then((r) => { if (!r.ok) courseBySlugCache.delete(slug); }).catch(() => courseBySlugCache.delete(slug));
+    return cloneCourseResult(await promise);
+  },
+
+  // Fire-and-forget warm-up for hover/focus on a course card.
+  prefetchBySlug: (slug: string) => {
+    const cached = courseBySlugCache.get(slug);
+    if (cached && Date.now() - cached.ts < COURSE_BY_SLUG_TTL) return;
+    coursesApi.getBySlug(slug).catch(() => {});
   },
 
   getCategories: async () => {

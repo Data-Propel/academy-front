@@ -88,7 +88,13 @@ const CourseCard = ({ course, status, progress, isFavorite, onToggleFavorite, on
   };
 
   return (
-    <Link to={courseUrl} className="course-card" onClick={handleCardClick}>
+    <Link
+      to={courseUrl}
+      className="course-card"
+      onClick={handleCardClick}
+      onMouseEnter={() => coursesApi.prefetchBySlug(course.slug)}
+      onFocus={() => coursesApi.prefetchBySlug(course.slug)}
+    >
       <div className="course-thumbnail">
         {src ? (
           <img src={src} alt={course.title} loading="lazy" decoding="async" width={400} height={260} />
