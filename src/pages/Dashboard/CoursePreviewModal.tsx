@@ -101,7 +101,8 @@ export default function CoursePreviewModal({ slug, onClose }: { slug: string; on
     });
   };
 
-  const thumb = course ? (localThumbnails[course.slug] || course.thumbnail_url) : null;
+  // Admin-uploaded thumbnail (backend) wins; hardcoded local map is only a fallback.
+  const thumb = course ? (course.thumbnail_url || localThumbnails[course.slug]) : null;
   const ctaLabel = loggedIn ? 'Empezar curso' : 'Inscribirme';
   const ctaHref = loggedIn ? `/courses/${slug}` : '/login';
 

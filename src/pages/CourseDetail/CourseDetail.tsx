@@ -186,7 +186,6 @@ const formatFileSize = (bytes: number): string => {
 
 const CourseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  console.log('[CourseDetail]', slug);
   const navigate = useNavigate();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
