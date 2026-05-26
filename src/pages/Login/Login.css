@@ -1,435 +1,626 @@
-.login-page {
-  min-height: 60vh;
-  min-height: 60dvh;
-  background: linear-gradient(135deg, #043A37 28%, #032220 95%);
+.login2-page {
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4% 0;
-}
-
-.login-container {
-  width: 100%;
-  max-width: 560px;
-}
-
-.login-header {
-  text-align: center;
-  padding: 50px 40px 0;
-}
-
-.login-logo {
-  max-width: 200px;
-  height: auto;
-  margin-bottom: 2rem;
-}
-
-.login-title {
-  color: #F2F2F2;
-  font-size: 34px;
-  font-weight: 600;
+  background: #f2f2f2;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin: 0 0 1rem 0;
-  line-height: 100%;
 }
 
-.login-subtitle {
-  color: #F2F2F2;
-  font-size: 24px;
-  font-weight: 600;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin: 0 0 2rem 0;
-  line-height: 100%;
+/* ---------- Mobile-only header & footer (hidden on desktop) ---------- */
+
+.login2-mobileHeader,
+.login2-mobileFooter {
+  display: none;
 }
 
-.login-divider {
-  width: 61%;
-  height: 1px;
-  background: #656565;
-  margin: 2.5rem auto 0.5rem;
-}
+/* ---------- Left brand panel ---------- */
 
-.login-card {
-  background: transparent;
-  border: 1px solid #656565;
-  border-radius: 0;
-  box-shadow: none;
+.login2-brand {
+  flex: 0 0 50%;
+  position: relative;
+  padding: 96px 48px 140px;
+  text-align: center;
+  background: #f2f2f2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   overflow: hidden;
 }
 
-.login-form {
-  padding: 0 40px 40px;
+.login2-brand__logo {
+  width: min(560px, 80%);
+  height: auto;
+  display: block;
 }
 
-.form-error {
-  background: rgba(253, 106, 68, 0.2);
-  border: 1px solid #FD6A44;
-  color: #FD6A44;
-  padding: 12px 16px;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+.login2-brand__tagline {
+  margin-top: 28px;
+  font-size: 20px;
+  color: #144a46;
+  max-width: 440px;
 }
 
-.form-info {
-  background: rgba(4, 58, 55, 0.3);
-  border: 1px solid #656565;
-  color: #F2F2F2;
+.login2-tiles {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 200px));
+  gap: 16px 12px;
+  justify-content: center;
+}
+
+.login2-tiles img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+
+.login2-support {
+  margin-top: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.login2-support__label {
+  font-size: 14px;
+  color: #144a46;
+}
+
+.login2-support img {
+  width: 160px;
+  height: auto;
+}
+
+.login2-brand__corner {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: 96px;
+  background: #f4945c;
+  display: flex;
+  align-items: stretch;
+}
+
+.login2-brand__corner img {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+
+/* ---------- Right form panel ---------- */
+
+.login2-formSide {
+  flex: 1 1 auto;
+  position: relative;
+  background: #fff;
+  padding: 96px 80px;
+  display: flex;
+  align-items: center;
+}
+
+.login2-form {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.login2-title {
+  margin: 0 0 36px;
+  font-weight: 300;
+  font-size: 32px;
+  color: #003b37;
+}
+
+.login2-subtitle {
+  margin: -20px 0 28px;
+  font-size: 16px;
+  color: #144a46;
+  line-height: 1.4;
+}
+
+.login2-error {
+  background: rgba(252, 92, 58, 0.1);
+  border: 1px solid #fc5c3a;
+  color: #fc5c3a;
   padding: 12px 16px;
   border-radius: 4px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.login2-success {
+  background: rgba(17, 109, 102, 0.1);
+  border: 1px solid #116D66;
+  color: #0E4B43;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.login2-info {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  color: #144a46;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
-.email-display {
-  color: #F2F2F2;
-  font-size: 1rem;
-  font-weight: 500;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+.login2-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 22px;
 }
 
-.change-email {
-  background: none;
+.login2-field label {
+  font-size: 16px;
+  color: #144a46;
+  font-weight: 400;
+}
+
+.login2-field input {
+  height: 48px;
   border: none;
-  color: #FD6A44;
-  font-size: 0.85rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  cursor: pointer;
-  margin-left: 10px;
-  padding: 0;
-  transition: color 0.3s ease;
-}
-
-.change-email:hover {
-  color: #f8b81f;
-  text-decoration: underline;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #F2F2F2;
-  font-size: 0.95rem;
-  font-weight: 500;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-.required {
-  color: #fd6a44;
-  font-weight: 600;
-}
-
-.login-form .form-input,
-.login-form input[type="text"],
-.login-form input[type="email"],
-.login-form input[type="password"] {
-  width: 100%;
-  height: 50px;
-  padding: 0 1rem;
-  border: 1px solid #656565;
-  border-radius: 0;
+  background: #f5f5f5;
+  border-radius: 5px;
+  padding: 0 16px;
   font-size: 15px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  transition: border-color 0.3s ease, background-color 0.3s ease;
+  color: #144a46;
+  font-family: inherit;
   box-sizing: border-box;
-  background-color: #ffffff;
-  color: #1a1a1a;
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  appearance: none;
+  width: 100%;
 }
 
-.login-form .form-input::placeholder,
-.login-form input::placeholder {
-  color: rgba(0, 0, 0, 0.4);
+.login2-field input:focus {
+  outline: 2px solid #fc5c3a;
+  outline-offset: 0;
 }
 
-.login-form .form-input:focus,
-.login-form input:focus {
-  outline: none;
-  border-color: #FD6A44;
-  background-color: #ffffff;
-}
-
-/* Password toggle */
-.password-wrapper {
+.login2-passwordWrap {
   position: relative;
 }
 
-.password-wrapper .form-input {
-  padding-right: 3rem;
+.login2-passwordWrap input {
+  padding-right: 48px;
 }
 
-.eye-toggle {
+.login2-eye {
   position: absolute;
   right: 0;
   top: 0;
   height: 100%;
-  width: 3rem;
+  width: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: none;
   border: none;
   cursor: pointer;
-  color: #656565;
+  color: #144a46;
   padding: 0;
-  transition: color 0.2s ease;
 }
 
-.eye-toggle:hover {
-  color: #F2F2F2;
+.login2-eye:hover {
+  color: #003b37;
 }
 
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.checkbox-label {
+.login2-emailRow {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: #F2F2F2;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  gap: 12px;
+  font-size: 15px;
+  color: #144a46;
 }
 
-.checkbox-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+.login2-link {
+  background: none;
+  border: none;
+  color: #fc5c3a;
+  font-size: 14px;
   cursor: pointer;
-  accent-color: #043a37;
-}
-
-.forgot-password {
-  color: #FD6A44;
+  padding: 0;
+  font-family: inherit;
   text-decoration: none;
-  font-size: 0.9rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  transition: color 0.3s ease;
 }
 
-.forgot-password:hover {
-  color: #f8b81f;
+.login2-link:hover {
   text-decoration: underline;
 }
 
-.forgot-password-container {
-  text-align: center;
-  margin-top: 1.5rem;
+.login2-required {
+  margin: 14px 0 28px;
+  font-size: 14px;
+  color: #656565;
 }
 
-.button-divider {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(to right, transparent, #656565, transparent);
-  margin: 1.5rem 0;
-}
-
-.submit-button {
-  display: block;
+.login2-google {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
   width: auto;
-  margin: 0 auto;
-  padding: 14px 48px;
+  min-width: 320px;
+  height: 54px;
+  padding: 0 20px;
+  background: #f5f5f5;
   border: none;
-  border-radius: 0;
-  box-sizing: border-box;
-  background: #FD6A44;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  border-radius: 4px;
+  font-size: 17px;
+  color: #144a46;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-family: inherit;
+  margin-bottom: 44px;
 }
 
-.button-text {
-  display: block;
+.login2-google img {
+  width: 22px;
+  height: 22px;
 }
 
-.submit-button:hover {
-  background: #e55a36;
+.login2-google:hover {
+  background: #ebebeb;
 }
 
-.submit-button:active {
-  transform: translateY(0);
-}
-
-.submit-button:disabled {
-  background: #ccc;
+.login2-google:disabled {
   cursor: not-allowed;
   opacity: 0.7;
 }
 
-.login-footer {
-  padding: 2rem 30px;
-  text-align: center;
-  background: transparent;
-  border-top: 1px solid #656565;
-  font-size: 0.95rem;
-  color: #F2F2F2;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+.login2-actions {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.register-link {
-  display: inline-block;
-  background: rgba(255, 90, 47, 0.12);
-  color: #FF5A2F;
-  text-decoration: none;
-  font-weight: 600;
-  border: 2px solid #FF5A2F;
+.login2-btn {
+  height: 56px;
+  padding: 0 32px;
   border-radius: 0;
-  padding: 10px 24px;
-  margin-top: 0;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 17px;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  min-width: 170px;
 }
 
-.register-link:hover {
-  background: #FF5A2F;
-  border-color: #FF5A2F;
-  color: #ffffff;
+.login2-btn--primary {
+  background: #fc5c3a;
+  color: #fff;
+  border-color: #fc5c3a;
 }
 
-/* Verify Email */
-.verify-email-container {
-  padding: 40px 30px;
+.login2-btn--primary:hover {
+  background: #e54a2b;
+  border-color: #e54a2b;
+}
+
+.login2-btn--primary:disabled {
+  background: #f0a18d;
+  border-color: #f0a18d;
+  cursor: not-allowed;
+}
+
+.login2-btn--outline {
+  background: transparent;
+  color: #fc5c3a;
+  border-color: #fc5c3a;
+}
+
+.login2-btn--outline:hover {
+  background: #fff5f1;
+}
+
+.login2-btn--full {
+  width: 100%;
+}
+
+.login2-forgot {
+  display: inline-block;
+  margin-top: 28px;
+  font-size: 13px;
+  color: #656565;
+  text-decoration: underline;
+}
+
+.login2-forgot:hover {
+  color: #fc5c3a;
+}
+
+.login2-help {
+  position: fixed;
+  right: 28px;
+  bottom: 24px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid #144a46;
+  background: transparent;
+  color: #144a46;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login2-help:hover {
+  background: #f5f5f5;
+}
+
+/* Verify email state */
+.login2-verify {
   text-align: center;
 }
 
-.verify-email-icon {
+.login2-verify__icon {
   width: 80px;
   height: 80px;
-  margin: 0 auto 24px;
-  background: rgba(248, 184, 31, 0.2);
+  margin: 24px auto 24px;
+  background: rgba(17, 109, 102, 0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.verify-email-icon svg {
+.login2-verify__icon svg {
   width: 40px;
   height: 40px;
-  color: #f8b81f;
+  color: #0E4B43;
 }
 
-.verify-email-text {
-  color: #F2F2F2;
-  font-size: 1.1rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin: 0 0 12px 0;
+.login2-verify__text {
+  color: #144a46;
+  font-size: 16px;
+  margin: 0 0 12px;
   line-height: 1.5;
 }
 
-.verify-email-text strong {
-  color: #FD6A44;
+.login2-verify__text strong {
+  color: #fc5c3a;
 }
 
-.verify-email-subtext {
-  color: rgba(242, 242, 242, 0.7);
-  font-size: 0.95rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  margin: 0 0 30px 0;
+.login2-verify__sub {
+  color: #656565;
+  font-size: 14px;
+  margin: 0 0 28px;
   line-height: 1.5;
 }
 
-.back-to-login {
+.login2-back {
   display: block;
-  background: none;
-  border: none;
-  color: #FD6A44;
-  font-size: 0.95rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  cursor: pointer;
   margin: 20px auto 0;
-  padding: 0;
-  transition: color 0.3s ease;
 }
 
-.back-to-login:hover {
-  color: #f8b81f;
-  text-decoration: underline;
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1280px) {
+  .login2-formSide {
+    padding: 80px 56px;
+  }
 }
 
-.form-success {
-  background: rgba(17, 109, 102, 0.3);
-  border: 1px solid #116D66;
-  color: #4ecdc4;
-  padding: 12px 16px;
-  border-radius: 4px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-/* Tablet (768px) */
-@media (max-width: 768px) {
-  .login-page {
-    padding: 10% 5%;
-  }
-
-  .login-container {
-    width: 100%;
-  }
-
-  .login-form {
-    padding: 30px 30px 20px;
-  }
-
-  .login-footer {
-    padding: 1.5rem;
-  }
-
-  .form-options {
+@media (max-width: 1024px) {
+  .login2-page {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+  }
+
+  /* Hide desktop brand panel on mobile — replaced by mobileHeader + mobileFooter */
+  .login2-brand {
+    display: none;
+  }
+
+  /* Hide the in-form title on mobile — title moves to mobileHeader */
+  .login2-form > .login2-title {
+    display: none;
+  }
+  .login2-form > .login2-subtitle {
+    text-align: center;
+    margin: 0 0 24px;
+  }
+
+  .login2-mobileHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 24px 32px;
+    background: #f2f2f2;
+  }
+  .login2-mobileHeader__title {
+    margin: 0 0 24px;
+    color: #003b37;
+    font-weight: 300;
+    font-size: 24px;
+  }
+  .login2-mobileHeader__logo {
+    width: min(360px, 80%);
+    height: auto;
+  }
+  .login2-mobileHeader__tagline {
+    margin: 18px 0 0;
+    font-size: 15px;
+    color: #144a46;
+    max-width: 360px;
+  }
+
+  .login2-formSide {
+    padding: 40px 32px 40px;
+    background: #fff;
+  }
+
+  .login2-mobileFooter {
+    display: block;
+    background: #fff;
+  }
+  .login2-mobileFooter__support {
+    background: #f2f2f2;
+    padding: 40px 24px 32px;
+    text-align: center;
+    color: #144a46;
+  }
+  .login2-mobileFooter__support span {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .login2-mobileFooter__support img {
+    width: 180px;
+    height: auto;
+  }
+  .login2-mobileFooter__corner {
+    background: #f4945c;
+    height: 80px;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+  }
+  .login2-mobileFooter__corner img {
+    height: 100%;
+    width: auto;
+    display: block;
   }
 }
 
-/* Mobile (480px) */
-@media (max-width: 480px) {
-  .login-page {
-    padding: 8% 4%;
+@media (max-width: 1024px) {
+  /* Buttons stay side-by-side on mobile, matching the Figma mobile layout */
+  .login2-actions {
+    flex-wrap: nowrap;
+    gap: 12px;
   }
+  .login2-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 8px;
+  }
+  .login2-google {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+  }
+  /* Forgot-password link is not present in the mobile design */
+  .login2-forgot {
+    display: none;
+  }
+}
 
-  .login-title {
+@media (max-width: 640px) {
+  .login2-mobileHeader {
+    padding: 32px 20px 24px;
+  }
+  .login2-mobileHeader__title {
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+  .login2-mobileHeader__tagline {
+    font-size: 14px;
+  }
+  .login2-formSide {
+    padding: 32px 20px 40px;
+  }
+  .login2-title {
     font-size: 26px;
   }
-
-  .login-subtitle {
-    font-size: 18px;
+  .login2-btn {
+    height: 52px;
+    font-size: 15px;
   }
-
-  .login-header {
-    padding: 24px 16px 0;
+  .login2-help {
+    right: 16px;
+    bottom: 16px;
   }
-
-  .login-form {
-    padding: 24px 16px 20px;
+  .login2-mobileFooter__corner {
+    height: 64px;
   }
+}
 
-  .login-divider {
-    margin: 1.5rem auto 0;
+/* ---------- Mobile-only dark-teal site footer ---------- */
+
+.login2-siteFooter {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .login2-siteFooter {
+    display: block;
+    background: #003b37;
+    color: #fff;
+    padding: 40px 24px 32px;
+    font-family: inherit;
   }
-
-  .submit-button {
-    width: 100%;
-    padding: 14px 20px;
+  .login2-siteFooter__logo {
+    width: 180px;
+    height: auto;
+    display: block;
+    margin-bottom: 14px;
+  }
+  .login2-siteFooter__tagline {
+    margin: 0 0 32px;
+    font-size: 13px;
+    color: #d6e0df;
+    line-height: 1.5;
+  }
+  .login2-siteFooter__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .login2-siteFooter__col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .login2-siteFooter__col h4 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .login2-siteFooter__col a {
+    font-size: 15px;
+    color: #fff;
+    text-decoration: none;
+  }
+  .login2-siteFooter__col a:hover {
+    text-decoration: underline;
+  }
+  .login2-siteFooter__social {
+    display: flex;
+    gap: 14px;
+    margin: 36px 0 24px;
+    color: #fff;
+  }
+  .login2-siteFooter__social a {
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .login2-siteFooter__contact {
+    display: inline-block;
+    color: #fff;
+    font-size: 14px;
+    text-decoration: underline;
+    margin-bottom: 14px;
+  }
+  .login2-siteFooter__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 14px;
+  }
+  .login2-siteFooter__legal a {
+    color: #fff;
+    text-decoration: underline;
   }
 }

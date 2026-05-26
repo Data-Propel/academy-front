@@ -60,6 +60,7 @@ export function AppContent() {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isFormRoute = location.pathname.startsWith('/forms/');
   const isWorkshopRoute = location.pathname === '/lidera-con-ia-mindset';
+  const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
 
   return (
     <div className="app">
@@ -93,8 +94,8 @@ export function AppContent() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-      {!isLearnerRoute && !isAdminRoute && !isFormRoute && !isWorkshopRoute && <Footer />}
-      {!isAdminRoute && !isFormRoute && !isWorkshopRoute && (
+      {!isLearnerRoute && !isAdminRoute && !isFormRoute && !isWorkshopRoute && !isAuthRoute && <Footer />}
+      {!isAdminRoute && !isFormRoute && !isWorkshopRoute && !isAuthRoute && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '3rem', pointerEvents: 'none', zIndex: 9999 }}>
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <GradualBlur position="bottom" height="3rem" strength={2} divCount={6} curve="bezier" />
