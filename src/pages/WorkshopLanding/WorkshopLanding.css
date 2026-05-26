@@ -599,8 +599,7 @@
   .ws-form__row { gap: 8px; margin-bottom: 10px; }
   .ws-field--full { margin-bottom: 10px; }
   .ws-form__note { font-size: 11px; }
-  .ws-checkbox { font-size: 12px; }
-  .ws-form__legal { font-size: 10px; }
+  /* Keep checkbox + legal text at the desktop size on all screens. */
   .ws-btn--submit { height: 43px; min-width: 128px; font-size: 13px; }
 
   .ws-detail-line { font-size: 14px; }
@@ -632,8 +631,8 @@
   .ws-benefits { padding: 40px 20px; gap: 20px; }
   .ws-benefits__left h2 { font-size: 20px; line-height: 1.5; }
   .ws-benefits__label { font-size: 15px; margin-bottom: 14px; }
-  .ws-benefits__list li { font-size: 15px; padding-left: 20px; }
-  .ws-benefits__list li::before { width: 9px; height: 9px; top: 5px; }
+  .ws-benefits__list li { font-size: 15px; line-height: 1.5; padding-left: 20px; }
+  .ws-benefits__list li::before { width: 9px; height: 9px; top: 7px; }
   .ws-benefits__list { gap: 12px; }
 
   .ws-modal { padding: 40px 28px 48px; }
