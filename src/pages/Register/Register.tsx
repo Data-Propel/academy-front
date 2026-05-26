@@ -52,7 +52,7 @@ const COUNTRIES = [
   { value: 'OTHER', label: 'Otro' },
 ];
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID as string | undefined;
 
 type GoogleCredentialResponse = { credential: string };
 type GoogleIdAPI = {
@@ -137,7 +137,7 @@ const Register = () => {
 
   const handleGoogleClick = () => {
     if (!GOOGLE_CLIENT_ID) {
-      setError('Google Sign-In no está configurado (falta VITE_GOOGLE_CLIENT_ID).');
+      setError('Google Sign-In no está configurado (falta VITE_GOOGLE_OAUTH_CLIENT_ID).');
       return;
     }
     if (!googleReady.current) {
