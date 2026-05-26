@@ -20,6 +20,7 @@ type GoogleCredentialResponse = { credential: string };
 type GoogleIdAPI = {
   initialize: (config: { client_id: string; callback: (r: GoogleCredentialResponse) => void }) => void;
   prompt: () => void;
+  renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
 };
 declare global {
   interface Window {
@@ -48,6 +49,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState('');
   const googleReady = useRef(false);
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+  const [gsiRendered, setGsiRendered] = useState(false);
 
   const handleGoogleCredential = async ({ credential }: GoogleCredentialResponse) => {
     setError('');
@@ -73,6 +76,20 @@ const Login = () => {
       const id = window.google?.accounts?.id;
       if (!id) return;
       id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredential });
+      // Render Google's real button into a transparent overlay sized to match the
+      // styled button. GSI won't render into a hidden/zero-size container, so the
+      // overlay must have real dimensions; opacity:0 keeps it invisible while the
+      // user's click lands on the real button (reliable popup flow, not One Tap).
+      const container = googleBtnRef.current;
+      if (container) {
+        container.innerHTML = '';
+        const w = Math.min(400, Math.max(200, Math.round(container.getBoundingClientRect().width) || 320));
+        id.renderButton(container, {
+          type: 'standard', theme: 'outline', size: 'large',
+          text: 'continue_with', locale: 'es', width: w,
+        });
+        setGsiRendered(true);
+      }
       googleReady.current = true;
     };
     if (existing) {
@@ -94,11 +111,12 @@ const Login = () => {
       setError('Google Sign-In no está configurado (falta VITE_GOOGLE_OAUTH_CLIENT_ID).');
       return;
     }
-    if (!googleReady.current) {
+    const inner = googleBtnRef.current?.querySelector<HTMLElement>('div[role="button"], button');
+    if (!googleReady.current || !inner) {
       setError('Cargando Google Sign-In, intenta de nuevo en un momento.');
       return;
     }
-    window.google?.accounts?.id?.prompt();
+    inner.click();
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -289,10 +307,20 @@ const Login = () => {
 
             <p className="login2-required">*Obligatorio</p>
 
-            <button type="button" className="login2-google" onClick={handleGoogleClick} disabled={loading}>
-              <img src={googleG} alt="" aria-hidden="true" />
-              <span>Continuar con Google</span>
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button type="button" className="login2-google" onClick={handleGoogleClick} disabled={loading} tabIndex={gsiRendered ? -1 : 0}>
+                <img src={googleG} alt="" aria-hidden="true" />
+                <span>Continuar con Google</span>
+              </button>
+              <div
+                ref={googleBtnRef}
+                style={{
+                  position: 'absolute', inset: 0, opacity: 0, overflow: 'hidden',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  pointerEvents: gsiRendered ? 'auto' : 'none',
+                }}
+              />
+            </div>
 
             <div className="login2-actions">
               <button type="button" className="login2-btn login2-btn--outline" onClick={() => navigate('/register')}>
