@@ -66,7 +66,8 @@ const CourseCard = ({ course, status, progress, isFavorite, onToggleFavorite, on
   onToggleFavorite?: (e: MouseEvent) => void;
   onPreview?: (slug: string) => void;
 }) => {
-  const src = localThumbnails[course.slug] || course.thumbnail_url;
+  // Admin-uploaded thumbnail (backend) wins; hardcoded local map is only a fallback.
+  const src = course.thumbnail_url || localThumbnails[course.slug];
   const lastLesson = status === 'in-progress'
     ? localStorage.getItem(`lastLesson:${course.slug}`)
     : null;
