@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef, type MouseEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import PageHead from '../../utils/PageHead';
+import { PAGE_META } from '../../utils/pageMeta';
 import { coursesApi, isAuthenticated, authApi } from '../../services/api';
 import { matchesSearch } from '../../utils/searchAliases';
 import CoursePreviewModal from './CoursePreviewModal';
@@ -471,17 +472,14 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page">
-      <Helmet>
-        <title>Propel Academy — Cursos en línea para organizaciones sin fines de lucro</title>
-        <meta name="description" content="Plataforma de cursos en línea para organizaciones sin fines de lucro: liderazgo, marketing, IA, fundraising, OKRs y más." />
-        <link rel="canonical" href="https://propelacademy.org/" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Propel Academy" />
-        <meta property="og:description" content="Cursos en línea para organizaciones sin fines de lucro." />
-        <meta property="og:url" content="https://propelacademy.org/" />
-        <meta property="og:image" content="https://propelacademy.org/thumbnails/Conacta-con-donantes-portada.webp" />
-        <meta name="twitter:card" content="summary_large_image" />
-      </Helmet>
+      <PageHead
+        raw
+        title={PAGE_META.home.title}
+        description={PAGE_META.home.description}
+        ogDescription={PAGE_META.home.ogDescription}
+        ogImage={PAGE_META.home.ogImage}
+        canonicalPath={PAGE_META.home.canonicalPath}
+      />
       {/* Hero Banner */}
       {!isCatalogRoute && (
       <div className={`dashboard-hero${loggedIn ? ' dashboard-hero--logged-in' : ''}`}>

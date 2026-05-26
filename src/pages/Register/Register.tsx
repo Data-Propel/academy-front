@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
 import { getAttribution } from '../../utils/attribution';
+import PageHead from '../../utils/PageHead';
+import { PAGE_META } from '../../utils/pageMeta';
 import propelLogo from '../../assets/register/propel-logo.png';
 import tileAsistenteIA from '../../assets/register/tile-asistente-ia.png';
 import tileGrants from '../../assets/register/tile-grants.png';
@@ -208,6 +210,14 @@ const Register = () => {
   if (registered) {
     return (
       <div className="reg2-page">
+        <PageHead
+          raw
+          title={PAGE_META.register.title}
+          description={PAGE_META.register.description}
+          ogDescription={PAGE_META.register.ogDescription}
+          ogImage={PAGE_META.register.ogImage}
+          canonicalPath={PAGE_META.register.canonicalPath}
+        />
         <div className="reg2-confirm">
           <h2 className="reg2-confirm__title">Confirma tu correo</h2>
           <p className="reg2-confirm__text">
@@ -226,6 +236,14 @@ const Register = () => {
 
   return (
     <div className="reg2-page">
+      <PageHead
+        raw
+        title={PAGE_META.register.title}
+        description={PAGE_META.register.description}
+        ogDescription={PAGE_META.register.ogDescription}
+        ogImage={PAGE_META.register.ogImage}
+        canonicalPath={PAGE_META.register.canonicalPath}
+      />
       <section className="reg2-brand">
         <h1 className="reg2-brand__welcome">Te damos la bienvenida</h1>
         <img src={propelLogo} alt="Propel Nonprofit Academy" className="reg2-brand__logo" />

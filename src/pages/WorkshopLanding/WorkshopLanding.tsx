@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { authApi, isAuthenticated } from '../../services/api';
 import PageHead from '../../utils/PageHead';
+import { PAGE_META } from '../../utils/pageMeta';
 import propelSquare from '../../assets/workshop/propel-square.png';
 import googleOrg from '../../assets/workshop/google-org.png';
 import courseAsistente from '../../assets/workshop/course-asistente.png';
@@ -139,8 +140,12 @@ const WorkshopLanding = () => {
   return (
     <div className="ws-page">
       <PageHead
-        title="Workshop: Lidera con un IA mindset"
-        description="Aprende a usar IA en tu organización social. Regístrate gratis al workshop virtual del 18 de junio."
+        raw
+        title={PAGE_META.workshop.title}
+        description={PAGE_META.workshop.description}
+        ogDescription={PAGE_META.workshop.ogDescription}
+        ogImage={PAGE_META.workshop.ogImage}
+        canonicalPath={PAGE_META.workshop.canonicalPath}
       />
 
       {/* ── Success modal ── */}
