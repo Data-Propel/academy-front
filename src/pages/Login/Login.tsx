@@ -239,8 +239,7 @@ const Login = () => {
         </div>
 
         <div className="login2-support">
-          <span className="login2-support__label">with support from</span>
-          <img src={googleOrg} alt="Google.org" />
+          <img src={googleOrg} alt="with support from Google.org" />
         </div>
 
         <div className="login2-brand__corner">
@@ -413,8 +412,7 @@ const Login = () => {
 
       <footer className="login2-mobileFooter">
         <div className="login2-mobileFooter__support">
-          <span>with support from</span>
-          <img src={googleOrg} alt="Google.org" />
+          <img src={googleOrg} alt="with support from Google.org" />
         </div>
         <div className="login2-mobileFooter__corner">
           <img src={propelSquare} alt="" aria-hidden="true" />

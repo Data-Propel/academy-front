@@ -221,8 +221,7 @@ const Register = () => {
         </div>
 
         <div className="reg2-support">
-          <span className="reg2-support__label">with support from</span>
-          <img src={googleOrg} alt="Google.org" />
+          <img src={googleOrg} alt="with support from Google.org" />
         </div>
 
         <div className="reg2-brand__corner">
