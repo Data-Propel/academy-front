@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { authApi, isAuthenticated } from '../../services/api';
 import PageHead from '../../utils/PageHead';
 import propelSquare from '../../assets/workshop/propel-square.png';
 import googleOrg from '../../assets/workshop/google-org.png';
@@ -32,6 +33,21 @@ const COMO_TE_ENTERASTE = [
   'Propel',
 ];
 
+// Profile stores country as ISO code; this form uses Spanish names. Unmapped → 'Otro'.
+const COUNTRY_ISO_TO_NAME: Record<string, string> = {
+  AR: 'Argentina', BO: 'Bolivia', CL: 'Chile', CO: 'Colombia', CR: 'Costa Rica',
+  EC: 'Ecuador', SV: 'El Salvador', GT: 'Guatemala', HN: 'Honduras', MX: 'México',
+  NI: 'Nicaragua', PA: 'Panamá', PY: 'Paraguay', PE: 'Perú', DO: 'República Dominicana',
+  UY: 'Uruguay', VE: 'Venezuela', ES: 'España',
+};
+
+// Profile stores org type as a slug; this form uses labels. Unmapped → 'Otro'.
+const ORG_TYPE_SLUG_TO_LABEL: Record<string, string> = {
+  ong: 'ONG / OSC', fundacion: 'Fundación', asociacion: 'Asociación Civil',
+  empresa_social: 'Empresa Social', educativa: 'Academia / Universidad',
+  gobierno: 'Sector Público',
+};
+
 const COURSES = [
   { tag: 'Live',                    title: 'Workshop:\nLidera con IA mindset',  date: '18 DE JUNIO',  meta: '10 AM CH | 11 AM ARG', img: courseLidera },
   { tag: 'Inteligencia Artificial', title: 'Crea tu\nasistente IA',             date: '30 DE JUNIO',  meta: '20 MIN',               img: courseAsistente },
@@ -56,6 +72,30 @@ const WorkshopLanding = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [zoomJoinUrl, setZoomJoinUrl] = useState<string | null>(null);
+
+  // Pre-fill from the logged-in user's profile (editable — they may register someone else).
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+    let cancelled = false;
+    (async () => {
+      const res = await authApi.getProfile();
+      if (cancelled || !res.ok) return;
+      const u = res.data as {
+        first_name?: string; last_name?: string; email?: string;
+        organization?: string; organization_type?: string; country?: string;
+      };
+      setForm(f => ({
+        ...f,
+        nombre: f.nombre || u.first_name || '',
+        apellido: f.apellido || u.last_name || '',
+        email: f.email || u.email || '',
+        organizacion: f.organizacion || u.organization || '',
+        pais: f.pais || (u.country ? (COUNTRY_ISO_TO_NAME[u.country] ?? 'Otro') : ''),
+        tipoOrganizacion: f.tipoOrganizacion || (u.organization_type ? (ORG_TYPE_SLUG_TO_LABEL[u.organization_type] ?? 'Otro') : ''),
+      }));
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
