@@ -67,6 +67,16 @@ const EMPTY: FormState = {
   organizacion: '', tipoOrganizacion: '', comoTeEnteraste: '', newsletter: false,
 };
 
+// DRF returns either { detail: "..." } or field-keyed errors like { email: ["..."] }.
+const extractError = (data: Record<string, unknown>): string => {
+  if (typeof data.detail === 'string') return data.detail;
+  for (const v of Object.values(data)) {
+    if (typeof v === 'string') return v;
+    if (Array.isArray(v) && typeof v[0] === 'string') return v[0];
+  }
+  return 'Ocurrió un error. Por favor, intenta de nuevo.';
+};
+
 const WorkshopLanding = () => {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [loading, setLoading] = useState(false);
@@ -127,8 +137,8 @@ const WorkshopLanding = () => {
         setZoomJoinUrl(data.zoom_join_url ?? null);
         setSuccess(true);
       } else {
-        const data = await res.json().catch(() => ({})) as { detail?: string };
-        setError(data.detail || 'Ocurrió un error. Por favor, intenta de nuevo.');
+        const data = await res.json().catch(() => ({})) as Record<string, unknown>;
+        setError(extractError(data));
       }
     } catch {
       setError('Error de conexión. Intenta más tarde.');
@@ -213,7 +223,7 @@ const WorkshopLanding = () => {
 
         {/* Right: white form panel */}
         <div className="ws-hero__right">
-          <form className="ws-form" onSubmit={handleSubmit} noValidate>
+          <form className="ws-form" onSubmit={handleSubmit}>
             {error && <div className="ws-form__error">{error}</div>}
 
             <div className="ws-form__row">
