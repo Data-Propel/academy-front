@@ -1,0 +1,13 @@
+{
+  "name": "Propel Academy Workshop",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "postCreateCommand": "npm install && npm install -g @anthropic-ai/claude-code",
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite preview",
+      "onAutoForward": "notify"
+    }
+  },
+  "postAttachCommand": "echo '\\n👋 Welcome to the Propel Academy workshop!\\n\\nTo start: type  claude  and press Enter.\\nThen follow the steps in WORKSHOP.md.\\n'"
+}
