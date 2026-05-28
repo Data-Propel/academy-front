@@ -283,7 +283,7 @@ const WorkshopLanding = () => {
 
             <label className="ws-checkbox">
               <input type="checkbox" name="newsletter" checked={form.newsletter} onChange={handleChange} />
-              <span>¿Quieres suscribirte al newsletter de Propel?*</span>
+              <span>¿Quieres suscribirte al newsletter de Propel?</span>
             </label>
 
             <p className="ws-form__legal">
