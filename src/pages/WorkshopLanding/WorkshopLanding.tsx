@@ -287,7 +287,7 @@ const WorkshopLanding = () => {
               )}
               <p><strong>Mientras tanto, comienza tu certificación en la Nonprofit Academy.</strong></p>
               <div className="ws-modal__actions">
-                <a href="/dashboard" className="ws-btn ws-btn--modal-primary">Ir a mis cursos</a>
+                <a href="/cursos" className="ws-btn ws-btn--modal-primary">Ir a mis cursos</a>
               </div>
             </div>
           ) : (
