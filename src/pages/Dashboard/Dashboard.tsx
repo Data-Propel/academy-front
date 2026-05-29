@@ -343,19 +343,21 @@ const Dashboard = () => {
         }
 
         if (loggedIn) {
-          const [profileRes, enrollmentsRes, trackRes, routesRes] = await Promise.all([
+          // Decoupled from Promise.all because a 500 from another endpoint
+          // that returns HTML makes its companion's response.json() throw,
+          // which would reject the whole batch and erase routes.
+          workshopsApi.getMyRoutes()
+            .then((r) => { if (r.ok && Array.isArray(r.data)) setRoutes(r.data); })
+            .catch(() => { /* silently leave routes empty */ });
+
+          const [profileRes, enrollmentsRes, trackRes] = await Promise.all([
             authApi.getProfile(),
             coursesApi.getMyEnrollments(),
-            tracksApi.getFeatured(),
-            workshopsApi.getMyRoutes(),
+            tracksApi.getFeatured().catch(() => ({ ok: false, data: null })),
           ]);
 
           if (trackRes.ok && trackRes.data) {
             setFeaturedTrack(trackRes.data);
-          }
-
-          if (routesRes.ok && Array.isArray(routesRes.data)) {
-            setRoutes(routesRes.data);
           }
 
           if (profileRes.ok) {
