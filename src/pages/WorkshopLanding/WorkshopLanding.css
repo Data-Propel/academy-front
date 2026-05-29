@@ -153,6 +153,23 @@
   max-width: 553px;
 }
 
+/* Shown for ~1 tick while the my-status check runs, so the form never flashes
+   before being swapped for the 'already registered' panel. */
+.ws-form--loading {
+  min-height: 480px;
+}
+
+/* Panel that replaces the form when the logged-in user already has a
+   registration for this workshop. Mirrors the success-modal typography. */
+.ws-form--registered {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0;
+  color: #0E4B43;
+}
+.ws-form--registered p { margin: 0; line-height: 1.5; }
+
 .ws-form__error {
   background: rgba(252, 92, 58, 0.08);
   border: 1px solid #fc5c3a;
