@@ -85,6 +85,29 @@ export default function AdminWorkshops() {
   const [workshops, setWorkshops] = useState<WorkshopOption[]>([]);
   const [workshopSlug, setWorkshopSlug] = useState<string>('');
 
+  // Guided "Crear nueva ruta" flow: workshop + Zoom + courses, all from one
+  // form. `creating` toggles the panel; the rest are form fields, with
+  // `formCourseIds` collecting the 3-or-so courses tied to the ruta.
+  const [creating, setCreating] = useState(false);
+  const [createBusy, setCreateBusy] = useState(false);
+  const [formName, setFormName] = useState('');
+  const [formSlug, setFormSlug] = useState('');
+  const [formSlugTouched, setFormSlugTouched] = useState(false);
+  const [formDate, setFormDate] = useState('');
+  const [formZoomId, setFormZoomId] = useState('');
+  const [formCertName, setFormCertName] = useState('Certificación en IA');
+  const [formCourseIds, setFormCourseIds] = useState<number[]>([]);
+
+  const slugify = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
+
+  const resetCreateForm = () => {
+    setFormName(''); setFormSlug(''); setFormSlugTouched(false);
+    setFormDate(''); setFormZoomId(''); setFormCertName('Certificación en IA');
+    setFormCourseIds([]);
+  };
+
   // Load the workshop list + global course catalog once. The selector reads
   // from `workshops`; default to the most-recent workshop (first in the list,
   // which is ordered by -event_date server-side).
@@ -147,6 +170,46 @@ export default function AdminWorkshops() {
     const res = await adminApi.removeWorkshopPathCourse(workshopSlug, id);
     if (!res.ok) { showError('No se pudo quitar el curso.'); return; }
     setPath((cur) => cur.filter((p) => p.id !== id));
+  };
+
+  const submitCreate = async () => {
+    if (!formName.trim() || !formSlug.trim() || !formDate) {
+      showError('Nombre, slug y fecha son obligatorios.');
+      return;
+    }
+    setCreateBusy(true);
+    // Browser's datetime-local gives "YYYY-MM-DDTHH:MM"; backend accepts that
+    // as a naive datetime in DRF's default parser.
+    const wRes = await adminApi.createWorkshop({
+      name: formName.trim(),
+      slug: formSlug.trim(),
+      event_date: formDate,
+      zoom_meeting_id: formZoomId.trim() || undefined,
+      certification_name: formCertName.trim() || undefined,
+    });
+    if (!wRes.ok) {
+      setCreateBusy(false);
+      const detail = wRes.data && typeof wRes.data === 'object' && 'detail' in wRes.data
+        ? String((wRes.data as { detail: unknown }).detail) : 'No se pudo crear el workshop.';
+      showError(detail);
+      return;
+    }
+    const created = wRes.data as { slug: string; name: string; event_date: string };
+
+    // Attach courses sequentially (the path endpoint appends one at a time and
+    // backfills enrollments; sequential keeps order_index deterministic).
+    for (const id of formCourseIds) {
+      await adminApi.addWorkshopPathCourse(created.slug, id);
+    }
+
+    // Refresh the selector list and switch to the new ruta — its data fetches
+    // automatically via the [workshopSlug] effect.
+    const wList = await adminApi.getWorkshops();
+    if (wList.ok) setWorkshops(wList.data as WorkshopOption[]);
+    setWorkshopSlug(created.slug);
+    setCreating(false);
+    resetCreateForm();
+    setCreateBusy(false);
   };
 
   // Swap two cards locally, persist the new order. Roll back on failure so the
@@ -260,6 +323,13 @@ export default function AdminWorkshops() {
         .wk-path-add button { background: #FD6A44; color: #fff; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
         .wk-path-add button:disabled { opacity: 0.4; cursor: not-allowed; }
         .wk-path-empty { font-size: 0.85rem; color: rgba(242,242,242,0.5); margin-bottom: 14px; }
+        .wk-create-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+        .wk-create-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: rgba(242,242,242,0.7); }
+        .wk-create-grid label input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; }
+        .wk-create-grid__full { grid-column: 1 / -1; }
+        .wk-create-subhead { font-family: 'Libre Franklin', sans-serif; font-size: 0.95rem; color: #F2F2F2; margin: 4px 0 6px; }
+        .wk-create-actions { display: flex; gap: 10px; margin-top: 18px; }
+        @media (max-width: 700px) { .wk-create-grid { grid-template-columns: 1fr; } }
       `}</style>
 
       <PageHeader
@@ -271,20 +341,139 @@ export default function AdminWorkshops() {
       />
 
       <div className="admin-content">
-        {workshops.length > 1 && (
-          <div className="wk-toolbar" style={{ marginBottom: 18 }}>
-            <label style={{ fontSize: '0.85rem', color: 'rgba(242,242,242,0.7)' }}>
-              Workshop:
-            </label>
-            <select
-              value={workshopSlug}
-              onChange={(e) => setWorkshopSlug(e.target.value)}
-            >
-              {workshops.map((w) => (
-                <option key={w.slug} value={w.slug}>{w.name}</option>
-              ))}
-            </select>
-          </div>
+        <div className="wk-toolbar" style={{ marginBottom: 18 }}>
+          <label style={{ fontSize: '0.85rem', color: 'rgba(242,242,242,0.7)' }}>
+            Ruta:
+          </label>
+          <select
+            value={workshopSlug}
+            onChange={(e) => setWorkshopSlug(e.target.value)}
+            disabled={workshops.length === 0}
+          >
+            {workshops.length === 0 && <option value="">— Sin rutas —</option>}
+            {workshops.map((w) => (
+              <option key={w.slug} value={w.slug}>{w.name}</option>
+            ))}
+          </select>
+          <button className="wk-export" onClick={() => setCreating(true)}>
+            + Crear nueva ruta
+          </button>
+        </div>
+
+        {creating && (
+          <section className="wk-path-section">
+            <h2 className="wk-path-title">Nueva ruta</h2>
+            <p className="wk-path-sub">
+              Crea el workshop con su Zoom y elige los cursos que forman la ruta de aprendizaje.
+            </p>
+
+            <div className="wk-create-grid">
+              <label>
+                <span>Nombre del workshop *</span>
+                <input
+                  type="text"
+                  value={formName}
+                  onChange={(e) => {
+                    setFormName(e.target.value);
+                    if (!formSlugTouched) setFormSlug(slugify(e.target.value));
+                  }}
+                  placeholder="Lidera con un IA mindset"
+                />
+              </label>
+              <label>
+                <span>Slug (URL) *</span>
+                <input
+                  type="text"
+                  value={formSlug}
+                  onChange={(e) => { setFormSlug(slugify(e.target.value)); setFormSlugTouched(true); }}
+                  placeholder="lidera-ia"
+                />
+              </label>
+              <label>
+                <span>Fecha y hora del evento *</span>
+                <input
+                  type="datetime-local"
+                  value={formDate}
+                  onChange={(e) => setFormDate(e.target.value)}
+                />
+              </label>
+              <label>
+                <span>Zoom Meeting ID</span>
+                <input
+                  type="text"
+                  value={formZoomId}
+                  onChange={(e) => setFormZoomId(e.target.value.replace(/\s+/g, ''))}
+                  placeholder="123 4567 8901"
+                />
+              </label>
+              <label className="wk-create-grid__full">
+                <span>Nombre de la certificación</span>
+                <input
+                  type="text"
+                  value={formCertName}
+                  onChange={(e) => setFormCertName(e.target.value)}
+                />
+              </label>
+            </div>
+
+            <h3 className="wk-create-subhead">Cursos de la ruta</h3>
+            <p className="wk-path-sub">
+              Selecciona los cursos que el participante debe completar para obtener la certificación. Pueden ser tres o más.
+            </p>
+            {formCourseIds.length > 0 && (
+              <div className="wk-path-list">
+                {formCourseIds.map((cid, i) => {
+                  const c = allCourses.find((x) => x.id === cid);
+                  return (
+                    <div className="wk-path-item" key={cid}>
+                      <div className="wk-path-thumb" />
+                      <div className="wk-path-name">{i + 1}. {c?.title ?? `Curso #${cid}`}</div>
+                      <div className="wk-path-actions">
+                        <button
+                          className="wk-path-btn wk-path-btn--danger"
+                          onClick={() => setFormCourseIds((ids) => ids.filter((x) => x !== cid))}
+                          aria-label="Quitar"
+                        >✕</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="wk-path-add">
+              <select
+                value=""
+                onChange={(e) => {
+                  const id = Number(e.target.value);
+                  if (id) setFormCourseIds((ids) => ids.includes(id) ? ids : [...ids, id]);
+                }}
+              >
+                <option value="">Agregar curso…</option>
+                {allCourses
+                  .filter((c) => !formCourseIds.includes(c.id))
+                  .map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+              </select>
+            </div>
+
+            <div className="wk-create-actions">
+              <button
+                className="wk-export"
+                onClick={submitCreate}
+                disabled={createBusy}
+              >
+                {createBusy ? 'Creando…' : 'Crear ruta'}
+              </button>
+              <button
+                className="wk-path-btn"
+                style={{ width: 'auto', padding: '9px 14px' }}
+                onClick={() => { setCreating(false); resetCreateForm(); }}
+                disabled={createBusy}
+              >
+                Cancelar
+              </button>
+            </div>
+          </section>
         )}
         <section className="wk-path-section">
           <h2 className="wk-path-title">Ruta de aprendizaje</h2>

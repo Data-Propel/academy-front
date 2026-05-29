@@ -1184,6 +1184,21 @@ export const adminApi = {
     return { ok: response.ok, data: await response.json() };
   },
 
+  createWorkshop: async (data: {
+    name: string;
+    slug: string;
+    event_date: string; // ISO 8601
+    zoom_meeting_id?: string;
+    certification_name?: string;
+    description?: string;
+  }) => {
+    const response = await apiFetch('/workshops/admin/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
+
   getWorkshopRegistrations: async (slug: string, stage?: number) => {
     const suffix = stage ? `?stage=${stage}` : '';
     const response = await apiFetch(`/workshops/admin/${slug}/registrations/${suffix}`);
