@@ -1314,3 +1314,32 @@ export interface TrackEngagement {
   enrolled_users: number;
   buckets: Record<string, number>;
 }
+
+export interface WorkshopRoute {
+  workshop: {
+    slug: string;
+    name: string;
+    event_date: string;
+    certification_name: string;
+    zoom_join_url: string | null;
+  };
+  courses: {
+    id: number;
+    slug: string;
+    title: string;
+    subtitle: string;
+    thumbnail_url: string;
+    enrolled: boolean;
+    progress: number;
+    completed: boolean;
+  }[];
+  certificate_issued_at: string | null;
+}
+
+export const workshopsApi = {
+  // Authenticated user's rutas de aprendizaje for the dashboard.
+  getMyRoutes: async (): Promise<{ ok: boolean; data: WorkshopRoute[] }> => {
+    const response = await apiFetch('/workshops/my-routes/');
+    return { ok: response.ok, data: await response.json() };
+  },
+};

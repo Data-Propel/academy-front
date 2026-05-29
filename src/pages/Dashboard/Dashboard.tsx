@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef, type MouseEvent } from 'react
 import { Link, useLocation } from 'react-router-dom';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
-import { coursesApi, isAuthenticated, authApi, tracksApi, type Track } from '../../services/api';
+import { coursesApi, isAuthenticated, authApi, tracksApi, workshopsApi, type Track, type WorkshopRoute } from '../../services/api';
 import { matchesSearch } from '../../utils/searchAliases';
 import CoursePreviewModal from './CoursePreviewModal';
 import TrackHero from './TrackHero';
@@ -315,6 +315,9 @@ const Dashboard = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [featuredTrack, setFeaturedTrack] = useState<Track | null>(null);
   const [enrolledSlugs, setEnrolledSlugs] = useState<Map<string, number>>(new Map());
+  // Each workshop registration the user has, with the course-by-course
+  // progress for its ruta. Empty for users who never registered for a workshop.
+  const [routes, setRoutes] = useState<WorkshopRoute[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('Todos');
   const [activeStatus, setActiveStatus] = useState<string>('Todos');
@@ -340,14 +343,19 @@ const Dashboard = () => {
         }
 
         if (loggedIn) {
-          const [profileRes, enrollmentsRes, trackRes] = await Promise.all([
+          const [profileRes, enrollmentsRes, trackRes, routesRes] = await Promise.all([
             authApi.getProfile(),
             coursesApi.getMyEnrollments(),
             tracksApi.getFeatured(),
+            workshopsApi.getMyRoutes(),
           ]);
 
           if (trackRes.ok && trackRes.data) {
             setFeaturedTrack(trackRes.data);
+          }
+
+          if (routesRes.ok && Array.isArray(routesRes.data)) {
+            setRoutes(routesRes.data);
           }
 
           if (profileRes.ok) {
@@ -524,6 +532,61 @@ const Dashboard = () => {
         </div>
       </div>
       )}
+
+      {loggedIn && !isCatalogRoute && routes.length > 0 && routes.map((route) => {
+        const total = route.courses.length;
+        const completed = route.courses.filter((c) => c.completed).length;
+        const overall = total > 0 ? Math.round((completed / total) * 100) : 0;
+        return (
+          <section key={route.workshop.slug} className="my-route-section">
+            <div className="my-route-header">
+              <div>
+                <p className="my-route-eyebrow">Mi ruta de aprendizaje</p>
+                <h2 className="my-route-title">{route.workshop.name}</h2>
+                <p className="my-route-progress-label">
+                  {completed} de {total} cursos completados · {overall}%
+                </p>
+              </div>
+              {route.workshop.zoom_join_url && (
+                <a
+                  href={route.workshop.zoom_join_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="my-route-zoom"
+                >
+                  Únete al Zoom →
+                </a>
+              )}
+            </div>
+            <div className="my-route-bar">
+              <div className="my-route-bar-fill" style={{ width: `${overall}%` }} />
+            </div>
+            <div className="my-route-grid">
+              {route.courses.map((c, i) => (
+                <Link key={c.slug} to={`/courses/${c.slug}`} className="my-route-card">
+                  <div className="my-route-card-img">
+                    {c.thumbnail_url && <img src={c.thumbnail_url} alt={c.title} loading="lazy" />}
+                  </div>
+                  <div className="my-route-card-body">
+                    <span className="my-route-step">Paso {i + 1}</span>
+                    <h3 className="my-route-card-title">{c.title}</h3>
+                    <div className="my-route-card-bar">
+                      <div className="my-route-card-bar-fill" style={{ width: `${c.progress}%` }} />
+                    </div>
+                    <p className="my-route-card-status">
+                      {c.completed
+                        ? '✓ Completado'
+                        : c.enrolled
+                          ? `${c.progress}% · Continuar`
+                          : 'Comenzar'}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        );
+      })}
 
       {loggedIn && !isCatalogRoute && featuredTrack && (
         <TrackHero

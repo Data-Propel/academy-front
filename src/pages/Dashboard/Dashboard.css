@@ -1256,3 +1256,135 @@ h3.course-title {
     font-size: 0.8rem;
   }
 }
+
+/* ── Mi ruta de aprendizaje (workshop route) ─────────────────────────────── */
+.my-route-section {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 28px 28px 24px;
+  background: linear-gradient(135deg, #0E4B43 0%, #146358 100%);
+  color: #fff;
+  border-radius: 12px;
+}
+.my-route-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.my-route-eyebrow {
+  margin: 0 0 4px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.7);
+}
+.my-route-title {
+  margin: 0;
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 1.6rem;
+  color: #fff;
+}
+.my-route-progress-label {
+  margin: 4px 0 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.75);
+}
+.my-route-zoom {
+  white-space: nowrap;
+  align-self: center;
+  background: #FF5A2F;
+  color: #fff;
+  padding: 9px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+}
+.my-route-zoom:hover { background: #e6491f; }
+.my-route-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+.my-route-bar-fill {
+  height: 100%;
+  background: #A3C94A;
+  transition: width 0.3s ease;
+}
+.my-route-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.my-route-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.my-route-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.10);
+}
+.my-route-card-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: rgba(0,0,0,0.2);
+  overflow: hidden;
+}
+.my-route-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.my-route-card-body { padding: 12px 14px 14px; }
+.my-route-step {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.6);
+}
+.my-route-card-title {
+  margin: 4px 0 10px;
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 0.98rem;
+  color: #fff;
+  line-height: 1.3;
+}
+.my-route-card-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.my-route-card-bar-fill {
+  height: 100%;
+  background: #A3C94A;
+}
+.my-route-card-status {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.8);
+}
+
+@media (max-width: 640px) {
+  .my-route-section { padding: 20px 18px; margin: 20px 16px; }
+  .my-route-header { flex-direction: column; }
+  .my-route-title { font-size: 1.3rem; }
+}
