@@ -118,7 +118,7 @@ const TrackHero = ({ track, userFirstName, localThumbnails, onEnrolled }: TrackH
             const CardWrapper: React.ElementType = c.is_locked ? 'div' : Link;
             const wrapperProps = c.is_locked
               ? { 'aria-disabled': true, title: 'Disponible al completar el curso anterior' }
-              : { to: `/courses/${c.slug}`, 'aria-label': `${ctaLabel}: ${c.title}` };
+              : { to: c.href ?? `/courses/${c.slug}`, 'aria-label': `${ctaLabel}: ${c.title}` };
             return (
               <CardWrapper
                 key={c.course_id}

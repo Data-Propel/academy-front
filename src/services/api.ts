@@ -1238,6 +1238,14 @@ export const adminApi = {
     });
     return { ok: response.ok };
   },
+
+  setWorkshopAttendance: async (slug: string, registrationId: number, attended: boolean) => {
+    const response = await apiFetch(`/workshops/admin/${slug}/registrations/${registrationId}/attendance/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ attended }),
+    });
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
 };
 
 
@@ -1256,6 +1264,10 @@ export interface TrackCourse {
   is_completed: boolean;
   is_locked: boolean;
   progress: number;
+  // Optional override for the card link; defaults to `/courses/${slug}` in
+  // TrackHero. Used for non-course steps like a workshop event whose card
+  // should point at the landing page rather than a non-existent course route.
+  href?: string;
 }
 
 export interface Track {
@@ -1322,6 +1334,8 @@ export interface WorkshopRoute {
     event_date: string;
     certification_name: string;
     zoom_join_url: string | null;
+    attended: boolean;
+    attended_at: string | null;
   };
   courses: {
     id: number;

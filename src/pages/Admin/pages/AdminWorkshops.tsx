@@ -29,6 +29,7 @@ interface Registration {
   como_te_enteraste: string;
   newsletter: boolean;
   registered_at: string;
+  attended_at: string | null;
   user_id: number | null;
   user_email: string | null;
   account_created_at: string | null;
@@ -172,6 +173,18 @@ export default function AdminWorkshops() {
     setPath((cur) => cur.filter((p) => p.id !== id));
   };
 
+  // Toggle the registrant's workshop-attended flag. Optimistic — reverts on
+  // failure so the table doesn't lie if the network drops.
+  const toggleAttendance = async (reg: Registration) => {
+    const next = !reg.attended_at;
+    setRegs((cur) => cur.map((r) => r.id === reg.id ? { ...r, attended_at: next ? new Date().toISOString() : null } : r));
+    const res = await adminApi.setWorkshopAttendance(workshopSlug, reg.id, next);
+    if (!res.ok) {
+      setRegs((cur) => cur.map((r) => r.id === reg.id ? { ...r, attended_at: reg.attended_at } : r));
+      showError('No se pudo actualizar la asistencia.');
+    }
+  };
+
   const submitCreate = async () => {
     if (!formName.trim() || !formSlug.trim() || !formDate) {
       showError('Nombre, slug y fecha son obligatorios.');
@@ -263,11 +276,12 @@ export default function AdminWorkshops() {
   const exportCsv = () => {
     const headers = [
       'Nombre', 'Apellido', 'Email', 'País', 'Organización', 'Tipo de organización',
-      'Cómo se enteró', 'Newsletter', 'Registrado', 'Etapa', 'Cuenta', 'Certificado',
+      'Cómo se enteró', 'Newsletter', 'Registrado', 'Asistió', 'Etapa', 'Cuenta', 'Certificado',
     ];
     const rows = filtered.map((r) => [
       r.nombre, r.apellido, r.email, r.pais, r.organizacion, r.tipo_organizacion,
       r.como_te_enteraste, r.newsletter ? 'Sí' : 'No', fmtDate(r.registered_at),
+      r.attended_at ? 'Sí' : 'No',
       STAGE_META[r.stage]?.label ?? r.stage,
       r.account_created_at ? fmtDate(r.account_created_at) : '',
       r.certificate_issued_at ? fmtDate(r.certificate_issued_at) : '',
@@ -584,6 +598,7 @@ export default function AdminWorkshops() {
                   <th>País</th>
                   <th>Organización</th>
                   <th>Registrado</th>
+                  <th>Asistió</th>
                   <th>Etapa</th>
                 </tr>
               </thead>
@@ -602,6 +617,15 @@ export default function AdminWorkshops() {
                         <td>{r.pais}</td>
                         <td>{r.organizacion}</td>
                         <td>{fmtDate(r.registered_at)}</td>
+                        <td onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={!!r.attended_at}
+                            onChange={() => toggleAttendance(r)}
+                            aria-label={r.attended_at ? 'Marcado como asistió' : 'Marcar asistencia'}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </td>
                         <td>
                           <span className="wk-badge" style={{ background: meta.color }}>
                             {meta.label}
@@ -610,7 +634,7 @@ export default function AdminWorkshops() {
                       </tr>
                       {isOpen && (
                         <tr>
-                          <td colSpan={6} style={{ padding: 0 }}>
+                          <td colSpan={7} style={{ padding: 0 }}>
                             <div className="wk-detail">
                               <div className="wk-detail-grid">
                                 <div>

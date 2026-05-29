@@ -537,8 +537,46 @@ const Dashboard = () => {
 
       {/* Workshop registrants render their ruta via the existing TrackHero —
           the workshop route is just a Track-shaped object (stepper + cards +
-          progress bars already built in TrackHero). */}
+          progress bars already built in TrackHero). The live workshop event
+          is prepended as the first step so 'X de N completados' counts it
+          and the certification gate maps to the stepper visually. */}
       {loggedIn && routes.length > 0 && routes.map((route) => {
+        const workshopDate = new Date(route.workshop.event_date)
+          .toLocaleDateString('es', { day: 'numeric', month: 'long' });
+        const workshopStep = {
+          course_id: -1,
+          slug: route.workshop.slug,
+          title: route.workshop.name,
+          short_description: `Sesión en vivo · ${workshopDate}`,
+          subtitle: `Sesión en vivo · ${workshopDate}`,
+          duration_display: '',
+          thumbnail_url: null,
+          order_index: 0,
+          deadline_label: '',
+          is_enrolled: true,
+          is_completed: route.workshop.attended,
+          is_locked: false,
+          progress: route.workshop.attended ? 100 : 0,
+          // Click → the public landing for this workshop. The TrackHero now
+          // honors `href` over `/courses/${slug}` so a non-course step works.
+          href: '/lidera-con-ia-mindset',
+        };
+        const courseSteps = route.courses.map((c, i) => ({
+          course_id: c.id,
+          slug: c.slug,
+          title: c.title,
+          short_description: c.subtitle,
+          subtitle: c.subtitle,
+          duration_display: '',
+          thumbnail_url: c.thumbnail_url || null,
+          order_index: i + 1,
+          deadline_label: '',
+          is_enrolled: c.enrolled,
+          is_completed: c.completed,
+          is_locked: false,
+          progress: c.progress,
+        }));
+        const allSteps = [workshopStep, ...courseSteps];
         const adapted: Track = {
           id: 0,
           slug: route.workshop.slug,
@@ -548,23 +586,9 @@ const Dashboard = () => {
           description: '',
           is_published: true,
           is_featured: false,
-          completed_count: route.courses.filter((c) => c.completed).length,
-          total_count: route.courses.length,
-          courses: route.courses.map((c, i) => ({
-            course_id: c.id,
-            slug: c.slug,
-            title: c.title,
-            short_description: c.subtitle,
-            subtitle: c.subtitle,
-            duration_display: '',
-            thumbnail_url: c.thumbnail_url || null,
-            order_index: i,
-            deadline_label: '',
-            is_enrolled: c.enrolled,
-            is_completed: c.completed,
-            is_locked: false,
-            progress: c.progress,
-          })),
+          completed_count: allSteps.filter((s) => s.is_completed).length,
+          total_count: allSteps.length,
+          courses: allSteps,
           certificate_template_url: null,
           medal_image_url: null,
           cert_name_x: 0, cert_name_y: 0, cert_name_font_size: 0, cert_name_color: '',
