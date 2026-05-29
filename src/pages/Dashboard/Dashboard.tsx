@@ -533,7 +533,7 @@ const Dashboard = () => {
       </div>
       )}
 
-      {loggedIn && !isCatalogRoute && routes.length > 0 && routes.map((route) => {
+      {loggedIn && routes.length > 0 && routes.map((route) => {
         const total = route.courses.length;
         const completed = route.courses.filter((c) => c.completed).length;
         const overall = total > 0 ? Math.round((completed / total) * 100) : 0;
