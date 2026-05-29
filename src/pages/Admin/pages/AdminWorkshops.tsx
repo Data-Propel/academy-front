@@ -43,6 +43,20 @@ interface Stats {
   stage_5_certified: number;
 }
 
+interface PathCourse {
+  id: number;
+  slug: string;
+  title: string;
+  subtitle: string;
+  thumbnail_url: string;
+}
+
+interface CourseOption {
+  id: number;
+  slug: string;
+  title: string;
+}
+
 const STAGE_META: Record<number, { label: string; color: string }> = {
   1: { label: 'Registrado', color: '#9aa5a1' },
   2: { label: 'Cuenta creada', color: '#5b8def' },
@@ -62,21 +76,63 @@ export default function AdminWorkshops() {
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<number | ''>('');
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [path, setPath] = useState<PathCourse[]>([]);
+  const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
+  const [courseToAdd, setCourseToAdd] = useState<number | ''>('');
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [r, s] = await Promise.all([
+      const [r, s, p, c] = await Promise.all([
         adminApi.getWorkshopRegistrations(WORKSHOP_SLUG),
         adminApi.getWorkshopStats(WORKSHOP_SLUG),
+        adminApi.getWorkshopPath(WORKSHOP_SLUG),
+        adminApi.getCourses(),
       ]);
       setLoading(false);
       if (r.ok) setRegs(r.data as Registration[]);
       else showError('No se pudieron cargar las inscripciones.');
       if (s.ok) setStats(s.data as Stats);
+      if (p.ok) setPath(p.data as PathCourse[]);
+      if (c.ok) setAllCourses((c.data as CourseOption[]).map((x) => ({ id: x.id, slug: x.slug, title: x.title })));
     })();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, []);
+
+  // Courses available to add = all courses minus those already on the path.
+  const availableCourses = useMemo(() => {
+    const taken = new Set(path.map((p) => p.id));
+    return allCourses.filter((c) => !taken.has(c.id));
+  }, [allCourses, path]);
+
+  const addCourseToPath = async () => {
+    if (courseToAdd === '') return;
+    const id = Number(courseToAdd);
+    const res = await adminApi.addWorkshopPathCourse(WORKSHOP_SLUG, id);
+    if (!res.ok) { showError('No se pudo agregar el curso.'); return; }
+    setPath((cur) => [...cur, res.data as PathCourse]);
+    setCourseToAdd('');
+  };
+
+  const removeFromPath = async (id: number) => {
+    const res = await adminApi.removeWorkshopPathCourse(WORKSHOP_SLUG, id);
+    if (!res.ok) { showError('No se pudo quitar el curso.'); return; }
+    setPath((cur) => cur.filter((p) => p.id !== id));
+  };
+
+  // Swap two cards locally, persist the new order. Roll back on failure so the
+  // UI never diverges from the server.
+  const movePath = async (id: number, dir: -1 | 1) => {
+    const idx = path.findIndex((p) => p.id === id);
+    const target = idx + dir;
+    if (idx < 0 || target < 0 || target >= path.length) return;
+    const next = [...path];
+    [next[idx], next[target]] = [next[target], next[idx]];
+    const prev = path;
+    setPath(next);
+    const res = await adminApi.reorderWorkshopPath(WORKSHOP_SLUG, next.map((p) => p.id));
+    if (!res.ok) { setPath(prev); showError('No se pudo reordenar.'); }
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -158,6 +214,23 @@ export default function AdminWorkshops() {
         .wk-course-bar { flex: 1; max-width: 200px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; }
         .wk-course-fill { height: 100%; background: #A3C94A; }
         .wk-link { color: #FD6A44; text-decoration: none; }
+        .wk-path-section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 18px 20px; margin-bottom: 28px; }
+        .wk-path-title { font-family: 'Libre Franklin', sans-serif; font-size: 1.05rem; color: #F2F2F2; margin: 0 0 4px; }
+        .wk-path-sub { font-family: 'Poppins', sans-serif; font-size: 0.78rem; color: rgba(242,242,242,0.6); margin: 0 0 14px; }
+        .wk-path-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+        .wk-path-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; }
+        .wk-path-thumb { width: 56px; height: 40px; object-fit: cover; border-radius: 4px; background: rgba(255,255,255,0.06); }
+        .wk-path-name { flex: 1; font-size: 0.9rem; color: #F2F2F2; }
+        .wk-path-actions { display: flex; gap: 4px; }
+        .wk-path-btn { background: rgba(255,255,255,0.08); color: #F2F2F2; border: none; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .wk-path-btn:hover { background: rgba(255,255,255,0.14); }
+        .wk-path-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .wk-path-btn--danger:hover { background: rgba(252,92,58,0.6); }
+        .wk-path-add { display: flex; gap: 10px; align-items: center; }
+        .wk-path-add select { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; }
+        .wk-path-add button { background: #FD6A44; color: #fff; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .wk-path-add button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .wk-path-empty { font-size: 0.85rem; color: rgba(242,242,242,0.5); margin-bottom: 14px; }
       `}</style>
 
       <PageHeader
@@ -166,6 +239,64 @@ export default function AdminWorkshops() {
       />
 
       <div className="admin-content">
+        <section className="wk-path-section">
+          <h2 className="wk-path-title">Ruta de aprendizaje</h2>
+          <p className="wk-path-sub">
+            Cursos que aparecen en la sección "Certificación en IA" del landing y que el participante debe completar para certificarse.
+          </p>
+
+          {path.length === 0 ? (
+            <p className="wk-path-empty">Aún no hay cursos en la ruta.</p>
+          ) : (
+            <div className="wk-path-list">
+              {path.map((c, i) => (
+                <div className="wk-path-item" key={c.id}>
+                  {c.thumbnail_url
+                    ? <img className="wk-path-thumb" src={c.thumbnail_url} alt="" />
+                    : <div className="wk-path-thumb" />}
+                  <div className="wk-path-name">
+                    {i + 1}. {c.title}
+                  </div>
+                  <div className="wk-path-actions">
+                    <button
+                      className="wk-path-btn"
+                      onClick={() => movePath(c.id, -1)}
+                      disabled={i === 0}
+                      aria-label="Subir"
+                    >↑</button>
+                    <button
+                      className="wk-path-btn"
+                      onClick={() => movePath(c.id, 1)}
+                      disabled={i === path.length - 1}
+                      aria-label="Bajar"
+                    >↓</button>
+                    <button
+                      className="wk-path-btn wk-path-btn--danger"
+                      onClick={() => removeFromPath(c.id)}
+                      aria-label="Quitar"
+                    >✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="wk-path-add">
+            <select
+              value={courseToAdd}
+              onChange={(e) => setCourseToAdd(e.target.value === '' ? '' : Number(e.target.value))}
+            >
+              <option value="">Selecciona un curso…</option>
+              {availableCourses.map((c) => (
+                <option key={c.id} value={c.id}>{c.title}</option>
+              ))}
+            </select>
+            <button onClick={addCourseToPath} disabled={courseToAdd === ''}>
+              Agregar
+            </button>
+          </div>
+        </section>
+
         <div className="wk-funnel">
           {funnel.map((f, i) => (
             <div className="wk-card" key={f.label}>

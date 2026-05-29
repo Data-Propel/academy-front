@@ -1189,6 +1189,35 @@ export const adminApi = {
     const response = await apiFetch(`/workshops/admin/${slug}/stats/`);
     return { ok: response.ok, data: await response.json() };
   },
+
+  // Ruta de aprendizaje (ordered courses on a workshop's certification path)
+  getWorkshopPath: async (slug: string) => {
+    const response = await apiFetch(`/workshops/admin/${slug}/path/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  addWorkshopPathCourse: async (slug: string, courseId: number) => {
+    const response = await apiFetch(`/workshops/admin/${slug}/path/`, {
+      method: 'POST',
+      body: JSON.stringify({ course_id: courseId }),
+    });
+    return { ok: response.ok, data: response.status === 204 ? null : await response.json().catch(() => null) };
+  },
+
+  removeWorkshopPathCourse: async (slug: string, courseId: number) => {
+    const response = await apiFetch(`/workshops/admin/${slug}/path/${courseId}/`, {
+      method: 'DELETE',
+    });
+    return { ok: response.ok };
+  },
+
+  reorderWorkshopPath: async (slug: string, courseIds: number[]) => {
+    const response = await apiFetch(`/workshops/admin/${slug}/path/reorder/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ course_ids: courseIds }),
+    });
+    return { ok: response.ok };
+  },
 };
 
 

@@ -475,7 +475,12 @@
   overflow: hidden;
   border-radius: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.ws-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14); }
 
 .ws-card__img {
   width: 100%;

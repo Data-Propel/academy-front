@@ -4,10 +4,6 @@ import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
 import propelSquare from '../../assets/workshop/propel-square.png';
 import googleOrg from '../../assets/workshop/google-org.png';
-import courseAsistente from '../../assets/workshop/course-asistente.png';
-import courseLidera from '../../assets/workshop/course-lidera.png';
-import courseMetas from '../../assets/workshop/course-metas.png';
-import courseData from '../../assets/workshop/course-data.png';
 import iconCalendar from '../../assets/workshop/icons/calendar.svg';
 import iconClock from '../../assets/workshop/icons/clock.svg';
 import iconVideo from '../../assets/workshop/icons/video.svg';
@@ -49,12 +45,13 @@ const ORG_TYPE_SLUG_TO_LABEL: Record<string, string> = {
   gobierno: 'Sector Público',
 };
 
-const COURSES = [
-  { tag: 'Live',                    title: 'Workshop:\nLidera con IA mindset',  date: '18 DE JUNIO',  meta: '10 AM CH | 11 AM ARG', img: courseLidera },
-  { tag: 'Inteligencia Artificial', title: 'Crea tu\nasistente IA',             date: '30 DE JUNIO',  meta: '20 MIN',               img: courseAsistente },
-  { tag: 'Liderazgo',               title: 'Define tus metas\ncon IA',          date: '16 DE JULIO',  meta: '30 MIN',               img: courseMetas },
-  { tag: 'Medición de impacto',     title: 'Data para el\nimpacto social',      date: '23 DE JULIO',  meta: '30 MIN',               img: courseData },
-];
+type PathCourse = {
+  id: number;
+  slug: string;
+  title: string;
+  subtitle: string;
+  thumbnail_url: string;
+};
 
 type FormState = {
   nombre: string; apellido: string; email: string; pais: string;
@@ -91,6 +88,23 @@ const WorkshopLanding = () => {
   // being replaced — for guests it's true from the start.
   const [statusReady, setStatusReady] = useState(!isAuthenticated());
   const [alreadyRegistered, setAlreadyRegistered] = useState<AlreadyRegistered | null>(null);
+  const [pathCourses, setPathCourses] = useState<PathCourse[]>([]);
+
+  // Public 'ruta de aprendizaje' — runs on mount for everyone, no auth needed.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/workshops/lidera-ia/path/');
+        if (!res.ok || cancelled) return;
+        const data = await res.json() as PathCourse[];
+        if (!cancelled) setPathCourses(data);
+      } catch {
+        // Leave empty on failure — the section just hides itself.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Pre-fill from the logged-in user's profile (editable — they may register someone else)
   // and check whether they already have a registration for this workshop.
@@ -360,33 +374,32 @@ const WorkshopLanding = () => {
       </section>
 
       {/* ── Courses ── */}
-      <section className="ws-courses">
-        <h2 className="ws-courses__title">Certificación en IA</h2>
-        <p className="ws-courses__desc">
-          Lidera el cambio en tu organización social y aplica IA de forma práctica con nuestra ruta de aprendizaje.
-        </p>
+      {pathCourses.length > 0 && (
+        <section className="ws-courses">
+          <h2 className="ws-courses__title">Certificación en IA</h2>
+          <p className="ws-courses__desc">
+            Lidera el cambio en tu organización social y aplica IA de forma práctica con nuestra ruta de aprendizaje.
+          </p>
 
-        <div className="ws-grid">
-          {COURSES.map(c => (
-            <div key={c.title} className="ws-card">
-              <div className="ws-card__img">
-                <img src={c.img} alt={c.title.replace('\n', ' ')} />
-              </div>
-              <div className="ws-card__body">
-                <span className="ws-card__tag">{c.tag}</span>
-                <h3 className="ws-card__title">{c.title.split('\n').map((line, i) => (
-                  <span key={i}>{line}{i < c.title.split('\n').length - 1 && <br />}</span>
-                ))}</h3>
-                <p className="ws-card__meta">{c.date}<br />{c.meta}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+          <div className="ws-grid">
+            {pathCourses.map(c => (
+              <a key={c.id} href={`/courses/${c.slug}`} className="ws-card">
+                <div className="ws-card__img">
+                  {c.thumbnail_url && <img src={c.thumbnail_url} alt={c.title} loading="lazy" />}
+                </div>
+                <div className="ws-card__body">
+                  <h3 className="ws-card__title">{c.title}</h3>
+                  {c.subtitle && <p className="ws-card__meta">{c.subtitle}</p>}
+                </div>
+              </a>
+            ))}
+          </div>
 
-        <div className="ws-courses__cta">
-          <a href="/register" className="ws-btn ws-btn--cta">Crea tu cuenta</a>
-        </div>
-      </section>
+          <div className="ws-courses__cta">
+            <a href="/register" className="ws-btn ws-btn--cta">Crea tu cuenta</a>
+          </div>
+        </section>
+      )}
 
       {/* ── Benefits ── */}
       <section className="ws-benefits">
