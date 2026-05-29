@@ -1190,3 +1190,78 @@ export const adminApi = {
     return { ok: response.ok, data: await response.json() };
   },
 };
+
+
+// Tracks API (certification paths)
+export interface TrackCourse {
+  course_id: number;
+  title: string;
+  slug: string;
+  short_description: string;
+  subtitle: string;
+  duration_display: string;
+  thumbnail_url: string | null;
+  order_index: number;
+  deadline_label: string;
+  is_enrolled: boolean;
+  is_completed: boolean;
+  is_locked: boolean;
+  progress: number;
+}
+
+export interface Track {
+  id: number;
+  name: string;
+  slug: string;
+  subtitle: string;
+  cta_heading: string;
+  description: string;
+  is_published: boolean;
+  is_featured: boolean;
+  completed_count: number;
+  total_count: number;
+  courses: TrackCourse[];
+  certificate_template_url: string | null;
+  medal_image_url: string | null;
+  cert_name_x: number;
+  cert_name_y: number;
+  cert_name_font_size: number;
+  cert_name_color: string;
+  completion_email_subject: string;
+  completion_email_body: string;
+}
+
+export const tracksApi = {
+  getFeatured: async (): Promise<{ ok: boolean; data: Track | null }> => {
+    const response = await apiFetch('/courses/tracks/featured/');
+    return { ok: response.ok, data: await response.json() };
+  },
+  getBySlug: async (slug: string): Promise<{ ok: boolean; data: Track }> => {
+    const response = await apiFetch(`/courses/tracks/${slug}/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+  getEngagement: async (slug: string) => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/engagement/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+  listAdmin: async (): Promise<{ ok: boolean; data: Track[] }> => {
+    const response = await apiFetch('/courses/admin/tracks/');
+    return { ok: response.ok, data: await response.json() };
+  },
+  enroll: async (slug: string) => {
+    const response = await apiFetch(`/courses/tracks/${slug}/enroll/`, { method: 'POST' });
+    return { ok: response.ok, data: await response.json() };
+  },
+  certificateUrl: (slug: string) => `${API_URL}/courses/tracks/${slug}/certificate/`,
+  updateConfig: async (slug: string, formData: FormData) => {
+    const response = await apiFetchFormData(`/courses/admin/tracks/${slug}/config/`, formData, 'PATCH');
+    return { ok: response.ok, data: await response.json() };
+  },
+};
+
+export interface TrackEngagement {
+  track: { slug: string; name: string };
+  total_courses: number;
+  enrolled_users: number;
+  buckets: Record<string, number>;
+}

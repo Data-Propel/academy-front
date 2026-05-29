@@ -2,11 +2,21 @@ import { useEffect, useState, useCallback, useRef, type MouseEvent } from 'react
 import { Link, useLocation } from 'react-router-dom';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
-import { coursesApi, isAuthenticated, authApi } from '../../services/api';
+import { coursesApi, isAuthenticated, authApi, tracksApi, type Track } from '../../services/api';
 import { matchesSearch } from '../../utils/searchAliases';
 import CoursePreviewModal from './CoursePreviewModal';
+import TrackHero from './TrackHero';
 import './Dashboard.css';
 import portadaHero from '../../assets/PortadaAcademy-1920.webp';
+import trackImgCreaAsistente from '../../assets/track/crea-tu-asistente-ia.png';
+import trackImgDefineUi from '../../assets/track/define-tu-ui-con-ia.png';
+import trackImgDataImpacto from '../../assets/track/data-para-el-impacto-social.png';
+
+const trackThumbnails: Record<string, string> = {
+  'crea-tu-asistente-ia': trackImgCreaAsistente,
+  'define-tu-ui-con-ia': trackImgDefineUi,
+  'data-para-el-impacto-social': trackImgDataImpacto,
+};
 
 const localThumbnails: Record<string, string> = {
   'conecta-con-nuevos-donantes': '/thumbnails/Conacta-con-donantes-portada.webp',
@@ -303,6 +313,7 @@ const Dashboard = () => {
   console.log('[Dashboard]');
   const [user, setUser] = useState<User | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [featuredTrack, setFeaturedTrack] = useState<Track | null>(null);
   const [enrolledSlugs, setEnrolledSlugs] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('Todos');
@@ -329,10 +340,15 @@ const Dashboard = () => {
         }
 
         if (loggedIn) {
-          const [profileRes, enrollmentsRes] = await Promise.all([
+          const [profileRes, enrollmentsRes, trackRes] = await Promise.all([
             authApi.getProfile(),
             coursesApi.getMyEnrollments(),
+            tracksApi.getFeatured(),
           ]);
+
+          if (trackRes.ok && trackRes.data) {
+            setFeaturedTrack(trackRes.data);
+          }
 
           if (profileRes.ok) {
             setUser(profileRes.data);
@@ -480,8 +496,8 @@ const Dashboard = () => {
         ogImage={PAGE_META.home.ogImage}
         canonicalPath={PAGE_META.home.canonicalPath}
       />
-      {/* Hero Banner */}
-      {!isCatalogRoute && (
+      {/* Hero Banner — hidden when user is enrolled in the featured track */}
+      {!isCatalogRoute && !(loggedIn && featuredTrack?.courses?.some(c => c.is_enrolled || c.is_completed)) && (
       <div className={`dashboard-hero${loggedIn ? ' dashboard-hero--logged-in' : ''}`}>
         <img
           src={portadaHero}
@@ -507,6 +523,18 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+      )}
+
+      {loggedIn && !isCatalogRoute && featuredTrack && (
+        <TrackHero
+          track={featuredTrack}
+          userFirstName={user?.first_name}
+          localThumbnails={trackThumbnails}
+          onEnrolled={async () => {
+            const r = await tracksApi.getFeatured();
+            if (r.ok && r.data) setFeaturedTrack(r.data);
+          }}
+        />
       )}
 
       <div className="dashboard-container">

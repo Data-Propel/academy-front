@@ -12,6 +12,7 @@ import AdminTags from './pages/AdminTags';
 import AdminCampaigns from './pages/AdminCampaigns';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminWorkshops from './pages/AdminWorkshops';
+import AdminTracks from './pages/AdminTracks';
 import { isSuperuser, isUsersReadonly, isMarketingAdmin } from '../../services/api';
 import './Admin.css';
 import './AdminLayout.css';
@@ -70,6 +71,7 @@ const Admin = () => {
           <Route path="campaigns" element={<AdminCampaigns />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="workshops" element={<AdminWorkshops />} />
+          <Route path="tracks" element={<AdminTracks />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
       </Routes>

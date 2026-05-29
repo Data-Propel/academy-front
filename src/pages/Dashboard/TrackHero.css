@@ -1,0 +1,367 @@
+.track-hero {
+  background: #F5F5F3;
+  padding: 64px 20px 56px;
+}
+
+.track-hero__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ---- Header ---- */
+.track-hero__header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.track-hero__greeting {
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #144a46;
+  margin: 0 0 8px;
+}
+
+.track-hero__headline {
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: clamp(32px, 4.5vw, 44px);
+  font-weight: 400;
+  color: #144a46;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.track-hero__headline strong {
+  font-weight: 700;
+}
+
+/* ---- Stepper ---- */
+.track-stepper {
+  list-style: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0;
+  margin: 0 auto 48px;
+  padding: 0;
+  max-width: 900px;
+  position: relative;
+}
+
+.track-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+
+/* connecting line — sits across dots */
+.track-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 13px;
+  left: calc(50% + 20px);
+  right: calc(-50% + 20px);
+  height: 2px;
+  background: #16625b;
+  z-index: 0;
+}
+
+.track-step--pending:not(:last-child)::after {
+  background: #cfd6d4;
+}
+
+.track-step__label {
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #144a46;
+  text-align: center;
+  line-height: 1.35;
+  min-height: 38px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.track-step__label strong {
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.track-step--pending .track-step__label {
+  color: #7a8a87;
+}
+
+.track-step__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #16625b;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  flex-shrink: 0;
+  transition: width 0.15s ease, height 0.15s ease;
+}
+
+.track-step--done .track-step__dot {
+  width: 18px;
+  height: 18px;
+  background: #16625b;
+}
+
+.track-step--active .track-step__dot {
+  width: 28px;
+  height: 28px;
+  background: #fff;
+  border: 4px solid #16625b;
+  box-shadow: 0 0 0 4px rgba(22, 98, 91, 0.18);
+}
+
+.track-step--pending .track-step__dot {
+  background: #cfd6d4;
+}
+
+/* ---- Cards ---- */
+.track-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 880px) {
+  .track-cards { grid-template-columns: 1fr; }
+  .track-stepper { max-width: 100%; }
+}
+
+.track-card {
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 14px rgba(14, 75, 67, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.track-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(14, 75, 67, 0.16);
+}
+
+.track-card__media {
+  position: relative;
+  aspect-ratio: 434 / 283;
+  overflow: hidden;
+  background: #e9e9e7;
+}
+
+.track-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Designed top placeholder: colored background + white title panel */
+.track-card__media-art {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 28px;
+  overflow: hidden;
+}
+
+.track-card__media-art::before {
+  /* soft radial highlight to mimic the Figma textured backgrounds */
+  content: '';
+  position: absolute;
+  inset: -40% -10% auto auto;
+  width: 70%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(255,255,255,0.18), transparent 65%);
+  pointer-events: none;
+}
+
+.track-card__title-panel {
+  background: #fff;
+  border-radius: 4px;
+  padding: 18px 22px;
+  max-width: 70%;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+}
+
+.track-card__top-title {
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.1;
+  display: block;
+}
+
+/* Theme variants — applied to .track-card__media-art and panel title color */
+.track-card--blue  .track-card__media-art { background: linear-gradient(135deg, #2E4F9B 0%, #38609A 100%); }
+.track-card--blue  .track-card__top-title { color: #2E4F9B; }
+
+.track-card--orange .track-card__media-art { background: linear-gradient(135deg, #E5562E 0%, #F0703B 100%); }
+.track-card--orange .track-card__top-title { color: #E5562E; }
+
+.track-card--teal .track-card__media-art { background: linear-gradient(135deg, #144a46 0%, #1E6C66 100%); }
+.track-card--teal .track-card__top-title { color: #144a46; }
+
+.track-card__badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #A3C94A;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  z-index: 2;
+}
+
+.track-card__body {
+  padding: 22px 30px 28px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.track-card__desc {
+  font-family: 'Libre Franklin', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #144a46;
+  margin: 0 0 14px;
+  line-height: 1.45;
+  flex: 1;
+}
+
+.track-card__meta {
+  font-family: 'Libre Franklin', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  color: #144a46;
+  margin-bottom: 22px;
+}
+
+.track-card__progress {
+  height: 6px;
+  background: #ececea;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.track-card__progress-bar {
+  height: 100%;
+  background: #A3C94A;
+  border-radius: 3px;
+}
+
+.track-card__cta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #16625b;
+  color: #16625b;
+  font-family: 'Libre Franklin', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  padding: 12px 32px;
+  border-radius: 4px;
+  height: 47px;
+  min-width: 136px;
+  text-align: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.track-card:hover .track-card__cta {
+  background: #16625b;
+  color: #fff;
+}
+
+/* ---- Enroll-track CTA (shown above stepper when not yet enrolled) ---- */
+.track-hero__enroll-cta {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.track-hero__enroll-btn {
+  background: #16625b;
+  border: none;
+  color: #fff;
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 14px 36px;
+  border-radius: 4px;
+  cursor: pointer;
+  min-height: 52px;
+  min-width: 280px;
+  transition: background 0.15s ease;
+}
+
+.track-hero__enroll-btn:hover:not(:disabled) {
+  background: #0f4a44;
+}
+
+.track-hero__enroll-btn:disabled {
+  background: #97b1ae;
+  cursor: wait;
+}
+
+.track-hero__enroll-note {
+  margin: 10px 0 0;
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 14px;
+  color: #5b6e6b;
+}
+
+/* ---- Locked card state ---- */
+.track-card--locked {
+  cursor: not-allowed;
+  opacity: 0.92;
+}
+
+.track-card--locked:hover {
+  transform: none;
+  box-shadow: 0 4px 14px rgba(14, 75, 67, 0.08);
+}
+
+.track-card__lock-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 74, 70, 0.65);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  z-index: 3;
+}
