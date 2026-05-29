@@ -1179,6 +1179,11 @@ export const adminApi = {
   },
 
   // Workshops - /api/workshops/admin/<slug>/
+  getWorkshops: async () => {
+    const response = await apiFetch('/workshops/admin/');
+    return { ok: response.ok, data: await response.json() };
+  },
+
   getWorkshopRegistrations: async (slug: string, stage?: number) => {
     const suffix = stage ? `?stage=${stage}` : '';
     const response = await apiFetch(`/workshops/admin/${slug}/registrations/${suffix}`);

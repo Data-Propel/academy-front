@@ -3,8 +3,11 @@ import { adminApi } from '../../../services/api';
 import { useAdmin } from '../AdminContext';
 import PageHeader from '../components/PageHeader';
 
-// Only one workshop exists today. When more are added, turn this into a selector.
-const WORKSHOP_SLUG = 'lidera-ia';
+interface WorkshopOption {
+  slug: string;
+  name: string;
+  event_date: string;
+}
 
 interface CourseProgress {
   slug: string;
@@ -79,25 +82,51 @@ export default function AdminWorkshops() {
   const [path, setPath] = useState<PathCourse[]>([]);
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
   const [courseToAdd, setCourseToAdd] = useState<number | ''>('');
+  const [workshops, setWorkshops] = useState<WorkshopOption[]>([]);
+  const [workshopSlug, setWorkshopSlug] = useState<string>('');
 
+  // Load the workshop list + global course catalog once. The selector reads
+  // from `workshops`; default to the most-recent workshop (first in the list,
+  // which is ordered by -event_date server-side).
   useEffect(() => {
     (async () => {
-      setLoading(true);
-      const [r, s, p, c] = await Promise.all([
-        adminApi.getWorkshopRegistrations(WORKSHOP_SLUG),
-        adminApi.getWorkshopStats(WORKSHOP_SLUG),
-        adminApi.getWorkshopPath(WORKSHOP_SLUG),
+      const [w, c] = await Promise.all([
+        adminApi.getWorkshops(),
         adminApi.getCourses(),
+      ]);
+      if (w.ok) {
+        const list = w.data as WorkshopOption[];
+        setWorkshops(list);
+        if (list.length > 0 && !workshopSlug) setWorkshopSlug(list[0].slug);
+      } else {
+        showError('No se pudieron cargar los workshops.');
+      }
+      if (c.ok) setAllCourses((c.data as CourseOption[]).map((x) => ({ id: x.id, slug: x.slug, title: x.title })));
+    })();
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
+
+  // Per-workshop data — refetched whenever the admin switches workshop.
+  useEffect(() => {
+    if (!workshopSlug) return;
+    (async () => {
+      setLoading(true);
+      // Reset per-workshop state so the previous workshop's data doesn't
+      // flash while the new one loads.
+      setRegs([]); setStats(null); setPath([]); setExpanded(null);
+      const [r, s, p] = await Promise.all([
+        adminApi.getWorkshopRegistrations(workshopSlug),
+        adminApi.getWorkshopStats(workshopSlug),
+        adminApi.getWorkshopPath(workshopSlug),
       ]);
       setLoading(false);
       if (r.ok) setRegs(r.data as Registration[]);
       else showError('No se pudieron cargar las inscripciones.');
       if (s.ok) setStats(s.data as Stats);
       if (p.ok) setPath(p.data as PathCourse[]);
-      if (c.ok) setAllCourses((c.data as CourseOption[]).map((x) => ({ id: x.id, slug: x.slug, title: x.title })));
     })();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, []);
+  }, [workshopSlug]);
 
   // Courses available to add = all courses minus those already on the path.
   const availableCourses = useMemo(() => {
@@ -108,14 +137,14 @@ export default function AdminWorkshops() {
   const addCourseToPath = async () => {
     if (courseToAdd === '') return;
     const id = Number(courseToAdd);
-    const res = await adminApi.addWorkshopPathCourse(WORKSHOP_SLUG, id);
+    const res = await adminApi.addWorkshopPathCourse(workshopSlug, id);
     if (!res.ok) { showError('No se pudo agregar el curso.'); return; }
     setPath((cur) => [...cur, res.data as PathCourse]);
     setCourseToAdd('');
   };
 
   const removeFromPath = async (id: number) => {
-    const res = await adminApi.removeWorkshopPathCourse(WORKSHOP_SLUG, id);
+    const res = await adminApi.removeWorkshopPathCourse(workshopSlug, id);
     if (!res.ok) { showError('No se pudo quitar el curso.'); return; }
     setPath((cur) => cur.filter((p) => p.id !== id));
   };
@@ -130,7 +159,7 @@ export default function AdminWorkshops() {
     [next[idx], next[target]] = [next[target], next[idx]];
     const prev = path;
     setPath(next);
-    const res = await adminApi.reorderWorkshopPath(WORKSHOP_SLUG, next.map((p) => p.id));
+    const res = await adminApi.reorderWorkshopPath(workshopSlug, next.map((p) => p.id));
     if (!res.ok) { setPath(prev); showError('No se pudo reordenar.'); }
   };
 
@@ -186,7 +215,7 @@ export default function AdminWorkshops() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `inscripciones-${WORKSHOP_SLUG}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `inscripciones-${workshopSlug}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -235,10 +264,28 @@ export default function AdminWorkshops() {
 
       <PageHeader
         title="Workshops"
-        subtitle="Inscripciones y embudo de certificación · Lidera con IA mindset"
+        subtitle={
+          workshops.find((w) => w.slug === workshopSlug)?.name
+          ?? 'Inscripciones y embudo de certificación'
+        }
       />
 
       <div className="admin-content">
+        {workshops.length > 1 && (
+          <div className="wk-toolbar" style={{ marginBottom: 18 }}>
+            <label style={{ fontSize: '0.85rem', color: 'rgba(242,242,242,0.7)' }}>
+              Workshop:
+            </label>
+            <select
+              value={workshopSlug}
+              onChange={(e) => setWorkshopSlug(e.target.value)}
+            >
+              {workshops.map((w) => (
+                <option key={w.slug} value={w.slug}>{w.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <section className="wk-path-section">
           <h2 className="wk-path-title">Ruta de aprendizaje</h2>
           <p className="wk-path-sub">
