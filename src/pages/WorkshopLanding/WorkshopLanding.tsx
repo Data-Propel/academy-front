@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { authApi, isAuthenticated } from '../../services/api';
+import { authApi, getToken, isAuthenticated } from '../../services/api';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
 import propelSquare from '../../assets/workshop/propel-square.png';
@@ -77,33 +77,63 @@ const extractError = (data: Record<string, unknown>): string => {
   return 'Ocurrió un error. Por favor, intenta de nuevo.';
 };
 
+type AlreadyRegistered = { zoomJoinUrl: string | null };
+
 const WorkshopLanding = () => {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [zoomJoinUrl, setZoomJoinUrl] = useState<string | null>(null);
+  // For authenticated users we ask the backend up-front whether they already
+  // have a registration for this workshop. While `statusReady` is false we
+  // render a skeleton in the form panel so the form never flashes before
+  // being replaced — for guests it's true from the start.
+  const [statusReady, setStatusReady] = useState(!isAuthenticated());
+  const [alreadyRegistered, setAlreadyRegistered] = useState<AlreadyRegistered | null>(null);
 
-  // Pre-fill from the logged-in user's profile (editable — they may register someone else).
+  // Pre-fill from the logged-in user's profile (editable — they may register someone else)
+  // and check whether they already have a registration for this workshop.
   useEffect(() => {
     if (!isAuthenticated()) return;
     let cancelled = false;
     (async () => {
-      const res = await authApi.getProfile();
-      if (cancelled || !res.ok) return;
-      const u = res.data as {
-        first_name?: string; last_name?: string; email?: string;
-        organization?: string; organization_type?: string; country?: string;
-      };
-      setForm(f => ({
-        ...f,
-        nombre: f.nombre || u.first_name || '',
-        apellido: f.apellido || u.last_name || '',
-        email: f.email || u.email || '',
-        organizacion: f.organizacion || u.organization || '',
-        pais: f.pais || (u.country ? (COUNTRY_ISO_TO_NAME[u.country] ?? 'Otro') : ''),
-        tipoOrganizacion: f.tipoOrganizacion || (u.organization_type ? (ORG_TYPE_SLUG_TO_LABEL[u.organization_type] ?? 'Otro') : ''),
-      }));
+      const token = getToken();
+      const [profileRes, statusRes] = await Promise.all([
+        authApi.getProfile(),
+        fetch('/api/workshops/lidera-ia/my-status/', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }),
+      ]);
+      if (cancelled) return;
+
+      if (profileRes.ok) {
+        const u = profileRes.data as {
+          first_name?: string; last_name?: string; email?: string;
+          organization?: string; organization_type?: string; country?: string;
+        };
+        setForm(f => ({
+          ...f,
+          nombre: f.nombre || u.first_name || '',
+          apellido: f.apellido || u.last_name || '',
+          email: f.email || u.email || '',
+          organizacion: f.organizacion || u.organization || '',
+          pais: f.pais || (u.country ? (COUNTRY_ISO_TO_NAME[u.country] ?? 'Otro') : ''),
+          tipoOrganizacion: f.tipoOrganizacion || (u.organization_type ? (ORG_TYPE_SLUG_TO_LABEL[u.organization_type] ?? 'Otro') : ''),
+        }));
+      }
+
+      if (statusRes.ok) {
+        const data = await statusRes.json().catch(() => ({})) as {
+          registered?: boolean; zoom_join_url?: string | null;
+        };
+        if (data.registered) {
+          setAlreadyRegistered({ zoomJoinUrl: data.zoom_join_url ?? null });
+        }
+      }
+      // If the status call fails (e.g. 401 after refresh-token expiry), fall
+      // open to the form — the POST endpoint will still reject duplicates.
+      setStatusReady(true);
     })();
     return () => { cancelled = true; };
   }, []);
@@ -223,6 +253,30 @@ const WorkshopLanding = () => {
 
         {/* Right: white form panel */}
         <div className="ws-hero__right">
+          {!statusReady ? (
+            <div className="ws-form ws-form--loading" aria-busy="true" />
+          ) : alreadyRegistered ? (
+            <div className="ws-form ws-form--registered">
+              <h2 className="ws-modal__title">¡Ya estás registrado!</h2>
+              <p>Te esperamos en el workshop: Lidera con un IA mindset el 18 de junio.</p>
+              {alreadyRegistered.zoomJoinUrl && (
+                <p>
+                  <a
+                    href={alreadyRegistered.zoomJoinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ws-modal__zoom-link"
+                  >
+                    Únete al Zoom el 18 de junio →
+                  </a>
+                </p>
+              )}
+              <p><strong>Mientras tanto, comienza tu certificación en la Nonprofit Academy.</strong></p>
+              <div className="ws-modal__actions">
+                <a href="/dashboard" className="ws-btn ws-btn--modal-primary">Ir a mis cursos</a>
+              </div>
+            </div>
+          ) : (
           <form className="ws-form" onSubmit={handleSubmit}>
             {error && <div className="ws-form__error">{error}</div>}
 
@@ -294,6 +348,7 @@ const WorkshopLanding = () => {
               {loading ? 'Registrando...' : 'Registrarme'}
             </button>
           </form>
+          )}
 
           <button
             type="button"
