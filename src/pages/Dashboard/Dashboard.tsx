@@ -533,58 +533,61 @@ const Dashboard = () => {
       </div>
       )}
 
+      {/* Workshop registrants render their ruta via the existing TrackHero —
+          the workshop route is just a Track-shaped object (stepper + cards +
+          progress bars already built in TrackHero). */}
       {loggedIn && routes.length > 0 && routes.map((route) => {
-        const total = route.courses.length;
-        const completed = route.courses.filter((c) => c.completed).length;
-        const overall = total > 0 ? Math.round((completed / total) * 100) : 0;
+        const adapted: Track = {
+          id: 0,
+          slug: route.workshop.slug,
+          name: route.workshop.certification_name || route.workshop.name,
+          subtitle: '',
+          cta_heading: 'Tu ruta de aprendizaje:',
+          description: '',
+          is_published: true,
+          is_featured: false,
+          completed_count: route.courses.filter((c) => c.completed).length,
+          total_count: route.courses.length,
+          courses: route.courses.map((c, i) => ({
+            course_id: c.id,
+            slug: c.slug,
+            title: c.title,
+            short_description: c.subtitle,
+            subtitle: c.subtitle,
+            duration_display: '',
+            thumbnail_url: c.thumbnail_url || null,
+            order_index: i,
+            deadline_label: '',
+            is_enrolled: c.enrolled,
+            is_completed: c.completed,
+            is_locked: false,
+            progress: c.progress,
+          })),
+          certificate_template_url: null,
+          medal_image_url: null,
+          cert_name_x: 0, cert_name_y: 0, cert_name_font_size: 0, cert_name_color: '',
+          completion_email_subject: '', completion_email_body: '',
+        };
         return (
-          <section key={route.workshop.slug} className="my-route-section">
-            <div className="my-route-header">
-              <div>
-                <p className="my-route-eyebrow">Mi ruta de aprendizaje</p>
-                <h2 className="my-route-title">{route.workshop.name}</h2>
-                <p className="my-route-progress-label">
-                  {completed} de {total} cursos completados · {overall}%
-                </p>
-              </div>
-              {route.workshop.zoom_join_url && (
+          <div key={route.workshop.slug}>
+            <TrackHero track={adapted} userFirstName={user?.first_name} />
+            {route.workshop.zoom_join_url && (
+              <div style={{ textAlign: 'center', margin: '-8px auto 24px', maxWidth: 1200 }}>
                 <a
                   href={route.workshop.zoom_join_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="my-route-zoom"
+                  style={{
+                    display: 'inline-block', background: '#FF5A2F', color: '#fff',
+                    padding: '10px 20px', borderRadius: 6, textDecoration: 'none',
+                    fontWeight: 600, fontFamily: "'Poppins', sans-serif",
+                  }}
                 >
-                  Únete al Zoom →
+                  Únete al Zoom el 18 de junio →
                 </a>
-              )}
-            </div>
-            <div className="my-route-bar">
-              <div className="my-route-bar-fill" style={{ width: `${overall}%` }} />
-            </div>
-            <div className="my-route-grid">
-              {route.courses.map((c, i) => (
-                <Link key={c.slug} to={`/courses/${c.slug}`} className="my-route-card">
-                  <div className="my-route-card-img">
-                    {c.thumbnail_url && <img src={c.thumbnail_url} alt={c.title} loading="lazy" />}
-                  </div>
-                  <div className="my-route-card-body">
-                    <span className="my-route-step">Paso {i + 1}</span>
-                    <h3 className="my-route-card-title">{c.title}</h3>
-                    <div className="my-route-card-bar">
-                      <div className="my-route-card-bar-fill" style={{ width: `${c.progress}%` }} />
-                    </div>
-                    <p className="my-route-card-status">
-                      {c.completed
-                        ? '✓ Completado'
-                        : c.enrolled
-                          ? `${c.progress}% · Continuar`
-                          : 'Comenzar'}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
+              </div>
+            )}
+          </div>
         );
       })}
 
