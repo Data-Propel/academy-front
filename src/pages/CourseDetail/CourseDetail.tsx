@@ -872,7 +872,8 @@ const CourseDetail = () => {
           <div className="course-sidebar">
             <div className="sidebar-card">
               {(() => {
-                const thumbSrc = localThumbnails[course.slug] || course.thumbnail_url;
+                // Admin-uploaded thumbnail (backend) wins; hardcoded local map is only a fallback.
+                const thumbSrc = course.thumbnail_url || localThumbnails[course.slug];
                 return thumbSrc ? (
                   <div className="sidebar-thumbnail">
                     <img src={thumbSrc} alt={course.title} width={400} height={260} />
