@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { tracksApi, type Track } from '../../services/api';
+import certificationBadge from '../../assets/workshop/certification-badge.png';
 import './TrackHero.css';
 
 interface TrackHeroProps {
@@ -89,14 +90,27 @@ const TrackHero = ({ track, userFirstName, localThumbnails, onEnrolled }: TrackH
                 ? 'active'
                 : 'pending';
             const label = c.deadline_label || c.subtitle || `Paso ${i + 1}`;
+            // The final milestone is the certification reward — render the badge
+            // (Propel × Google.org) in place of the plain dot.
+            const isBadge = i === courses.length - 1;
             return (
-              <li key={c.course_id} className={`track-step track-step--${state}`}>
+              <li key={c.course_id} className={`track-step track-step--${state}${isBadge ? ' track-step--badge' : ''}`}>
                 <span className="track-step__label">{renderStepLabel(label)}</span>
-                <span className="track-step__dot" aria-hidden="true">
-                  {c.is_completed && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
+                <span className="track-step__node">
+                  {isBadge ? (
+                    <img
+                      className="track-step__badge-img"
+                      src={certificationBadge}
+                      alt="Certificación: Lidera con un IA mindset"
+                    />
+                  ) : (
+                    <span className="track-step__dot" aria-hidden="true">
+                      {c.is_completed && (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </span>
                   )}
                 </span>
               </li>
@@ -147,11 +161,12 @@ const TrackHero = ({ track, userFirstName, localThumbnails, onEnrolled }: TrackH
                   )}
                 </div>
                 <div className="track-card__body">
-                  {c.short_description && (
-                    <p className="track-card__desc">{c.short_description}</p>
-                  )}
+                  <h3 className="track-card__title">{c.title}</h3>
                   {c.duration_display && (
                     <span className="track-card__meta">{c.duration_display}</span>
+                  )}
+                  {c.short_description && (
+                    <p className="track-card__desc">{c.short_description}</p>
                   )}
                   {c.is_enrolled && !c.is_completed && c.progress > 0 && (
                     <div className="track-card__progress" aria-label={`${c.progress}% completado`}>

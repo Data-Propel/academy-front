@@ -35,16 +35,15 @@
   font-weight: 700;
 }
 
-/* ---- Stepper ---- */
+/* ---- Stepper (ruta de aprendizaje timeline) ---- */
 .track-stepper {
   list-style: none;
   display: flex;
-  align-items: flex-end;
   justify-content: space-between;
   gap: 0;
-  margin: 0 auto 48px;
+  margin: 0 auto 52px;
   padding: 0;
-  max-width: 900px;
+  max-width: 1040px;
   position: relative;
 }
 
@@ -53,34 +52,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
   position: relative;
-}
-
-/* connecting line — sits across dots */
-.track-step:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  bottom: 13px;
-  left: calc(50% + 20px);
-  right: calc(-50% + 20px);
-  height: 2px;
-  background: #16625b;
-  z-index: 0;
-}
-
-.track-step--pending:not(:last-child)::after {
-  background: #cfd6d4;
 }
 
 .track-step__label {
   font-family: 'Libre Franklin', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
   color: #144a46;
   text-align: center;
   line-height: 1.35;
   min-height: 38px;
+  margin-bottom: 34px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -88,43 +71,75 @@
 
 .track-step__label strong {
   font-weight: 700;
-  margin-left: 4px;
+  color: #2C59B7;
+  margin-left: 5px;
 }
 
-.track-step--pending .track-step__label {
-  color: #7a8a87;
+/* Node row — fixed height so the 36px dots and the larger badge share one
+   horizontal centre line, and the connector can run straight through it. */
+.track-step__node {
+  position: relative;
+  width: 100%;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Connecting line — runs through the centre of the node row to the next node. */
+.track-step:not(:last-child) .track-step__node::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: -50%;
+  transform: translateY(-50%);
+  height: 8px;
+  background: #C7C7C7;
+  border-radius: 4px;
+  z-index: 0;
+}
+
+/* Completed segments fill blue to convey progress along the route. */
+.track-step--done:not(:last-child) .track-step__node::after {
+  background: #2C59B7;
 }
 
 .track-step__dot {
-  width: 14px;
-  height: 14px;
+  position: relative;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: #16625b;
+  background: #C7C7C7;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1;
   flex-shrink: 0;
-  transition: width 0.15s ease, height 0.15s ease;
-}
-
-.track-step--done .track-step__dot {
-  width: 18px;
-  height: 18px;
-  background: #16625b;
 }
 
 .track-step--active .track-step__dot {
-  width: 28px;
-  height: 28px;
-  background: #fff;
-  border: 4px solid #16625b;
-  box-shadow: 0 0 0 4px rgba(22, 98, 91, 0.18);
+  background: #2C59B7;
+  box-shadow: 0 0 0 6px rgba(44, 89, 183, 0.16);
+}
+
+.track-step--done .track-step__dot {
+  background: #2C59B7;
 }
 
 .track-step--pending .track-step__dot {
-  background: #cfd6d4;
+  background: #C7C7C7;
+}
+
+/* Final milestone — the certification badge sits on the end of the line. */
+.track-step__badge-img {
+  position: relative;
+  z-index: 1;
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* ---- Cards ---- */
@@ -142,7 +157,7 @@
 .track-card {
   background: #fff;
   border: 1px solid #ececec;
-  border-radius: 6px;
+  border-radius: 12px;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
@@ -238,28 +253,37 @@
 }
 
 .track-card__body {
-  padding: 22px 30px 28px;
+  padding: 20px 24px 24px;
   display: flex;
   flex-direction: column;
   flex: 1;
+}
+
+.track-card__title {
+  font-family: 'Libre Franklin', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: #144a46;
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+.track-card__meta {
+  font-family: 'Libre Franklin', sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  color: #7a8a87;
+  margin: 0 0 12px;
 }
 
 .track-card__desc {
   font-family: 'Libre Franklin', sans-serif;
   font-weight: 400;
   font-size: 15px;
-  color: #144a46;
-  margin: 0 0 14px;
+  color: #3f5854;
+  margin: 0 0 18px;
   line-height: 1.45;
   flex: 1;
-}
-
-.track-card__meta {
-  font-family: 'Libre Franklin', sans-serif;
-  font-weight: 400;
-  font-size: 14px;
-  color: #144a46;
-  margin-bottom: 22px;
 }
 
 .track-card__progress {

@@ -506,8 +506,9 @@ const Dashboard = () => {
         ogImage={PAGE_META.home.ogImage}
         canonicalPath={PAGE_META.home.canonicalPath}
       />
-      {/* Hero Banner — hidden when user is enrolled in the featured track */}
-      {!isCatalogRoute && !(loggedIn && featuredTrack?.courses?.some(c => c.is_enrolled || c.is_completed)) && (
+      {/* Hero Banner — hidden when the user is on a workshop (their workshop
+          TrackHero renders below instead) or enrolled in the featured track */}
+      {!isCatalogRoute && !(loggedIn && (routes.length > 0 || featuredTrack?.courses?.some(c => c.is_enrolled || c.is_completed))) && (
       <div className={`dashboard-hero${loggedIn ? ' dashboard-hero--logged-in' : ''}`}>
         <img
           src={portadaHero}
