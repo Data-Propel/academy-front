@@ -427,7 +427,7 @@ const CourseDetail = () => {
       <div className="course-detail-page">
         <div className="course-detail-error">
           <p>{error || 'Curso no encontrado'}</p>
-          <Link to="/" className="back-link">Volver a cursos</Link>
+          <Link to="/cursos" className="back-link">Volver a cursos</Link>
         </div>
       </div>
     );
@@ -504,7 +504,7 @@ const CourseDetail = () => {
       <div className="course-detail-container">
         {/* Back Navigation */}
         <div className="course-detail-nav">
-          <Link to="/" className="back-button">
+          <Link to="/cursos" className="back-button">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 18l-6-6 6-6" />
             </svg>

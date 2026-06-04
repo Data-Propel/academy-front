@@ -154,7 +154,7 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
                 </svg>
                 {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
               </button>
-              <Link to="/" className="ccm-btn ccm-btn-secondary" onClick={onClose}>
+              <Link to="/cursos" className="ccm-btn ccm-btn-secondary" onClick={onClose}>
                 Explorar más cursos
               </Link>
             </div>

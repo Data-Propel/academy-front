@@ -103,7 +103,7 @@ const Register = () => {
         ...getAttribution(),
       });
       if (ok) {
-        navigate('/');
+        navigate('/cursos');
       } else {
         setError(data.detail || 'No fue posible iniciar sesión con Google.');
       }

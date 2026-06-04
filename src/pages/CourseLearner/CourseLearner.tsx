@@ -594,7 +594,7 @@ const CourseLearner = () => {
       <div className="cl-page">
         <div className="cl-loading">
           <p>{error || 'Curso no encontrado'}</p>
-          <Link to="/" className="cl-back-link">Volver a cursos</Link>
+          <Link to="/cursos" className="cl-back-link">Volver a cursos</Link>
         </div>
       </div>
     );

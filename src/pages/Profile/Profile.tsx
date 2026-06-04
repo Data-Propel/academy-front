@@ -450,7 +450,7 @@ const Profile = () => {
                       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                     </svg>
                     <p className="profile-empty-text">Aún no estás inscrito en ningún curso</p>
-                    <Link to="/" className="profile-empty-cta">Explorar cursos</Link>
+                    <Link to="/cursos" className="profile-empty-cta">Explorar cursos</Link>
                   </div>
                 )}
               </section>
@@ -542,7 +542,7 @@ const Profile = () => {
                       <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
                     </svg>
                     <p className="profile-empty-text">Completa tu primer curso para obtener un certificado</p>
-                    <Link to="/" className="profile-empty-cta">Explorar cursos</Link>
+                    <Link to="/cursos" className="profile-empty-cta">Explorar cursos</Link>
                   </div>
                 )}
               </section>
@@ -595,7 +595,7 @@ const Profile = () => {
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
                   <p className="profile-empty-text">No tienes cursos favoritos aún.</p>
-                  <Link to="/" className="profile-empty-cta">Explorar cursos</Link>
+                  <Link to="/cursos" className="profile-empty-cta">Explorar cursos</Link>
                 </div>
               )}
             </div>
