@@ -290,9 +290,9 @@ const Home = () => {
                 </a>
               </div>
               <div className="home-footer__legal-links">
-                <a href="/terminos">Términos &amp; Condiciones</a>
+                <a href="https://www.wepropel.org" target="_blank" rel="noopener noreferrer">Términos &amp; Condiciones</a>
                 <span>|</span>
-                <a href="/privacidad">Política de Privacidad</a>
+                <a href="https://www.wepropel.org" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
               </div>
             </div>
           </div>
