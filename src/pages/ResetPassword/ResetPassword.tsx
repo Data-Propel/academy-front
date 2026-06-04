@@ -73,7 +73,7 @@ const ResetPassword = () => {
       if (ok) {
         setSuccess('Contraseña actualizada correctamente. Redirigiendo...');
         setTimeout(() => {
-          navigate('/');
+          navigate('/cursos');
         }, 1500);
       } else {
         setError(data.detail || data.token?.[0] || data.password?.[0] || 'Error al restablecer. El enlace puede haber expirado.');

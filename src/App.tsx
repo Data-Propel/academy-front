@@ -19,6 +19,7 @@ const AutoLogin = lazy(() => import('./pages/AutoLogin/AutoLogin'));
 const FormPage = lazy(() => import('./pages/FormPage/FormPage'));
 const CourseEvaluation = lazy(() => import('./pages/CourseEvaluation/CourseEvaluation'));
 const WorkshopLanding = lazy(() => import('./pages/WorkshopLanding/WorkshopLanding'));
+const Home = lazy(() => import('./pages/Home/Home'));
 
 import './App.css';
 
@@ -61,9 +62,10 @@ export function AppContent() {
   const isFormRoute = location.pathname.startsWith('/forms/');
   const isWorkshopRoute = location.pathname === '/lidera-con-ia-mindset';
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
+  const isHomeRoute = location.pathname === '/';
 
   return (
-    <div className="app">
+    <div className={`app${isHomeRoute ? ' app--home' : ''}`}>
       {!isAdminRoute && !isFormRoute && <Topbar hideHamburger={isLearnerRoute} />}
       <Suspense fallback={
         <div className="page-loading">
@@ -77,7 +79,7 @@ export function AppContent() {
         </div>
       }>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Home />} />
           <Route path="/cursos" element={<Dashboard />} />
           <Route path="/courses/:slug" element={<CourseDetail />} />
           <Route path="/courses/:slug/lessons/:lessonId" element={<CourseLearner />} />
@@ -94,8 +96,8 @@ export function AppContent() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-      {!isLearnerRoute && !isAdminRoute && !isFormRoute && !isWorkshopRoute && !isAuthRoute && <Footer />}
-      {!isAdminRoute && !isFormRoute && !isWorkshopRoute && !isAuthRoute && (
+      {!isLearnerRoute && !isAdminRoute && !isFormRoute && !isWorkshopRoute && !isAuthRoute && !isHomeRoute && <Footer />}
+      {!isAdminRoute && !isFormRoute && !isWorkshopRoute && !isAuthRoute && !isHomeRoute && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '3rem', pointerEvents: 'none', zIndex: 9999 }}>
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <GradualBlur position="bottom" height="3rem" strength={2} divCount={6} curve="bezier" />

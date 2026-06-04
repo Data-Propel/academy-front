@@ -34,7 +34,7 @@ const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/');
+      navigate('/cursos');
     }
   }, [navigate]);
 
@@ -58,7 +58,7 @@ const Login = () => {
     try {
       const { ok, data } = await authApi.googleAuth(credential);
       if (ok) {
-        navigate('/');
+        navigate('/cursos');
       } else {
         setError(data.detail || 'No fue posible iniciar sesión con Google.');
       }
@@ -144,7 +144,7 @@ const Login = () => {
 
       const { ok, data } = await authApi.login(email, password);
       if (ok) {
-        navigate('/');
+        navigate('/cursos');
       } else if (data.email?.[0]?.toLowerCase().includes('verificar')) {
         setStep('verify-email');
         authApi.resendVerification(email).catch(() => {});
@@ -196,7 +196,7 @@ const Login = () => {
     try {
       const { ok, data } = await authApi.setInitialPassword(email, setupToken, password, confirmPassword);
       if (ok) {
-        navigate('/');
+        navigate('/cursos');
       } else {
         setError(data.detail || data.password?.[0] || 'Error al configurar contraseña.');
       }

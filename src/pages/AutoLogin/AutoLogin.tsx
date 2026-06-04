@@ -24,7 +24,7 @@ const AutoLogin = () => {
       try {
         const { ok, data } = await authApi.autoLogin(token);
         if (ok) {
-          navigate('/');
+          navigate('/cursos');
         } else {
           setError(data.detail || data.token?.[0] || 'El enlace es inválido o ha expirado.');
           setLoading(false);
