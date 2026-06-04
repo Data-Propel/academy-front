@@ -4,7 +4,12 @@ import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
 import { coursesApi, isAuthenticated } from '../../services/api';
 import { getCurrentAttribution } from '../../utils/attribution';
+import takeIcon1 from '../../assets/course/take-1.png';
+import takeIcon2 from '../../assets/course/take-2.png';
+import takeIcon3 from '../../assets/course/take-3.png';
 import './CourseDetail.css';
+
+const TAKEAWAY_ICONS = [takeIcon1, takeIcon2, takeIcon3];
 
 const localThumbnails: Record<string, string> = {
   'conecta-con-nuevos-donantes': '/thumbnails/Conacta-con-donantes-portada.webp',
@@ -517,20 +522,13 @@ const CourseDetail = () => {
           <div className="course-main-content">
             {/* Course Header */}
             <div className="course-header-section">
-              <h1 className="course-title">{course.title}</h1>
-
-              {instructor?.name && (
-                <p className="course-instructor-name">{instructor.name}</p>
-              )}
-
-              <div className="course-header-meta">
-                {course.category && (
-                  <span className="course-category-badge">{course.category.name}</span>
-                )}
+              <div className="course-header-top">
+                <h1 className="course-title">{course.title}</h1>
                 <button
                   className={`favorite-button ${course.is_favorite ? 'active' : ''}`}
                   onClick={handleToggleFavorite}
                   disabled={togglingFavorite}
+                  aria-label={course.is_favorite ? 'Guardado' : 'Agregar a favoritos'}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill={course.is_favorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -538,10 +536,23 @@ const CourseDetail = () => {
                   {course.is_favorite ? 'Guardado' : 'Agregar'}
                 </button>
               </div>
+
+              <div className="course-header-meta">
+                {instructor?.name && (
+                  <span className="course-meta-instructor">{instructor.name}</span>
+                )}
+                {instructor?.name && course.category && (
+                  <span className="course-meta-sep" aria-hidden="true" />
+                )}
+                {course.category && (
+                  <span className="course-meta-category">{course.category.name}</span>
+                )}
+              </div>
             </div>
 
             {/* Course Description */}
             <div className="course-section">
+              <h2 className="section-title">Descripción del curso</h2>
               <div
                 className="course-description-text"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(stripDescriptionHeading(course.description || course.short_description)) }}
@@ -555,10 +566,7 @@ const CourseDetail = () => {
                 <ul className="learning-list">
                   {course.what_you_learn.map((item, index) => (
                     <li key={index}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FD6A44" strokeWidth="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                        <polyline points="22 4 12 14.01 9 11.01"/>
-                      </svg>
+                      <span className="learning-bullet" aria-hidden="true" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -570,17 +578,15 @@ const CourseDetail = () => {
             {course.what_you_get && course.what_you_get.length > 0 && (
               <div className="course-section">
                 <h2 className="section-title">¿Qué te llevarás?</h2>
-                <div className="takeaway-list">
+                <div className="takeaway-grid">
                   {course.what_you_get.map((item, index) => (
                     <div key={index} className="takeaway-item">
-                      <div className="takeaway-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                          <polyline points="14 2 14 8 20 8"/>
-                          <line x1="16" y1="13" x2="8" y2="13"/>
-                          <line x1="16" y1="17" x2="8" y2="17"/>
-                        </svg>
-                      </div>
+                      <img
+                        className="takeaway-icon"
+                        src={TAKEAWAY_ICONS[index % TAKEAWAY_ICONS.length]}
+                        alt=""
+                        aria-hidden="true"
+                      />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -840,12 +846,12 @@ const CourseDetail = () => {
                         src={instructor.avatar}
                         alt={instructor.name}
                         className="instructor-avatar"
-                        width={120}
-                        height={120}
+                        width={182}
+                        height={189}
                       />
                     ) : (
                       <div className="instructor-avatar-placeholder">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(242,242,242,0.3)" strokeWidth="1.5">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#11544F" strokeWidth="1.5">
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                           <circle cx="12" cy="7" r="4"/>
                         </svg>
@@ -863,6 +869,17 @@ const CourseDetail = () => {
                       <p className="instructor-bio">{instructor.bio}</p>
                     )}
                   </div>
+                  <a
+                    href="https://www.linkedin.com/company/wepropel"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="instructor-linkedin"
+                    aria-label={`LinkedIn de ${instructor.name ?? 'el instructor'}`}
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </a>
                 </div>
               </div>
             )}
@@ -886,25 +903,49 @@ const CourseDetail = () => {
                 <div className="sidebar-info">
                   {instructor && (
                     <div className="sidebar-row">
-                      <span className="sidebar-label">Instructor:</span>
+                      <span className="sidebar-row-label">
+                        <svg className="sidebar-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        Instructor
+                      </span>
                       <span className="sidebar-value">{instructor.name}</span>
                     </div>
                   )}
 
                   <div className="sidebar-row">
-                    <span className="sidebar-label">Duración:</span>
+                    <span className="sidebar-row-label">
+                      <svg className="sidebar-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M12 7v5l3 2" />
+                      </svg>
+                      Duración
+                    </span>
                     <span className="sidebar-value">{formatDuration(course.duration_hours, course.duration_minutes, course.duration_display)}</span>
                   </div>
 
                   {course.lessons && (
                     <div className="sidebar-row">
-                      <span className="sidebar-label">Módulos:</span>
+                      <span className="sidebar-row-label">
+                        <svg className="sidebar-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                          <rect x="3" y="4" width="18" height="5" rx="1" />
+                          <rect x="3" y="13" width="18" height="5" rx="1" />
+                        </svg>
+                        Módulos
+                      </span>
                       <span className="sidebar-value">{course.lessons.length}</span>
                     </div>
                   )}
 
                   <div className="sidebar-row">
-                    <span className="sidebar-label">Certificación:</span>
+                    <span className="sidebar-row-label">
+                      <svg className="sidebar-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+                        <circle cx="12" cy="8" r="5" />
+                        <path d="M8.5 12.5 7 22l5-3 5 3-1.5-9.5" />
+                      </svg>
+                      Certificación
+                    </span>
                     <span className="sidebar-value">{course.has_certificate !== false ? 'Sí' : 'No'}</span>
                   </div>
                 </div>
@@ -1041,7 +1082,7 @@ const CourseDetail = () => {
                         Inscribiendo...
                       </>
                     ) : (
-                      'Inscribirme'
+                      'Iniciar curso ahora'
                     )}
                   </button>
                 )}
