@@ -4,7 +4,7 @@ import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
 import propelSquare from '../../assets/workshop/propel-square.png';
 import googleOrg from '../../assets/workshop/google-org.png';
-import iconCalendar from '../../assets/workshop/icons/calendar.svg';
+import heroTeam from '../../assets/workshop/hero-team.jpg';
 import iconClock from '../../assets/workshop/icons/clock.svg';
 import iconVideo from '../../assets/workshop/icons/video.svg';
 import './WorkshopLanding.css';
@@ -232,7 +232,10 @@ const WorkshopLanding = () => {
 
         {/* Left: blue info panel */}
         <div className="ws-hero__left">
-          <span className="ws-badge">Workshop</span>
+          <div className="ws-hero__badge-row">
+            <span className="ws-badge">Workshop</span>
+            <span className="ws-hero__date">18 de junio</span>
+          </div>
           <h1 className="ws-hero__title">
             <span className="ws-hero__title-light">Lidera con un</span>
             <br />
@@ -241,10 +244,6 @@ const WorkshopLanding = () => {
           <p className="ws-hero__subtitle">Aprende a usar IA en tu organización social</p>
 
           <div className="ws-hero__details">
-            <div className="ws-hero__detail">
-              <img src={iconCalendar} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
-              <p className="ws-detail-line">18 de junio</p>
-            </div>
             <div className="ws-hero__detail">
               <img src={iconClock} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
               <p className="ws-detail-line">11 AM AR/UR | 10 AM CH</p>
@@ -258,11 +257,14 @@ const WorkshopLanding = () => {
           <div className="ws-hero__support">
             <img src={googleOrg} alt="with support from Google.org" className="ws-hero__google" />
           </div>
+
+          <img src={heroTeam} alt="" aria-hidden="true" className="ws-hero__photo" />
         </div>
 
-        {/* Centre: strip with propel square */}
+        {/* Centre: strip with propel square sitting at the bottom (photo level) */}
         <div className="ws-hero__strip">
           <img src={propelSquare} alt="" aria-hidden="true" className="ws-hero__strip-img" />
+          <div className="ws-hero__strip-block" />
         </div>
 
         {/* Right: white form panel */}

@@ -21,26 +21,70 @@
 .ws-hero__left {
   flex: 0 0 49.3%;
   background: #2c59b7;
-  /* padding-left tracks the topbar's logo position so the badge sits directly
-     under the logo at any viewport ≥ 1264px; falls back to 64px below that. */
-  padding: 56px 64px 56px var(--ws-gutter);
+  /* --pad-l tracks the topbar's logo position so the badge sits directly under
+     the logo at any viewport ≥ 1264px; falls back to 64px below that. The photo
+     bleeds these paddings via the same variables, so overriding them per
+     breakpoint keeps it flush. Bottom padding is 0 so the photo can sit flush
+     against the bottom edge. */
+  --pad-l: var(--ws-gutter);
+  --pad-r: 64px;
+  padding: 56px var(--pad-r) 0 var(--pad-l);
   display: flex;
   flex-direction: column;
   color: #fff;
 }
 
-/* Centre strip */
+/* Top line: "Workshop" badge + event date, side by side */
+.ws-hero__badge-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 29px;
+}
+
+.ws-hero__date {
+  font-size: 23px;
+  font-weight: 300;
+  color: #fff;
+  line-height: normal;
+}
+
+/* Team photo, full-bleed across the bottom of the blue panel. The negative
+   left/right margins cancel the panel padding so it touches both edges; the
+   per-breakpoint overrides below keep it flush as the padding changes. */
+.ws-hero__photo {
+  display: block;
+  width: calc(100% + var(--pad-l) + var(--pad-r));
+  height: 320px;
+  object-fit: cover;
+  object-position: center 32%;
+  margin: 36px 0 0 calc(-1 * var(--pad-l));
+}
+
+/* Centre strip. In Figma this column only spans the bottom band of the hero
+   (level with the team photo) — the upper part is just the blue panel. So the
+   strip background matches the left panel (#2c59b7) and the colored portion
+   (propel square + light-blue block) is pushed to the bottom. */
 .ws-hero__strip {
   flex: 0 0 6%;
-  background: #618ece;
+  background: #2c59b7;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
 }
 
 .ws-hero__strip-img {
   width: 100%;
   display: block;
+}
+
+/* Light-blue block under the propel square; square + block ≈ photo height so
+   the strip's colored portion bottom-aligns with the team photo. */
+.ws-hero__strip-block {
+  width: 100%;
+  height: 240px;
+  background: #618ece;
 }
 
 /* Right: white form panel */
@@ -63,9 +107,12 @@
   font-weight: 400;
   padding: 6px 24px;
   border-radius: 0;
-  margin-bottom: 29px;
   width: fit-content;
   line-height: normal;
+}
+
+.ws-hero__badge-row .ws-badge {
+  margin-bottom: 0;
 }
 
 /* ── Hero title ── */
@@ -591,14 +638,15 @@
 @media (max-width: 1280px) {
   .ws-hero__title { font-size: 60px; }
   .ws-hero__subtitle { font-size: 22px; }
-  .ws-hero__left { padding: 48px 48px; }
+  .ws-hero__left { --pad-l: 48px; --pad-r: 48px; padding-top: 48px; }
   .ws-courses { padding: 56px 48px; }
   .ws-benefits { padding: 64px 48px; }
 }
 
 @media (max-width: 1024px) {
   .ws-hero { flex-direction: column; }
-  .ws-hero__left { flex: unset; padding: 48px 32px; }
+  .ws-hero__left { flex: unset; --pad-l: 32px; --pad-r: 32px; padding-top: 48px; }
+  .ws-hero__photo { height: 260px; }
   .ws-hero__strip { display: none; }
   .ws-hero__right { flex: unset; padding: 36px 32px; }
   .ws-hero__title { font-size: 46px; }
@@ -609,11 +657,14 @@
 }
 
 @media (max-width: 640px) {
-  .ws-hero__left { padding: 28px 20px 24px; }
+  .ws-hero__left { --pad-l: 20px; --pad-r: 20px; padding-top: 28px; }
+  .ws-hero__photo { height: 200px; margin-top: 24px; }
   .ws-hero__title { font-size: 36px; }
   .ws-hero__subtitle { font-size: 17px; margin-bottom: 20px; }
   .ws-hero__right { padding: 24px 20px 56px; }
-  .ws-badge { font-size: 13px; padding: 4px 14px; margin-bottom: 16px; }
+  .ws-badge { font-size: 13px; padding: 4px 14px; }
+  .ws-hero__badge-row { gap: 12px; margin-bottom: 16px; }
+  .ws-hero__date { font-size: 15px; }
 
   .ws-field label { font-size: 12px; }
   .ws-field input,
