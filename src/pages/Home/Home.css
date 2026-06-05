@@ -109,6 +109,12 @@
 .home-hero__media {
   align-self: stretch;
   min-height: 420px;
+  /* Bleed the image out of the inner's 72px/40px padding so it sits flush in
+     the hero's top-right corner instead of floating. min() keeps it pinned to
+     the right viewport edge on screens wider than the 1280px container. */
+  margin-top: -72px;
+  margin-bottom: -72px;
+  margin-right: min(-40px, calc((1280px - 100vw) / 2 - 40px));
 }
 
 .home-hero__media img {
@@ -572,6 +578,8 @@
   .home-hero__media {
     min-height: 280px;
     order: -1;
+    /* Stacked layout: bleed to the top and both side edges, gap below only. */
+    margin: -48px -24px 0;
   }
 
   .home-courses,
