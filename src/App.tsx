@@ -64,9 +64,10 @@ export function AppContent() {
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
   const isHomeRoute = location.pathname === '/';
   const isCatalogRoute = location.pathname === '/cursos';
+  const isCourseDetailRoute = /^\/courses\/[^/]+$/.test(location.pathname);
 
   return (
-    <div className={`app${isHomeRoute ? ' app--home' : ''}${isCatalogRoute ? ' app--catalog' : ''}`}>
+    <div className={`app${isHomeRoute ? ' app--home' : ''}${isCatalogRoute ? ' app--catalog' : ''}${isCourseDetailRoute ? ' app--coursedetail' : ''}`}>
       {!isAdminRoute && !isFormRoute && <Topbar hideHamburger={isLearnerRoute} />}
       <Suspense fallback={
         <div className="page-loading">

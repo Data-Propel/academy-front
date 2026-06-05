@@ -976,3 +976,29 @@
   .section-title { font-size: 20px; }
   .course-header-top { flex-direction: column; }
 }
+
+/* ── Design-system: all Libre Franklin + square (non-round) buttons ── */
+.favorite-button,
+.module-lesson-cta,
+.sidebar-certificate-btn,
+.sidebar-cta,
+.cd-enroll-popup-btn-primary,
+.cd-enroll-popup-btn-secondary,
+.cd-pdf-toolbar-btn,
+.preview-toolbar-btn {
+  border-radius: 0;
+}
+
+/* Shared chrome on the course-detail route → Libre Franklin + square buttons */
+.app--coursedetail .topbar,
+.app--coursedetail .topbar *,
+.app--coursedetail .footer,
+.app--coursedetail .footer * {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.app--coursedetail .topbar-login,
+.app--coursedetail .topbar-logout,
+.app--coursedetail .mobile-menu-cta {
+  border-radius: 0;
+}
