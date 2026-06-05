@@ -89,7 +89,9 @@ const CourseCard = ({ course, status, progress, isFavorite, onToggleFavorite, on
   const statusLabel = status === 'completed' ? 'Completado' : status === 'in-progress' ? 'En progreso' : null;
   const statusClass = status === 'completed' ? 'status-completed' : status === 'in-progress' ? 'status-in-progress' : '';
 
-  const buttonLabel = status === 'completed' ? 'Revisar' : status === 'in-progress' ? 'Continuar' : 'Ver curso';
+  const buttonLabel = status === 'completed' ? 'Revisar' : status === 'in-progress' ? 'Continuar' : 'Conoce más';
+  const durationText = course.duration_display || (course.duration_hours > 0 ? `${course.duration_hours}h` : '');
+  const metaText = [course.instructor, durationText].filter(Boolean).join(' · ');
 
   const handleCardClick = (e: MouseEvent<HTMLAnchorElement>) => {
     if (!onPreview) return;
@@ -134,27 +136,13 @@ const CourseCard = ({ course, status, progress, isFavorite, onToggleFavorite, on
         )}
       </div>
       <div className="course-content">
-        {(course.category || (course.tags && course.tags.length > 0)) && (
-          <div className="course-tags-row">
-            {course.category && (
-              <span className="course-category">{course.category.name}</span>
-            )}
-            {(course.tags || []).map(t => (
-              <span key={t.id} className="course-tag-chip">{t.name}</span>
-            ))}
-          </div>
-        )}
-        {course.instructor && (
-          <p className="course-card-instructor">{course.instructor}</p>
+        <h3 className="course-card-title">{course.title}</h3>
+        {metaText && (
+          <p className="course-card-meta">{metaText}</p>
         )}
         {course.short_description && (
           <p className="course-description">{course.short_description}</p>
         )}
-        <div className="course-meta">
-          {(course.duration_display || course.duration_hours > 0) && (
-            <span className="course-duration">{course.duration_display || `${course.duration_hours}h`}</span>
-          )}
-        </div>
         {status === 'in-progress' && progress != null && (
           <div className="course-progress">
             <div className="course-progress-bar">
@@ -497,7 +485,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard-page">
+    <div className={`dashboard-page${isCatalogRoute ? ' dashboard-page--catalog' : ''}`}>
       <PageHead
         raw
         title={PAGE_META.home.title}
@@ -506,6 +494,17 @@ const Dashboard = () => {
         ogImage={PAGE_META.home.ogImage}
         canonicalPath={PAGE_META.home.canonicalPath}
       />
+
+      {/* Catalog hero band ("Explora nuestros cursos") */}
+      {isCatalogRoute && (
+        <div className="catalog-hero">
+          <h1 className="catalog-hero__title">Explora nuestros cursos</h1>
+          <p className="catalog-hero__subtitle">
+            Ágiles. Prácticos. Con propósito. Cada curso está diseñado para que aprendas a tu
+            ritmo y apliques lo aprendido de inmediato.
+          </p>
+        </div>
+      )}
       {/* Hero Banner — hidden when the user is on a workshop (their workshop
           TrackHero renders below instead) or enrolled in the featured track */}
       {!isCatalogRoute && !(loggedIn && (routes.length > 0 || featuredTrack?.courses?.some(c => c.is_enrolled || c.is_completed))) && (
@@ -654,7 +653,7 @@ const Dashboard = () => {
 
         {(loggedIn || showAllCatalog) && (
           <div className="courses-section">
-            <h2 className="section-title">Explora nuestros cursos</h2>
+            {!isCatalogRoute && <h2 className="section-title">Explora nuestros cursos</h2>}
             {loggedIn && (
               <div className="catalog-search">
                 <svg className="catalog-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
