@@ -63,9 +63,10 @@ export function AppContent() {
   const isWorkshopRoute = location.pathname === '/lidera-con-ia-mindset';
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register';
   const isHomeRoute = location.pathname === '/';
+  const isCatalogRoute = location.pathname === '/cursos';
 
   return (
-    <div className={`app${isHomeRoute ? ' app--home' : ''}`}>
+    <div className={`app${isHomeRoute ? ' app--home' : ''}${isCatalogRoute ? ' app--catalog' : ''}`}>
       {!isAdminRoute && !isFormRoute && <Topbar hideHamburger={isLearnerRoute} />}
       <Suspense fallback={
         <div className="page-loading">

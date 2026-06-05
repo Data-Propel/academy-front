@@ -1451,3 +1451,32 @@ h3.course-title {
 @media (max-width: 600px) {
   .dashboard-page--catalog .courses-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Catalog refinements: all Libre Franklin + square (non-round) buttons ── */
+.dashboard-page--catalog,
+.dashboard-page--catalog * {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Square buttons / controls on the catalog */
+.dashboard-page--catalog .filter-button,
+.dashboard-page--catalog .course-button,
+.dashboard-page--catalog .catalog-search,
+.dashboard-page--catalog .catalog-status-dropdown,
+.dashboard-page--catalog .no-courses {
+  border-radius: 0;
+}
+
+/* Libre Franklin + square buttons for the shared chrome on the catalog route only */
+.app--catalog .topbar,
+.app--catalog .topbar *,
+.app--catalog .footer,
+.app--catalog .footer * {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.app--catalog .topbar-login,
+.app--catalog .topbar-logout,
+.app--catalog .mobile-menu-cta {
+  border-radius: 0;
+}
