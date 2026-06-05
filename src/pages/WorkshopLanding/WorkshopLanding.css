@@ -520,7 +520,7 @@
 .ws-card {
   background: #fff;
   overflow: hidden;
-  border-radius: 0;
+  border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
   display: block;
   color: inherit;
@@ -531,7 +531,7 @@
 
 .ws-card__img {
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 3 / 2;
   overflow: hidden;
 }
 
@@ -558,22 +558,29 @@
   border-radius: 0;
 }
 
-.ws-card__title {
-  font-size: 19.8px;
+.ws-card__chip {
+  display: inline-block;
+  font-size: 10px;
   font-weight: 600;
-  color: #043a37;
-  margin: 6px 0 8px;
-  line-height: 1.25;
+  color: #5b6b67;
+  background: #eef1ef;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.ws-card__chip--live {
+  color: #fff;
+  background: #FF5A2F;
 }
 
-.ws-card__meta {
-  font-size: 9px;
-  color: #888;
-  margin: 0;
-  line-height: 1.6;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+.ws-card__row {
+  font-size: 12.5px;
+  color: #2c3a37;
+  margin: 0 0 3px;
+  line-height: 1.4;
 }
+.ws-card__row:last-child { margin-bottom: 0; }
+.ws-card__row-label { font-weight: 600; color: #043a37; }
 
 .ws-courses__cta {
   text-align: center;
@@ -698,7 +705,6 @@
     flex: 0 0 80%;
     scroll-snap-align: start;
   }
-  .ws-card__title { font-size: 19px; }
   .ws-btn--cta { height: 43px; font-size: 15px; }
 
   .ws-benefits { padding: 40px 20px; gap: 20px; }

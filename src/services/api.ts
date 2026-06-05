@@ -1239,6 +1239,15 @@ export const adminApi = {
     return { ok: response.ok };
   },
 
+  // Set or clear (releaseDate=null) the Fecha shown on a ruta card.
+  setWorkshopPathDate: async (slug: string, courseId: number, releaseDate: string | null) => {
+    const response = await apiFetch(`/workshops/admin/${slug}/path/${courseId}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ release_date: releaseDate }),
+    });
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
+
   setWorkshopAttendance: async (slug: string, registrationId: number, attended: boolean) => {
     const response = await apiFetch(`/workshops/admin/${slug}/registrations/${registrationId}/attendance/`, {
       method: 'PATCH',

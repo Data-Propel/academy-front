@@ -53,6 +53,7 @@ interface PathCourse {
   title: string;
   subtitle: string;
   thumbnail_url: string;
+  release_date: string | null;
 }
 
 interface CourseOption {
@@ -171,6 +172,15 @@ export default function AdminWorkshops() {
     const res = await adminApi.removeWorkshopPathCourse(workshopSlug, id);
     if (!res.ok) { showError('No se pudo quitar el curso.'); return; }
     setPath((cur) => cur.filter((p) => p.id !== id));
+  };
+
+  // Persist the Fecha shown on a ruta card. Optimistic — reverts on failure.
+  const setPathDate = async (id: number, value: string) => {
+    const next = value || null;
+    const prev = path;
+    setPath((cur) => cur.map((p) => p.id === id ? { ...p, release_date: next } : p));
+    const res = await adminApi.setWorkshopPathDate(workshopSlug, id, next);
+    if (!res.ok) { setPath(prev); showError('No se pudo guardar la fecha.'); }
   };
 
   // Toggle the registrant's workshop-attended flag. Optimistic — reverts on
@@ -327,6 +337,8 @@ export default function AdminWorkshops() {
         .wk-path-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; }
         .wk-path-thumb { width: 56px; height: 40px; object-fit: cover; border-radius: 4px; background: rgba(255,255,255,0.06); }
         .wk-path-name { flex: 1; font-size: 0.9rem; color: #F2F2F2; }
+        .wk-path-date { display: flex; flex-direction: column; gap: 2px; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; color: rgba(242,242,242,0.5); }
+        .wk-path-date input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 5px 8px; border-radius: 5px; font-family: 'Poppins', sans-serif; font-size: 0.8rem; color-scheme: dark; }
         .wk-path-actions { display: flex; gap: 4px; }
         .wk-path-btn { background: rgba(255,255,255,0.08); color: #F2F2F2; border: none; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
         .wk-path-btn:hover { background: rgba(255,255,255,0.14); }
@@ -507,6 +519,14 @@ export default function AdminWorkshops() {
                   <div className="wk-path-name">
                     {i + 1}. {c.title}
                   </div>
+                  <label className="wk-path-date" title="Fecha mostrada en la tarjeta del landing">
+                    <span>Fecha</span>
+                    <input
+                      type="date"
+                      value={c.release_date ?? ''}
+                      onChange={(e) => setPathDate(c.id, e.target.value)}
+                    />
+                  </label>
                   <div className="wk-path-actions">
                     <button
                       className="wk-path-btn"

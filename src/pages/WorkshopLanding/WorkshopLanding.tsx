@@ -5,6 +5,7 @@ import { PAGE_META } from '../../utils/pageMeta';
 import propelSquare from '../../assets/workshop/propel-square.png';
 import googleOrg from '../../assets/workshop/google-org.png';
 import heroTeam from '../../assets/workshop/hero-team.jpg';
+import lideraCard from '../../assets/workshop/lidera-card.jpg';
 import iconClock from '../../assets/workshop/icons/clock.svg';
 import iconVideo from '../../assets/workshop/icons/video.svg';
 import './WorkshopLanding.css';
@@ -51,6 +52,23 @@ type PathCourse = {
   title: string;
   subtitle: string;
   thumbnail_url: string;
+  status: string;
+  duration: string;
+  fecha: string;
+};
+
+// One ruta card. The first card is the live workshop itself (static page
+// content); the rest come from the path API (on-demand courses, titles baked
+// into their thumbnails).
+type RutaCard = {
+  key: string;
+  href: string;
+  thumbnail: string;
+  alt: string;
+  live: boolean;
+  fecha: string;
+  metaLabel: string;
+  metaValue: string;
 };
 
 type FormState = {
@@ -191,6 +209,32 @@ const WorkshopLanding = () => {
     }
   };
 
+  // Card 1 is the workshop itself (Workshop Live); cards 2+ are the on-demand
+  // courses from the path API. Only built when there are path courses, since
+  // the whole section is gated on that below.
+  const rutaCards: RutaCard[] = [
+    {
+      key: 'workshop',
+      href: '#ws-registro',
+      thumbnail: lideraCard,
+      alt: 'Lidera con un IA mindset',
+      live: true,
+      fecha: '18 de junio',
+      metaLabel: 'Hora',
+      metaValue: '10 AM CH | 11 AM ARG',
+    },
+    ...pathCourses.map((c): RutaCard => ({
+      key: String(c.id),
+      href: `/courses/${c.slug}`,
+      thumbnail: c.thumbnail_url,
+      alt: c.title,
+      live: false,
+      fecha: c.fecha,
+      metaLabel: 'Duración',
+      metaValue: c.duration,
+    })),
+  ];
+
   return (
     <div className="ws-page">
       <PageHead
@@ -228,7 +272,7 @@ const WorkshopLanding = () => {
       )}
 
       {/* ── Hero ── */}
-      <section className="ws-hero">
+      <section className="ws-hero" id="ws-registro">
 
         {/* Left: blue info panel */}
         <div className="ws-hero__left">
@@ -384,14 +428,25 @@ const WorkshopLanding = () => {
           </p>
 
           <div className="ws-grid">
-            {pathCourses.map(c => (
-              <a key={c.id} href={`/courses/${c.slug}`} className="ws-card">
+            {rutaCards.map(card => (
+              <a key={card.key} href={card.href} className="ws-card">
                 <div className="ws-card__img">
-                  {c.thumbnail_url && <img src={c.thumbnail_url} alt={c.title} loading="lazy" />}
+                  {card.thumbnail && <img src={card.thumbnail} alt={card.alt} loading="lazy" />}
                 </div>
                 <div className="ws-card__body">
-                  <h3 className="ws-card__title">{c.title}</h3>
-                  {c.subtitle && <p className="ws-card__meta">{c.subtitle}</p>}
+                  <span className={`ws-card__chip${card.live ? ' ws-card__chip--live' : ''}`}>
+                    {card.live ? 'Workshop Live' : 'On demand'}
+                  </span>
+                  {card.fecha && (
+                    <p className="ws-card__row">
+                      <span className="ws-card__row-label">Fecha:</span> {card.fecha}
+                    </p>
+                  )}
+                  {card.metaValue && (
+                    <p className="ws-card__row">
+                      <span className="ws-card__row-label">{card.metaLabel}:</span> {card.metaValue}
+                    </p>
+                  )}
                 </div>
               </a>
             ))}
