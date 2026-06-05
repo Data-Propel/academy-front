@@ -89,7 +89,7 @@ const TrackHero = ({ track, userFirstName, localThumbnails, onEnrolled }: TrackH
               : i === currentStep
                 ? 'active'
                 : 'pending';
-            const label = c.deadline_label || c.subtitle || `Paso ${i + 1}`;
+            const label = c.deadline_label || c.subtitle || c.title;
             // The final milestone is the certification reward — render the badge
             // (Propel × Google.org) in place of the plain dot.
             const isBadge = i === courses.length - 1;
