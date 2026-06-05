@@ -625,3 +625,10 @@
     max-width: none;
   }
 }
+
+/* Square (non-round) buttons for the shared Topbar on the home route */
+.app--home .topbar-login,
+.app--home .topbar-logout,
+.app--home .mobile-menu-cta {
+  border-radius: 0;
+}
