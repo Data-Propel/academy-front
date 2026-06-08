@@ -80,6 +80,7 @@ export default function AdminWorkshops() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<number | ''>('');
+  const [showStats, setShowStats] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [path, setPath] = useState<PathCourse[]>([]);
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
@@ -263,6 +264,21 @@ export default function AdminWorkshops() {
     });
   }, [regs, search, stageFilter]);
 
+  // Registrations grouped by country, sorted desc. Based on the full list so
+  // it reads as a total breakdown, independent of the search/stage filters.
+  const byCountry = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const r of regs) {
+      const key = r.pais.trim() || 'Sin especificar';
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .map(([pais, count]) => ({ pais, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [regs]);
+
+  const maxCountry = byCountry[0]?.count ?? 1;
+
   // Cumulative funnel (each stage includes everyone who reached it or beyond).
   const funnel = stats
     ? [
@@ -317,6 +333,19 @@ export default function AdminWorkshops() {
         .wk-card-value { font-family: 'Libre Franklin', sans-serif; font-size: 32px; font-weight: 700; color: #F2F2F2; line-height: 1; }
         .wk-card-label { font-family: 'Poppins', sans-serif; font-size: 0.8rem; color: rgba(242,242,242,0.7); margin-top: 6px; }
         .wk-bar { height: 4px; border-radius: 2px; margin-top: 12px; background: #FD6A44; }
+        .wk-stats-toggle { background: none; border: none; color: #FD6A44; font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 18px; }
+        .wk-stats-toggle:hover { text-decoration: underline; }
+        .wk-stats { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 18px 20px; margin-bottom: 28px; }
+        .wk-stats-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .wk-stats-head h3 { font-family: 'Libre Franklin', sans-serif; font-size: 1.05rem; color: #F2F2F2; margin: 0; }
+        .wk-stats-head span { font-family: 'Poppins', sans-serif; font-size: 0.78rem; color: rgba(242,242,242,0.6); }
+        .wk-stats-bars { display: flex; flex-direction: column; gap: 8px; }
+        .wk-stat-row { display: flex; align-items: center; gap: 12px; }
+        .wk-stat-label { flex: 0 0 140px; font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #F2F2F2; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wk-stat-track { flex: 1; height: 16px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+        .wk-stat-fill { height: 100%; background: #FD6A44; border-radius: 4px; min-width: 2px; }
+        .wk-stat-count { flex: 0 0 36px; font-family: 'Libre Franklin', sans-serif; font-size: 0.9rem; font-weight: 600; color: #F2F2F2; }
+        @media (max-width: 700px) { .wk-stat-label { flex-basis: 96px; } }
         .wk-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
         .wk-toolbar input, .wk-toolbar select { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; }
         .wk-toolbar input { flex: 1; min-width: 220px; }
@@ -586,6 +615,37 @@ export default function AdminWorkshops() {
             </div>
           ))}
         </div>
+
+        <button
+          className="wk-stats-toggle"
+          onClick={() => setShowStats((s) => !s)}
+          disabled={regs.length === 0}
+        >
+          {showStats ? 'Ocultar estadísticas ▲' : 'Mostrar estadísticas ▼'}
+        </button>
+
+        {showStats && (
+          <section className="wk-stats">
+            <div className="wk-stats-head">
+              <h3>Registrados por país</h3>
+              <span>{regs.length} registros · {byCountry.length} países</span>
+            </div>
+            <div className="wk-stats-bars">
+              {byCountry.map(({ pais, count }) => (
+                <div className="wk-stat-row" key={pais}>
+                  <span className="wk-stat-label" title={pais}>{pais}</span>
+                  <div className="wk-stat-track">
+                    <div
+                      className="wk-stat-fill"
+                      style={{ width: `${(count / maxCountry) * 100}%` }}
+                    />
+                  </div>
+                  <span className="wk-stat-count">{count}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="wk-toolbar">
           <input
