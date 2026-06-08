@@ -257,7 +257,8 @@ export default function AdminWorkshops() {
       return (
         r.email.toLowerCase().includes(q) ||
         r.full_name.toLowerCase().includes(q) ||
-        r.organizacion.toLowerCase().includes(q)
+        r.organizacion.toLowerCase().includes(q) ||
+        r.pais.toLowerCase().includes(q)
       );
     });
   }, [regs, search, stageFilter]);
@@ -589,7 +590,7 @@ export default function AdminWorkshops() {
         <div className="wk-toolbar">
           <input
             type="text"
-            placeholder="Buscar por email, nombre u organización…"
+            placeholder="Buscar por email, nombre, organización o país…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
