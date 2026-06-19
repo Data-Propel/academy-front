@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAdmin } from '../AdminContext';
 import { type Lesson, type Topic, type Quiz, type Resource, type CourseResource } from '../AdminContext';
@@ -93,6 +93,13 @@ export default function AdminCourseDetail() {
   const [editingType, setEditingType] = useState<'lesson' | 'topic' | 'quiz' | 'resource' | 'course-resource' | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingParentLessonId, setEditingParentLessonId] = useState<number>(0);
+  const editPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (editingType) {
+      editPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [editingType, editingId]);
 
   // Form states
   const [lessonForm, setLessonForm] = useState({ title: '', content: '', video_url: '', order_index: 1 });
@@ -660,7 +667,7 @@ export default function AdminCourseDetail() {
           <p
             style={{
               color: 'rgba(242, 242, 242, 0.7)',
-              fontFamily: "'Poppins', sans-serif",
+              fontFamily: "'Libre Franklin', sans-serif",
               fontSize: '1rem',
               marginBottom: 20,
             }}
@@ -931,7 +938,7 @@ export default function AdminCourseDetail() {
 
           {/* Inline editing panel */}
           {editingType && (
-            <div className="curriculum-edit-panel">
+            <div className="curriculum-edit-panel" ref={editPanelRef}>
               <div className="curriculum-edit-panel-header">
                 <h3 className="form-title">
                   {editingId ? 'Editar' : 'Crear'}{' '}
@@ -1311,7 +1318,7 @@ export default function AdminCourseDetail() {
           {/* Form management */}
           {!evalForm && !creatingEvalForm && (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <p style={{ color: 'rgba(242,242,242,0.6)', fontFamily: "'Poppins', sans-serif", fontSize: '0.9rem', marginBottom: 16 }}>
+              <p style={{ color: 'rgba(242,242,242,0.6)', fontFamily: "'Libre Franklin', sans-serif", fontSize: '0.9rem', marginBottom: 16 }}>
                 Este curso no tiene formulario de evaluación.
               </p>
               <button className="btn-submit" onClick={() => setCreatingEvalForm(true)}>
@@ -1322,7 +1329,7 @@ export default function AdminCourseDetail() {
 
           {!evalForm && creatingEvalForm && (
             <div className="curriculum-edit-panel" style={{ margin: '0 0 20px' }}>
-              <h4 style={{ color: '#F2F2F2', fontFamily: "'Poppins', sans-serif", fontSize: '0.95rem', marginBottom: 16 }}>Nuevo formulario</h4>
+              <h4 style={{ color: '#F2F2F2', fontFamily: "'Libre Franklin', sans-serif", fontSize: '0.95rem', marginBottom: 16 }}>Nuevo formulario</h4>
               <div className="form-group" style={{ marginBottom: 12 }}>
                 <label className="form-label">Título</label>
                 <input className="form-input" value={evalFormTitle} onChange={e => setEvalFormTitle(e.target.value)} />
@@ -1350,7 +1357,7 @@ export default function AdminCourseDetail() {
               <div className="curriculum-lesson-card" style={{ marginBottom: 20, padding: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                   <div>
-                    <h4 style={{ color: '#F2F2F2', fontFamily: "'Poppins', sans-serif", fontSize: '0.95rem', margin: 0 }}>
+                    <h4 style={{ color: '#F2F2F2', fontFamily: "'Libre Franklin', sans-serif", fontSize: '0.95rem', margin: 0 }}>
                       {evalForm.title}
                     </h4>
                     {evalForm.description && (
@@ -1401,7 +1408,7 @@ export default function AdminCourseDetail() {
               {/* Questions list */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <h4 style={{ color: '#F2F2F2', fontFamily: "'Poppins', sans-serif", fontSize: '0.9rem', margin: 0 }}>
+                  <h4 style={{ color: '#F2F2F2', fontFamily: "'Libre Franklin', sans-serif", fontSize: '0.9rem', margin: 0 }}>
                     Preguntas ({evalForm.questions?.length || 0})
                   </h4>
                   <button className="curriculum-add-btn" onClick={() => {
@@ -1461,7 +1468,7 @@ export default function AdminCourseDetail() {
               {/* Question edit/create form */}
               {(creatingEvalQuestion || editingEvalQuestion !== null) && (
                 <div className="curriculum-edit-panel" style={{ marginBottom: 20 }}>
-                  <h4 style={{ color: '#F2F2F2', fontFamily: "'Poppins', sans-serif", fontSize: '0.9rem', marginBottom: 16 }}>
+                  <h4 style={{ color: '#F2F2F2', fontFamily: "'Libre Franklin', sans-serif", fontSize: '0.9rem', marginBottom: 16 }}>
                     {editingEvalQuestion ? 'Editar pregunta' : 'Nueva pregunta'}
                   </h4>
                   <div className="form-group" style={{ marginBottom: 12 }}>
@@ -1586,7 +1593,7 @@ export default function AdminCourseDetail() {
 
               {showEvalResults && evalResponses && (
                 <div style={{ marginTop: 20 }}>
-                  <h4 style={{ color: '#F2F2F2', fontFamily: "'Poppins', sans-serif", fontSize: '0.9rem', marginBottom: 16 }}>
+                  <h4 style={{ color: '#F2F2F2', fontFamily: "'Libre Franklin', sans-serif", fontSize: '0.9rem', marginBottom: 16 }}>
                     Resultados — {evalResponses.total_responses} respuesta{evalResponses.total_responses !== 1 ? 's' : ''}
                   </h4>
                   {evalResponses.statistics.map(stat => (
@@ -1727,7 +1734,7 @@ export default function AdminCourseDetail() {
               gridTemplateColumns: '160px 1fr',
               gap: '12px 16px',
               color: '#F2F2F2',
-              fontFamily: "'Poppins', sans-serif",
+              fontFamily: "'Libre Franklin', sans-serif",
               fontSize: '0.9rem',
             }}
           >

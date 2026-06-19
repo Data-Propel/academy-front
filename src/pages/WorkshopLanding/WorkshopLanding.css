@@ -19,7 +19,7 @@
 
 /* Left: blue info panel */
 .ws-hero__left {
-  flex: 0 0 49.3%;
+  flex: 0 0 55.3%;
   background: #2c59b7;
   /* --pad-l tracks the topbar's logo position so the badge sits directly under
      the logo at any viewport ≥ 1264px; falls back to 64px below that. The photo
@@ -42,15 +42,9 @@
   margin-bottom: 29px;
 }
 
-.ws-hero__date {
-  font-size: 23px;
-  font-weight: 300;
-  color: #fff;
-  line-height: normal;
-}
-
-/* Team photo, full-bleed across the bottom of the blue panel. The negative
-   left/right margins cancel the panel padding so it touches both edges; the
+/* Hero photo (includes the propel-square strip baked into its right edge),
+   full-bleed across the bottom of the blue panel. The negative left/right
+   margins cancel the panel padding so it touches both edges; the
    per-breakpoint overrides below keep it flush as the padding changes. */
 .ws-hero__photo {
   display: block;
@@ -59,32 +53,6 @@
   object-fit: cover;
   object-position: center 32%;
   margin: 36px 0 0 calc(-1 * var(--pad-l));
-}
-
-/* Centre strip. In Figma this column only spans the bottom band of the hero
-   (level with the team photo) — the upper part is just the blue panel. So the
-   strip background matches the left panel (#2c59b7) and the colored portion
-   (propel square + light-blue block) is pushed to the bottom. */
-.ws-hero__strip {
-  flex: 0 0 6%;
-  background: #2c59b7;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.ws-hero__strip-img {
-  width: 100%;
-  display: block;
-}
-
-/* Light-blue block under the propel square; square + block ≈ photo height so
-   the strip's colored portion bottom-aligns with the team photo. */
-.ws-hero__strip-block {
-  width: 100%;
-  height: 240px;
-  background: #618ece;
 }
 
 /* Right: white form panel */
@@ -154,7 +122,7 @@
 
 .ws-hero__detail {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
 }
 
@@ -162,7 +130,6 @@
   width: 24px;
   height: 24px;
   flex-shrink: 0;
-  margin-top: 8px;
   object-fit: contain;
   object-position: center;
 }
@@ -365,6 +332,10 @@
   background: #fc5c3a;
   color: #fff;
   border-color: #fc5c3a;
+  height: 68px;
+  padding: 0 48px;
+  min-width: 240px;
+  font-size: 21px;
 }
 
 .ws-btn--cta:hover {
@@ -455,6 +426,7 @@
 
 .ws-modal__zoom-link {
   color: #fa693c;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
   font-weight: 600;
   text-decoration: underline;
   overflow-wrap: anywhere;
@@ -654,7 +626,6 @@
   .ws-hero { flex-direction: column; }
   .ws-hero__left { flex: unset; --pad-l: 32px; --pad-r: 32px; padding-top: 48px; }
   .ws-hero__photo { height: 260px; }
-  .ws-hero__strip { display: none; }
   .ws-hero__right { flex: unset; padding: 36px 32px; }
   .ws-hero__title { font-size: 46px; }
   .ws-hero__subtitle { font-size: 20px; }
@@ -671,7 +642,6 @@
   .ws-hero__right { padding: 24px 20px 56px; }
   .ws-badge { font-size: 13px; padding: 4px 14px; }
   .ws-hero__badge-row { gap: 12px; margin-bottom: 16px; }
-  .ws-hero__date { font-size: 15px; }
 
   .ws-field label { font-size: 12px; }
   .ws-field input,
@@ -705,7 +675,7 @@
     flex: 0 0 80%;
     scroll-snap-align: start;
   }
-  .ws-btn--cta { height: 43px; font-size: 15px; }
+  .ws-btn--cta { height: 52px; font-size: 17px; }
 
   .ws-benefits { padding: 40px 20px; gap: 20px; }
   .ws-benefits__left h2 { font-size: 20px; line-height: 1.5; }

@@ -90,32 +90,33 @@ const TrackHero = ({ track, userFirstName, localThumbnails, onEnrolled }: TrackH
                 ? 'active'
                 : 'pending';
             const label = c.deadline_label || c.subtitle || c.title;
-            // The final milestone is the certification reward — render the badge
-            // (Propel × Google.org) in place of the plain dot.
-            const isBadge = i === courses.length - 1;
             return (
-              <li key={c.course_id} className={`track-step track-step--${state}${isBadge ? ' track-step--badge' : ''}`}>
+              <li key={c.course_id} className={`track-step track-step--${state}`}>
                 <span className="track-step__label">{renderStepLabel(label)}</span>
                 <span className="track-step__node">
-                  {isBadge ? (
-                    <img
-                      className="track-step__badge-img"
-                      src={certificationBadge}
-                      alt="Certificación: Lidera con un IA mindset"
-                    />
-                  ) : (
-                    <span className="track-step__dot" aria-hidden="true">
-                      {c.is_completed && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </span>
-                  )}
+                  <span className="track-step__dot" aria-hidden="true">
+                    {c.is_completed && (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </span>
                 </span>
               </li>
             );
           })}
+          {/* Final milestone — the certification reward badge (Propel ×
+              Google.org). Fills in once every step of the route is done. */}
+          <li className={`track-step track-step--badge track-step--${courses.every((c) => c.is_completed) ? 'done' : 'pending'}`}>
+            <span className="track-step__label">Certificación</span>
+            <span className="track-step__node">
+              <img
+                className="track-step__badge-img"
+                src={certificationBadge}
+                alt="Certificación: Lidera con un IA mindset"
+              />
+            </span>
+          </li>
         </ol>
 
         <div className="track-cards">

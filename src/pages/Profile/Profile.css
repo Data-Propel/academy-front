@@ -31,7 +31,7 @@
 }
 
 .profile-avatar-initials {
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1.75rem;
   font-weight: 700;
   color: #fff;
@@ -44,7 +44,7 @@
 }
 
 .profile-hero-name {
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 2rem;
   font-weight: 600;
   color: #F2F2F2;
@@ -53,21 +53,21 @@
 }
 
 .profile-hero-org {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.95rem;
   color: rgba(242, 242, 242, 0.7);
   margin: 4px 0 0;
 }
 
 .profile-hero-email {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   color: rgba(242, 242, 242, 0.5);
   margin: 4px 0 0;
 }
 
 .profile-hero-since {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.8rem;
   color: rgba(242, 242, 242, 0.35);
   margin: 4px 0 0;
@@ -112,7 +112,7 @@
 }
 
 .profile-stat-label {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.8rem;
   color: rgba(242, 242, 242, 0.6);
   text-align: center;
@@ -131,7 +131,7 @@
   border: none;
   color: rgba(242, 242, 242, 0.6);
   padding: 16px 24px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -159,7 +159,7 @@
 }
 
 .profile-section-title {
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: #F2F2F2;
@@ -216,7 +216,7 @@ a.profile-course-card:hover {
   flex-shrink: 0;
   background: rgba(34, 197, 94, 0.9);
   color: #fff;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.65rem;
   font-weight: 600;
   padding: 2px 8px;
@@ -243,7 +243,7 @@ a.profile-course-card:hover {
 }
 
 .profile-course-card-title {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   font-weight: 500;
   color: #F2F2F2;
@@ -278,7 +278,7 @@ a.profile-course-card-title:hover {
 }
 
 .profile-course-card-pct {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.75rem;
   color: rgba(242, 242, 242, 0.5);
   white-space: nowrap;
@@ -296,7 +296,7 @@ a.profile-course-card-title:hover {
   color: #FD6A44;
   padding: 6px 14px;
   border-radius: 4px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -325,7 +325,7 @@ a.profile-course-card-title:hover {
   color: #0E4B43;
   padding: 6px 12px;
   border-radius: 4px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Libre Franklin', sans-serif;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -346,7 +346,7 @@ a.profile-course-card-title:hover {
   border-radius: 4px;
   background: rgba(163, 201, 74, 0.15);
   color: #6b8e23;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Libre Franklin', sans-serif;
   font-size: 0.75rem;
   font-weight: 500;
   white-space: nowrap;
@@ -389,7 +389,7 @@ a.profile-course-card-title:hover {
 }
 
 .profile-empty-text {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   color: rgba(242, 242, 242, 0.5);
   margin: 0 0 20px;
@@ -401,7 +401,7 @@ a.profile-course-card-title:hover {
   color: #fff;
   padding: 10px 24px;
   border-radius: 4px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
@@ -427,7 +427,7 @@ a.profile-course-card-title:hover {
 }
 
 .profile-card-title {
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: #F2F2F2;
@@ -441,7 +441,7 @@ a.profile-course-card-title:hover {
 
 .profile-field label {
   display: block;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   font-weight: 500;
   color: rgba(242, 242, 242, 0.8);
@@ -457,7 +457,7 @@ a.profile-course-card-title:hover {
   border: 1px solid #656565;
   border-radius: 0;
   color: #1a1a1a;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s ease;
@@ -492,7 +492,7 @@ a.profile-course-card-title:hover {
 
 .profile-field-hint {
   display: block;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.75rem;
   color: rgba(242, 242, 242, 0.4);
   margin-top: 4px;
@@ -533,7 +533,7 @@ a.profile-course-card-title:hover {
 }
 
 .profile-strength-label {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
   white-space: nowrap;
@@ -557,7 +557,7 @@ a.profile-course-card-title:hover {
   border: 1px solid rgba(239, 68, 68, 0.4);
   color: #fca5a5;
   padding: 10px 14px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   margin-bottom: 16px;
 }
@@ -567,7 +567,7 @@ a.profile-course-card-title:hover {
   border: 1px solid rgba(34, 197, 94, 0.4);
   color: #86efac;
   padding: 10px 14px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   margin-bottom: 16px;
 }
@@ -581,7 +581,7 @@ a.profile-course-card-title:hover {
   color: #ffffff;
   padding: 12px;
   border-radius: 4px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;

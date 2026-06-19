@@ -143,14 +143,16 @@
 }
 
 /* ---- Cards ---- */
+/* One equal-width column per course, all on a single row */
 .track-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 24px;
 }
 
 @media (max-width: 880px) {
-  .track-cards { grid-template-columns: 1fr; }
+  .track-cards { grid-auto-flow: row; }
   .track-stepper { max-width: 100%; }
 }
 
@@ -242,7 +244,7 @@
   right: 14px;
   background: #A3C94A;
   color: #fff;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Libre Franklin', sans-serif;
   font-size: 11px;
   font-weight: 600;
   padding: 4px 12px;
@@ -302,6 +304,9 @@
 
 .track-card__cta {
   align-self: flex-start;
+  /* Anchor to the card bottom even when the card has no description (the
+     desc's flex: 1 normally absorbs the free space). */
+  margin-top: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;

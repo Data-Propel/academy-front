@@ -403,6 +403,29 @@ const Dashboard = () => {
   };
 
   const loggedIn = isAuthenticated();
+  // A user registered for multiple workshops that share the SAME ruta (same set
+  // of courses) — e.g. the Jun 18 `lidera-ia` and Jun 25 `lidera-ia-25` cohorts —
+  // should see ONE hero, not one per registration. Collapse routes by their
+  // course-path identity. Which session to keep:
+  //   • If the user ATTENDED a session, keep that one — its live step shows as
+  //     completed, so an attendee never sees a later cohort's date.
+  //   • Otherwise keep the latest event_date — a no-show sees the next live
+  //     session's date (the one they can still attend).
+  const dedupedRoutes = Array.from(
+    routes.reduce((acc, route) => {
+      const key = route.courses.map((c) => c.slug).sort().join('|');
+      const existing = acc.get(key);
+      const better = !existing
+        || (route.workshop.attended !== existing.workshop.attended
+              ? route.workshop.attended
+              : new Date(route.workshop.event_date) > new Date(existing.workshop.event_date));
+      if (better) acc.set(key, route);
+      return acc;
+    }, new Map<string, WorkshopRoute>()).values()
+  );
+  // True when the user has an active ruta de aprendizaje (workshop route or
+  // enrolled/completed in the featured track) — used to hide both heroes.
+  const onLearningPath = loggedIn && (routes.length > 0 || !!featuredTrack?.courses?.some(c => c.is_enrolled || c.is_completed));
 
   const matchesStatusFilter = (c: Course, status: string) => {
     if (status === 'En progreso') return getStatus(c.slug) === 'in-progress';
@@ -495,8 +518,9 @@ const Dashboard = () => {
         canonicalPath={PAGE_META.home.canonicalPath}
       />
 
-      {/* Catalog hero band ("Explora nuestros cursos") */}
-      {isCatalogRoute && (
+      {/* Catalog hero band ("Explora nuestros cursos") — hidden when the user
+          is on a ruta de aprendizaje (their TrackHero renders instead) */}
+      {isCatalogRoute && !onLearningPath && (
         <div className="catalog-hero">
           <h1 className="catalog-hero__title">Explora nuestros cursos</h1>
           <p className="catalog-hero__subtitle">
@@ -507,7 +531,7 @@ const Dashboard = () => {
       )}
       {/* Hero Banner — hidden when the user is on a workshop (their workshop
           TrackHero renders below instead) or enrolled in the featured track */}
-      {!isCatalogRoute && !(loggedIn && (routes.length > 0 || featuredTrack?.courses?.some(c => c.is_enrolled || c.is_completed))) && (
+      {!isCatalogRoute && !onLearningPath && (
       <div className={`dashboard-hero${loggedIn ? ' dashboard-hero--logged-in' : ''}`}>
         <img
           src={portadaHero}
@@ -540,7 +564,7 @@ const Dashboard = () => {
           progress bars already built in TrackHero). The live workshop event
           is prepended as the first step so 'X de N completados' counts it
           and the certification gate maps to the stepper visually. */}
-      {loggedIn && routes.length > 0 && routes.map((route) => {
+      {loggedIn && dedupedRoutes.length > 0 && dedupedRoutes.map((route) => {
         const workshopDate = new Date(route.workshop.event_date)
           .toLocaleDateString('es', { day: 'numeric', month: 'long' });
         const workshopStep = {
@@ -550,7 +574,7 @@ const Dashboard = () => {
           short_description: `Sesión en vivo · ${workshopDate}`,
           subtitle: `Sesión en vivo · ${workshopDate}`,
           duration_display: '',
-          thumbnail_url: null,
+          thumbnail_url: '/thumbnails/landinglidera.jpg',
           order_index: 0,
           deadline_label: '',
           is_enrolled: true,
@@ -606,10 +630,10 @@ const Dashboard = () => {
                   style={{
                     display: 'inline-block', background: '#FF5A2F', color: '#fff',
                     padding: '10px 20px', borderRadius: 6, textDecoration: 'none',
-                    fontWeight: 600, fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 600, fontFamily: "'Libre Franklin', sans-serif",
                   }}
                 >
-                  Únete al Zoom el 18 de junio →
+                  Únete al Zoom el {workshopDate}
                 </a>
               </div>
             )}

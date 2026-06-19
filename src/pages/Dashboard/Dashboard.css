@@ -289,7 +289,7 @@
 }
 
 .faq-answer p {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, sans-serif;
   font-size: 15px;
   font-weight: 400;
   color: rgba(242, 242, 242, 0.85);
@@ -455,7 +455,7 @@
 }
 
 .dashboard-title {
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 48px;
   font-weight: 600;
   color: #F2F2F2;
@@ -464,7 +464,7 @@
 }
 
 .dashboard-subtitle {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 18px;
   color: rgba(242, 242, 242, 0.8);
   margin: 0;
@@ -478,7 +478,7 @@
   padding: 8px 16px;
   background: #FF5A2F;
   color: #fff;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Libre Franklin', sans-serif;
   font-size: 14px;
   font-weight: 600;
   border-radius: 0;
@@ -491,7 +491,7 @@
 }
 
 .section-subtitle {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Libre Franklin', sans-serif;
   font-size: 16px;
   color: rgba(242, 242, 242, 0.7);
   margin: -16px 0 24px 0;
@@ -511,7 +511,7 @@
 }
 
 .section-title {
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 28px;
   font-weight: 600;
   color: #F2F2F2;
@@ -526,7 +526,7 @@
 .courses-section--featured .section-subtitle {
   text-align: center;
   margin-top: -16px;
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 36px;
   font-weight: 600;
   color: #F2F2F2;
@@ -566,7 +566,7 @@
   border: 1px solid #656565;
   border-radius: 0;
   color: #F2F2F2;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s ease;
@@ -608,7 +608,7 @@
   padding: 4px 8px;
   font-size: 0.7rem;
   font-weight: 600;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   border-radius: 0;
   z-index: 1;
 }
@@ -647,7 +647,7 @@
 }
 
 .catalog-filters-label {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
   color: rgba(242, 242, 242, 0.4);
@@ -671,7 +671,7 @@
   color: rgba(242, 242, 242, 0.7);
   padding: 8px 32px 8px 16px;
   border-radius: 0;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -715,7 +715,7 @@
   color: rgba(242, 242, 242, 0.7);
   padding: 8px 16px;
   border-radius: 0;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -771,7 +771,7 @@
 
 .no-courses p {
   color: rgba(242, 242, 242, 0.8);
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1rem;
   margin: 0;
 }
@@ -918,7 +918,7 @@
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 0;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .course-tags-row {
@@ -937,11 +937,11 @@
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 12px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 h3.course-title {
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1.4rem;
   font-weight: 600;
   color: #F2F2F2;
@@ -955,7 +955,7 @@ h3.course-title {
 }
 
 .course-description {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   color: rgba(242, 242, 242, 0.7);
   margin: 0 0 16px 0;
@@ -976,13 +976,13 @@ h3.course-title {
 
 .course-level,
 .course-duration {
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.8rem;
   color: rgba(242, 242, 242, 0.6);
 }
 
 .course-card-instructor {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Libre Franklin', sans-serif;
   font-size: 0.8rem;
   color: rgba(242, 242, 242, 0.6);
   margin: -4px 0 8px 0;
@@ -993,7 +993,7 @@ h3.course-title {
 }
 
 .course-card-subtitle {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Libre Franklin', sans-serif;
   font-size: 0.85rem;
   color: rgba(242, 242, 242, 0.75);
   margin: 8px 0 8px 0;
@@ -1022,7 +1022,7 @@ h3.course-title {
 
 .course-progress-text {
   display: block;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.75rem;
   color: rgba(242, 242, 242, 0.5);
   margin-top: 8px;
@@ -1040,7 +1040,7 @@ h3.course-title {
   border: 1.5px solid #FD6A44;
   padding: 8px 16px;
   border-radius: 4px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -1066,7 +1066,7 @@ h3.course-title {
   color: #ffffff;
   padding: 16px;
   border-radius: 4px;
-  font-family: 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -1087,7 +1087,7 @@ h3.course-title {
   background: transparent;
   border: 2px solid #FF5A2F;
   color: #FF5A2F;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Libre Franklin', sans-serif;
   font-size: 14px;
   font-weight: 600;
   padding: 8px 32px;

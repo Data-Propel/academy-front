@@ -1,3 +1,6 @@
+import { recordApi, type RecordedStep } from '../utils/actionRecorder';
+import { needsProfileCompletion } from '../utils/profileOptions';
+
 const API_URL = '/api';
 export const MEDIA_URL = 'https://api.academy.wepropel.org';
 
@@ -14,6 +17,22 @@ export const clearTokens = () => {
   localStorage.removeItem('is_superuser');
   localStorage.removeItem('is_users_readonly');
   localStorage.removeItem('is_marketing_admin');
+  localStorage.removeItem('profile_complete');
+};
+
+// Whether the signed-in user has filled the required profile fields
+// (organization/type/country). Persisted so the App-level gate can block every
+// route until a Google-registered user completes their profile, instead of
+// relying on a one-time redirect they could click past. `null` = not yet known.
+export const setProfileComplete = (complete: boolean) => {
+  const v = complete ? 'true' : 'false';
+  if (localStorage.getItem('profile_complete') === v) return;
+  localStorage.setItem('profile_complete', v);
+  window.dispatchEvent(new Event('profile-flag'));
+};
+export const getProfileComplete = (): boolean | null => {
+  const v = localStorage.getItem('profile_complete');
+  return v === null ? null : v === 'true';
 };
 
 // Superuser management
@@ -50,6 +69,7 @@ const apiFetchFormData = async (endpoint: string, formData: FormData, method: st
     headers,
     body: formData,
   });
+  recordApi(method, endpoint, response.status);
 
   if (response.status === 401) {
     const refreshed = await refreshToken();
@@ -82,6 +102,7 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     ...options,
     headers,
   });
+  recordApi(options.method || 'GET', endpoint, response.status);
 
   if (response.status === 401) {
     // Try to refresh token
@@ -258,6 +279,7 @@ export const authApi = {
       setSuperuser(data.is_superuser || false);
       setUsersReadonly(data.is_users_readonly || false);
       setMarketingAdmin(data.is_marketing_admin || false);
+      setProfileComplete(!needsProfileCompletion(data.user));
     }
     return { ok: response.ok, data };
   },
@@ -320,6 +342,7 @@ export const authApi = {
       setSuperuser(isAdmin);
       setUsersReadonly(data.is_users_readonly || false);
       setMarketingAdmin(data.is_marketing_admin || false);
+      setProfileComplete(!needsProfileCompletion(data));
     }
     return { ok: response.ok, data };
   },
@@ -332,6 +355,7 @@ export const authApi = {
     organization?: string;
     organization_type?: string;
     country?: string;
+    newsletter_opt_in?: boolean;
   }) => {
     const response = await apiFetch('/users/profile/', {
       method: 'PATCH',
@@ -530,6 +554,20 @@ export const isAuthenticated = () => !!getToken();
 
 // Admin API (requires is_superuser)
 export const adminApi = {
+  // Debug report - /api/users/debug-report/
+  sendDebugReport: async (description: string, steps: RecordedStep[]) => {
+    const response = await apiFetch('/users/debug-report/', {
+      method: 'POST',
+      body: JSON.stringify({
+        description,
+        steps,
+        page_url: window.location.href,
+        user_agent: navigator.userAgent,
+      }),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
   // Users - /api/users/admin/
   getUsers: async (options?: {
     search?: string;
@@ -1210,6 +1248,13 @@ export const adminApi = {
     return { ok: response.ok, data: await response.json() };
   },
 
+  // Live Zoom participant list (who actually joined the meeting), reconciled
+  // against registrations. Pulled on demand from the Zoom API.
+  getWorkshopZoomAttendance: async (slug: string) => {
+    const response = await apiFetch(`/workshops/admin/${slug}/zoom-attendance/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+
   // Ruta de aprendizaje (ordered courses on a workshop's certification path)
   getWorkshopPath: async (slug: string) => {
     const response = await apiFetch(`/workshops/admin/${slug}/path/`);
@@ -1255,7 +1300,65 @@ export const adminApi = {
     });
     return { ok: response.ok, data: await response.json().catch(() => null) };
   },
+
+  // Campaign email checklist (cronograma de señales) of a workshop ruta.
+  getWorkshopJourney: async (slug: string): Promise<{ ok: boolean; data: { journey_steps: TrackJourneyStep[] } }> => {
+    const response = await apiFetch(`/workshops/admin/${slug}/journey/`);
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
+
+  setWorkshopJourney: async (slug: string, steps: TrackJourneyStep[]): Promise<{ ok: boolean; data: { journey_steps: TrackJourneyStep[] } }> => {
+    const response = await apiFetch(`/workshops/admin/${slug}/journey/`, {
+      method: 'PUT',
+      body: JSON.stringify({ journey_steps: steps }),
+    });
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
+
+  // Platform sending of a journey señal: recipient preview, test send to the
+  // requesting admin, and batched real sends (POST until pending is 0).
+  getWorkshopJourneyRecipients: async (slug: string, stepId: string): Promise<{ ok: boolean; data: JourneySendPreview }> => {
+    const response = await apiFetch(`/workshops/admin/${slug}/journey/${stepId}/send/`);
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
+
+  sendWorkshopJourneyTest: async (slug: string, stepId: string): Promise<{ ok: boolean; data: { detail: string } }> => {
+    const response = await apiFetch(`/workshops/admin/${slug}/journey/${stepId}/send/`, {
+      method: 'POST',
+      body: JSON.stringify({ test: true }),
+    });
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
+
+  sendWorkshopJourneyBatch: async (slug: string, stepId: string): Promise<{ ok: boolean; data: JourneySendResult }> => {
+    const response = await apiFetch(`/workshops/admin/${slug}/journey/${stepId}/send/`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
+
+  // Mailchimp-ready CSV of a señal's audience (Tags column = mailchimp_tag).
+  downloadWorkshopJourneyCsv: async (slug: string, stepId: string): Promise<{ ok: boolean; blob: Blob | null }> => {
+    const response = await apiFetch(`/workshops/admin/${slug}/journey/${stepId}/csv/`);
+    return { ok: response.ok, blob: response.ok ? await response.blob() : null };
+  },
 };
+
+export interface JourneySendPreview {
+  audience_label: string;
+  total: number;
+  already_sent: number;
+  pending: number;
+}
+
+export interface JourneySendResult {
+  sent: number;
+  failed: number;
+  pending: number;
+  already_sent: number;
+  total: number;
+}
 
 
 // Tracks API (certification paths)
@@ -1279,6 +1382,28 @@ export interface TrackCourse {
   href?: string;
 }
 
+// One signal of the campaign journey checklist (admin-only field on Track).
+export interface TrackJourneyStep {
+  id: string;
+  kind: 'auto' | 'manual' | 'milestone';
+  date_label: string;
+  title: string;
+  audience: string;
+  mounted: boolean; // ¿Montado en Mailchimp?
+  sent: boolean; // ¿Enviado?
+  // Platform audience (optional). With audience_key set, the señal can export
+  // its recipient list as a Mailchimp CSV (mailchimp_tag fills the Tags
+  // column) and — if subject/body are also set — send from the platform.
+  // Subject/body/cta_url accept {{ user_name }}, {{ workshop_name }},
+  // {{ zoom_join_url }} variables.
+  audience_key?: string;
+  mailchimp_tag?: string;
+  subject?: string;
+  body?: string;
+  cta_label?: string;
+  cta_url?: string;
+}
+
 export interface Track {
   id: number;
   name: string;
@@ -1299,7 +1424,38 @@ export interface Track {
   cert_name_color: string;
   completion_email_subject: string;
   completion_email_body: string;
+  journey_steps?: TrackJourneyStep[]; // only present on admin endpoints
 }
+
+export interface TrackWritePayload {
+  name: string;
+  slug?: string;
+  subtitle?: string;
+  cta_heading?: string;
+  description?: string;
+  is_published?: boolean;
+  is_featured?: boolean;
+  journey_steps?: TrackJourneyStep[];
+}
+
+export type TrackEmailTrigger = 'track_enrolled' | 'course_completed' | 'course_inactive' | 'track_completed';
+
+export interface TrackEmail {
+  id: number;
+  trigger: TrackEmailTrigger;
+  course: number | null;
+  course_title: string | null;
+  days_after: number;
+  name: string;
+  subject: string;
+  body: string;
+  cta_label: string;
+  is_active: boolean;
+  sent_count: number;
+  updated_at: string;
+}
+
+export type TrackEmailPayload = Omit<TrackEmail, 'id' | 'course_title' | 'sent_count' | 'updated_at'>;
 
 export const tracksApi = {
   getFeatured: async (): Promise<{ ok: boolean; data: Track | null }> => {
@@ -1314,6 +1470,10 @@ export const tracksApi = {
     const response = await apiFetch(`/courses/admin/tracks/${slug}/engagement/`);
     return { ok: response.ok, data: await response.json() };
   },
+  downloadEngagementCsv: async (slug: string, completed: number | 'all'): Promise<{ ok: boolean; blob: Blob | null }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/engagement/csv/?completed=${completed}`);
+    return { ok: response.ok, blob: response.ok ? await response.blob() : null };
+  },
   listAdmin: async (): Promise<{ ok: boolean; data: Track[] }> => {
     const response = await apiFetch('/courses/admin/tracks/');
     return { ok: response.ok, data: await response.json() };
@@ -1327,7 +1487,143 @@ export const tracksApi = {
     const response = await apiFetchFormData(`/courses/admin/tracks/${slug}/config/`, formData, 'PATCH');
     return { ok: response.ok, data: await response.json() };
   },
+  createTrack: async (payload: TrackWritePayload): Promise<{ ok: boolean; data: Track }> => {
+    const response = await apiFetch('/courses/admin/tracks/', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  updateTrack: async (slug: string, payload: Partial<TrackWritePayload>): Promise<{ ok: boolean; data: Track }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/manage/`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  deleteTrack: async (slug: string) => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/manage/`, { method: 'DELETE' });
+    return { ok: response.ok };
+  },
+  setCourses: async (
+    slug: string,
+    courses: { course_id: number; deadline_label?: string }[],
+  ): Promise<{ ok: boolean; data: Track }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/courses/`, {
+      method: 'PUT',
+      body: JSON.stringify({ courses }),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  listEmails: async (slug: string): Promise<{ ok: boolean; data: TrackEmail[] }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/emails/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+  createEmail: async (slug: string, payload: TrackEmailPayload): Promise<{ ok: boolean; data: TrackEmail }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/emails/`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  updateEmail: async (slug: string, id: number, payload: Partial<TrackEmailPayload>): Promise<{ ok: boolean; data: TrackEmail }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/emails/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  deleteEmail: async (slug: string, id: number) => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/emails/${id}/`, { method: 'DELETE' });
+    return { ok: response.ok };
+  },
+  testEmail: async (slug: string, id: number): Promise<{ ok: boolean; data: { detail: string } }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/emails/${id}/test/`, { method: 'POST' });
+    return { ok: response.ok, data: await response.json() };
+  },
+  listMailchimpTemplates: async (): Promise<{ ok: boolean; data: MailchimpTemplate[] }> => {
+    const response = await apiFetch('/courses/admin/mailchimp/templates/');
+    return { ok: response.ok, data: response.ok ? await response.json() : [] };
+  },
+  previewMailchimpTemplate: async (id: number): Promise<{ ok: boolean; data: MailchimpTemplateContent }> => {
+    const response = await apiFetch(`/courses/admin/mailchimp/templates/${id}/content/`);
+    return { ok: response.ok, data: await response.json() };
+  },
+  listMilestoneTemplates: async (slug: string): Promise<{ ok: boolean; data: MilestoneTemplate[] }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/milestone-templates/`);
+    return { ok: response.ok, data: response.ok ? await response.json() : [] };
+  },
+  setMilestoneTemplate: async (
+    slug: string,
+    payload: { milestone: string; template_id: number; template_name?: string },
+  ): Promise<{ ok: boolean; data: MilestoneTemplate }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/milestone-templates/`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  mailchimpPreview: async (slug: string, bucket: number | 'all'): Promise<{ ok: boolean; data: MailchimpPreview }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/mailchimp/preview/`, {
+      method: 'POST',
+      body: JSON.stringify({ bucket }),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  mailchimpPrepare: async (
+    slug: string,
+    payload: { bucket: number | 'all'; template_id: number; subject: string; include_new?: boolean },
+  ): Promise<{ ok: boolean; data: MailchimpPrepare }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/mailchimp/prepare/`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  mailchimpSend: async (slug: string, campaignId: string): Promise<{ ok: boolean; data: { detail: string } }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/mailchimp/send/`, {
+      method: 'POST',
+      body: JSON.stringify({ campaign_id: campaignId }),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
 };
+
+export interface MailchimpTemplate {
+  id: number;
+  name: string;
+}
+
+export interface MailchimpTemplateContent {
+  html: string;
+  plain_text: string;
+  mailchimp_url?: string;
+  detail?: string;
+}
+
+export interface MilestoneTemplate {
+  milestone: string;
+  template_id: number | null;
+  template_name: string;
+}
+
+export interface MailchimpPreview {
+  total: number;
+  in_audience: number;
+  not_in_audience: number;
+  detail?: string;
+}
+
+export interface MailchimpPrepare {
+  campaign_id?: string;
+  web_id?: number;
+  archive_url?: string;
+  recipients?: number;
+  not_in_audience?: number;
+  included_new?: boolean;
+  test_sent_to?: string;
+  detail?: string;
+}
 
 export interface TrackEngagement {
   track: { slug: string; name: string };

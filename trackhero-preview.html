@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!--
+  Standalone visual preview of the redesigned TrackHero "ruta de aprendizaje".
+  Uses the REAL component CSS + assets. Open from the academy-front/ dir:
+    npx serve .   →  http://localhost:3000/trackhero-preview.html
+  (or just open the file directly; fonts fall back to system sans-serif offline)
+  This file is a dev aid only — safe to delete.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrackHero preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./src/pages/Dashboard/TrackHero.css" />
+  <style> body { margin: 0; background: #F5F5F3; } </style>
+</head>
+<body>
+  <section class="track-hero" aria-labelledby="track-hero-title">
+    <div class="track-hero__inner">
+      <header class="track-hero__header">
+        <p class="track-hero__greeting">¡Hola Alexandra! Continúa con tu certificación en IA</p>
+        <h2 id="track-hero-title" class="track-hero__headline">Lidera con un <strong>IA mindset</strong></h2>
+      </header>
+
+      <ol class="track-stepper" aria-label="Progreso de la certificación">
+        <li class="track-step track-step--active">
+          <span class="track-step__label">Complétalo antes del <strong>30 de junio</strong></span>
+          <span class="track-step__node"><span class="track-step__dot"></span></span>
+        </li>
+        <li class="track-step track-step--pending">
+          <span class="track-step__label">Complétalo antes del <strong>16 de julio</strong></span>
+          <span class="track-step__node"><span class="track-step__dot"></span></span>
+        </li>
+        <li class="track-step track-step--pending track-step--badge">
+          <span class="track-step__label">Complétalo antes del <strong>31 de julio</strong></span>
+          <span class="track-step__node">
+            <img class="track-step__badge-img" src="./src/assets/workshop/certification-badge.png" alt="Certificación: Lidera con un IA mindset" />
+          </span>
+        </li>
+      </ol>
+
+      <div class="track-cards">
+        <a class="track-card track-card--blue track-card--active" href="#">
+          <div class="track-card__media"><img src="./src/assets/workshop/course-asistente.png" alt="" /></div>
+          <div class="track-card__body">
+            <h3 class="track-card__title">Crea tu asistente IA</h3>
+            <span class="track-card__meta">30 min</span>
+            <p class="track-card__desc">Convierte tus ideas en contenido que visibiliza tu causa.</p>
+            <span class="track-card__cta">Continuar</span>
+          </div>
+        </a>
+        <a class="track-card track-card--orange track-card--pending" href="#">
+          <div class="track-card__media"><img src="./src/assets/workshop/course-metas.png" alt="" /></div>
+          <div class="track-card__body">
+            <h3 class="track-card__title">Define tus metas con IA</h3>
+            <span class="track-card__meta">30 min</span>
+            <p class="track-card__desc">Convierte tus ideas en contenido que visibiliza tu causa.</p>
+            <span class="track-card__cta">Conoce más</span>
+          </div>
+        </a>
+        <a class="track-card track-card--teal track-card--pending" href="#">
+          <div class="track-card__media"><img src="./src/assets/workshop/course-data.png" alt="" /></div>
+          <div class="track-card__body">
+            <h3 class="track-card__title">Data para el impacto social</h3>
+            <span class="track-card__meta">30 min</span>
+            <p class="track-card__desc">Convierte tus ideas en contenido que visibiliza tu causa.</p>
+            <span class="track-card__cta">Conoce más</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

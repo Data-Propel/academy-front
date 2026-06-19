@@ -47,6 +47,25 @@ interface Stats {
   stage_5_certified: number;
 }
 
+interface ZoomParticipant {
+  name: string;
+  email: string;
+  duration: number; // seconds
+  join_time: string | null;
+  leave_time: string | null;
+  matched: boolean;
+  staff: boolean;
+}
+
+interface ZoomAttendance {
+  instance: { uuid: string; start_time: string } | null;
+  count: number;
+  matched: number;
+  staff: number;
+  walkins: number;
+  participants: ZoomParticipant[];
+}
+
 interface PathCourse {
   id: number;
   slug: string;
@@ -70,6 +89,10 @@ const STAGE_META: Record<number, { label: string; color: string }> = {
   5: { label: 'Certificado', color: '#0E4B43' },
 };
 
+// Paid-ads leads were imported with this exact `como_te_enteraste` value
+// (Mailchimp meta_ads segment) — it's the durable marker for the cohort.
+const PAID_SOURCE = 'Meta Ads';
+
 const fmtDate = (s: string | null) =>
   s ? new Date(s).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
@@ -80,7 +103,11 @@ export default function AdminWorkshops() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<number | ''>('');
+  const [boxFilter, setBoxFilter] = useState<'attended' | 'not_attended' | 'paid' | 'paid_attended' | ''>('');
   const [showStats, setShowStats] = useState(false);
+  const [zoom, setZoom] = useState<ZoomAttendance | null>(null);
+  const [zoomLoading, setZoomLoading] = useState(false);
+  const [zoomErr, setZoomErr] = useState('');
   const [expanded, setExpanded] = useState<number | null>(null);
   const [path, setPath] = useState<PathCourse[]>([]);
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
@@ -140,6 +167,7 @@ export default function AdminWorkshops() {
       // Reset per-workshop state so the previous workshop's data doesn't
       // flash while the new one loads.
       setRegs([]); setStats(null); setPath([]); setExpanded(null);
+      setZoom(null); setZoomErr('');
       const [r, s, p] = await Promise.all([
         adminApi.getWorkshopRegistrations(workshopSlug),
         adminApi.getWorkshopStats(workshopSlug),
@@ -193,6 +221,18 @@ export default function AdminWorkshops() {
     if (!res.ok) {
       setRegs((cur) => cur.map((r) => r.id === reg.id ? { ...r, attended_at: reg.attended_at } : r));
       showError('No se pudo actualizar la asistencia.');
+    }
+  };
+
+  // Pull the live Zoom participant list for the selected workshop on demand.
+  const loadZoom = async () => {
+    setZoomLoading(true); setZoomErr('');
+    const res = await adminApi.getWorkshopZoomAttendance(workshopSlug);
+    setZoomLoading(false);
+    if (res.ok) setZoom(res.data as ZoomAttendance);
+    else {
+      const d = res.data as { detail?: string };
+      setZoomErr(d?.detail || 'No se pudo cargar la asistencia de Zoom.');
     }
   };
 
@@ -254,6 +294,11 @@ export default function AdminWorkshops() {
     const q = search.trim().toLowerCase();
     return regs.filter((r) => {
       if (stageFilter !== '' && r.stage !== stageFilter) return false;
+      const isPaid = r.como_te_enteraste?.trim() === PAID_SOURCE;
+      if (boxFilter === 'attended' && !r.attended_at) return false;
+      if (boxFilter === 'not_attended' && r.attended_at) return false;
+      if (boxFilter === 'paid' && !isPaid) return false;
+      if (boxFilter === 'paid_attended' && !(isPaid && r.attended_at)) return false;
       if (!q) return true;
       return (
         r.email.toLowerCase().includes(q) ||
@@ -262,7 +307,21 @@ export default function AdminWorkshops() {
         r.pais.toLowerCase().includes(q)
       );
     });
-  }, [regs, search, stageFilter]);
+  }, [regs, search, stageFilter, boxFilter]);
+
+  // Attendance / paid-ads counts for the clickable square boxes. Computed from
+  // the full list so they read as totals, independent of search/stage filters.
+  const attendStats = useMemo(() => {
+    let attended = 0, paid = 0, paidAttended = 0;
+    for (const r of regs) {
+      const isPaid = r.como_te_enteraste?.trim() === PAID_SOURCE;
+      const att = !!r.attended_at;
+      if (att) attended++;
+      if (isPaid) paid++;
+      if (isPaid && att) paidAttended++;
+    }
+    return { attended, notAttended: regs.length - attended, paid, paidAttended };
+  }, [regs]);
 
   // Registrations grouped by country, sorted desc. Based on the full list so
   // it reads as a total breakdown, independent of the search/stage filters.
@@ -331,25 +390,25 @@ export default function AdminWorkshops() {
         @media (max-width: 900px) { .wk-funnel { grid-template-columns: repeat(2, 1fr); } }
         .wk-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 18px 16px; }
         .wk-card-value { font-family: 'Libre Franklin', sans-serif; font-size: 32px; font-weight: 700; color: #F2F2F2; line-height: 1; }
-        .wk-card-label { font-family: 'Poppins', sans-serif; font-size: 0.8rem; color: rgba(242,242,242,0.7); margin-top: 6px; }
+        .wk-card-label { font-family: 'Libre Franklin', sans-serif; font-size: 0.8rem; color: rgba(242,242,242,0.7); margin-top: 6px; }
         .wk-bar { height: 4px; border-radius: 2px; margin-top: 12px; background: #FD6A44; }
-        .wk-stats-toggle { background: none; border: none; color: #FD6A44; font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 18px; }
+        .wk-stats-toggle { background: none; border: none; color: #FD6A44; font-family: 'Libre Franklin', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 18px; }
         .wk-stats-toggle:hover { text-decoration: underline; }
         .wk-stats { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 18px 20px; margin-bottom: 28px; }
         .wk-stats-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
         .wk-stats-head h3 { font-family: 'Libre Franklin', sans-serif; font-size: 1.05rem; color: #F2F2F2; margin: 0; }
-        .wk-stats-head span { font-family: 'Poppins', sans-serif; font-size: 0.78rem; color: rgba(242,242,242,0.6); }
+        .wk-stats-head span { font-family: 'Libre Franklin', sans-serif; font-size: 0.78rem; color: rgba(242,242,242,0.6); }
         .wk-stats-bars { display: flex; flex-direction: column; gap: 8px; }
         .wk-stat-row { display: flex; align-items: center; gap: 12px; }
-        .wk-stat-label { flex: 0 0 140px; font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #F2F2F2; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wk-stat-label { flex: 0 0 140px; font-family: 'Libre Franklin', sans-serif; font-size: 0.85rem; color: #F2F2F2; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .wk-stat-track { flex: 1; height: 16px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
         .wk-stat-fill { height: 100%; background: #FD6A44; border-radius: 4px; min-width: 2px; }
         .wk-stat-count { flex: 0 0 36px; font-family: 'Libre Franklin', sans-serif; font-size: 0.9rem; font-weight: 600; color: #F2F2F2; }
         @media (max-width: 700px) { .wk-stat-label { flex-basis: 96px; } }
         .wk-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
-        .wk-toolbar input, .wk-toolbar select { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; }
+        .wk-toolbar input, .wk-toolbar select { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Libre Franklin', sans-serif; font-size: 0.9rem; }
         .wk-toolbar input { flex: 1; min-width: 220px; }
-        .wk-export { background: #FD6A44; color: #fff; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .wk-export { background: #FD6A44; color: #fff; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Libre Franklin', sans-serif; }
         .wk-export:hover { background: #e55a36; }
         .wk-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; color: #fff; }
         .wk-detail { background: rgba(255,255,255,0.03); padding: 16px 20px; }
@@ -362,26 +421,26 @@ export default function AdminWorkshops() {
         .wk-link { color: #FD6A44; text-decoration: none; }
         .wk-path-section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 18px 20px; margin-bottom: 28px; }
         .wk-path-title { font-family: 'Libre Franklin', sans-serif; font-size: 1.05rem; color: #F2F2F2; margin: 0 0 4px; }
-        .wk-path-sub { font-family: 'Poppins', sans-serif; font-size: 0.78rem; color: rgba(242,242,242,0.6); margin: 0 0 14px; }
+        .wk-path-sub { font-family: 'Libre Franklin', sans-serif; font-size: 0.78rem; color: rgba(242,242,242,0.6); margin: 0 0 14px; }
         .wk-path-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
         .wk-path-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; }
         .wk-path-thumb { width: 56px; height: 40px; object-fit: cover; border-radius: 4px; background: rgba(255,255,255,0.06); }
         .wk-path-name { flex: 1; font-size: 0.9rem; color: #F2F2F2; }
         .wk-path-date { display: flex; flex-direction: column; gap: 2px; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em; color: rgba(242,242,242,0.5); }
-        .wk-path-date input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 5px 8px; border-radius: 5px; font-family: 'Poppins', sans-serif; font-size: 0.8rem; color-scheme: dark; }
+        .wk-path-date input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 5px 8px; border-radius: 5px; font-family: 'Libre Franklin', sans-serif; font-size: 0.8rem; color-scheme: dark; }
         .wk-path-actions { display: flex; gap: 4px; }
         .wk-path-btn { background: rgba(255,255,255,0.08); color: #F2F2F2; border: none; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
         .wk-path-btn:hover { background: rgba(255,255,255,0.14); }
         .wk-path-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .wk-path-btn--danger:hover { background: rgba(252,92,58,0.6); }
         .wk-path-add { display: flex; gap: 10px; align-items: center; }
-        .wk-path-add select { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; }
-        .wk-path-add button { background: #FD6A44; color: #fff; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
+        .wk-path-add select { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Libre Franklin', sans-serif; font-size: 0.9rem; }
+        .wk-path-add button { background: #FD6A44; color: #fff; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Libre Franklin', sans-serif; }
         .wk-path-add button:disabled { opacity: 0.4; cursor: not-allowed; }
         .wk-path-empty { font-size: 0.85rem; color: rgba(242,242,242,0.5); margin-bottom: 14px; }
         .wk-create-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
         .wk-create-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: rgba(242,242,242,0.7); }
-        .wk-create-grid label input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; }
+        .wk-create-grid label input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Libre Franklin', sans-serif; font-size: 0.9rem; }
         .wk-create-grid__full { grid-column: 1 / -1; }
         .wk-create-subhead { font-family: 'Libre Franklin', sans-serif; font-size: 0.95rem; color: #F2F2F2; margin: 4px 0 6px; }
         .wk-create-actions { display: flex; gap: 10px; margin-top: 18px; }
@@ -614,6 +673,68 @@ export default function AdminWorkshops() {
               />
             </div>
           ))}
+        </div>
+
+        <div className="wk-squares">
+          {([
+            { key: 'attended', label: 'Asistieron', value: attendStats.attended },
+            { key: 'not_attended', label: 'No asistieron', value: attendStats.notAttended },
+            { key: 'paid', label: 'Vinieron de Meta Ads', value: attendStats.paid },
+            { key: 'paid_attended', label: 'Meta Ads que asistieron', value: attendStats.paidAttended },
+          ] as const).map((b) => (
+            <button
+              key={b.key}
+              type="button"
+              className={`wk-square${boxFilter === b.key ? ' wk-square--active' : ''}`}
+              onClick={() => setBoxFilter((cur) => (cur === b.key ? '' : b.key))}
+              disabled={regs.length === 0}
+            >
+              <span className="wk-square-value">{b.value}</span>
+              <span className="wk-square-label">{b.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="wk-zoom">
+          <button
+            className="wk-stats-toggle"
+            onClick={loadZoom}
+            disabled={zoomLoading || !workshopSlug}
+          >
+            {zoomLoading
+              ? 'Cargando asistencia de Zoom…'
+              : zoom ? 'Actualizar asistencia de Zoom ⟳' : 'Ver asistencia de Zoom (en vivo) ▼'}
+          </button>
+          {zoomErr && (
+            <div style={{ color: '#c0392b', marginTop: 8 }}>{zoomErr}</div>
+          )}
+          {zoom && (
+            <section className="wk-stats">
+              <div className="wk-stats-head">
+                <h3>Asistencia de Zoom{zoom.instance ? ` — ${fmtDate(zoom.instance.start_time)}` : ''}</h3>
+                <span>
+                  {zoom.count} en la sesión · {zoom.matched} registrados · {zoom.walkins} walk-ins · {zoom.staff} staff
+                </span>
+              </div>
+              <div className="admin-table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr><th>Nombre</th><th>Email</th><th>Min</th><th>Estado</th></tr>
+                  </thead>
+                  <tbody>
+                    {zoom.participants.map((p, i) => (
+                      <tr key={p.email || `${p.name}-${i}`}>
+                        <td>{p.name || '—'}</td>
+                        <td>{p.email || '—'}</td>
+                        <td>{Math.round(p.duration / 60)}</td>
+                        <td>{p.staff ? 'Staff' : p.matched ? 'Registrado' : 'Walk-in'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
         </div>
 
         <button

@@ -12,8 +12,8 @@ interface PageHeaderProps {
   action?: { label: string; onClick: () => void };
 }
 
-const fontHeading = "'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-const fontBody = "'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const fontHeading = "'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const fontBody = "'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
 export default function PageHeader({ title, subtitle, breadcrumbs, action }: PageHeaderProps) {
   return (

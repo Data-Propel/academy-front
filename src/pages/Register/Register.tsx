@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
 import { getAttribution } from '../../utils/attribution';
+import { ORGANIZATION_TYPES, COUNTRIES, needsProfileCompletion } from '../../utils/profileOptions';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
 import propelLogo from '../../assets/register/propel-logo.png';
@@ -14,47 +15,14 @@ import googleG from '../../assets/register/google-g.png';
 import propelSquare from '../../assets/register/propel-square.png';
 import './Register.css';
 
-const ORGANIZATION_TYPES = [
-  { value: '', label: 'Selecciona un tipo' },
-  { value: 'ong', label: 'ONG / Organización sin fines de lucro' },
-  { value: 'fundacion', label: 'Fundación' },
-  { value: 'asociacion', label: 'Asociación civil' },
-  { value: 'empresa_social', label: 'Empresa social' },
-  { value: 'cooperativa', label: 'Cooperativa' },
-  { value: 'educativa', label: 'Institución educativa' },
-  { value: 'gobierno', label: 'Organismo gubernamental' },
-  { value: 'internacional', label: 'Organismo internacional' },
-  { value: 'otro', label: 'Otro' },
-];
-
-const COUNTRIES = [
-  { value: '', label: 'Selecciona un país' },
-  { value: 'AR', label: 'Argentina' },
-  { value: 'BO', label: 'Bolivia' },
-  { value: 'BR', label: 'Brasil' },
-  { value: 'CL', label: 'Chile' },
-  { value: 'CO', label: 'Colombia' },
-  { value: 'CR', label: 'Costa Rica' },
-  { value: 'CU', label: 'Cuba' },
-  { value: 'DO', label: 'República Dominicana' },
-  { value: 'EC', label: 'Ecuador' },
-  { value: 'SV', label: 'El Salvador' },
-  { value: 'GT', label: 'Guatemala' },
-  { value: 'HN', label: 'Honduras' },
-  { value: 'MX', label: 'México' },
-  { value: 'NI', label: 'Nicaragua' },
-  { value: 'PA', label: 'Panamá' },
-  { value: 'PY', label: 'Paraguay' },
-  { value: 'PE', label: 'Perú' },
-  { value: 'PR', label: 'Puerto Rico' },
-  { value: 'ES', label: 'España' },
-  { value: 'US', label: 'Estados Unidos' },
-  { value: 'UY', label: 'Uruguay' },
-  { value: 'VE', label: 'Venezuela' },
-  { value: 'OTHER', label: 'Otro' },
-];
-
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID as string | undefined;
+
+// Google supplies name + email but not organization/type/country. Require those
+// three (same as the manual form) before allowing Google sign-up, so accounts
+// created via Google aren't left with blank profile fields.
+const GOOGLE_REQUIRED_MSG = 'Completa Organización, Tipo de organización y País antes de continuar con Google.';
+const googleFieldsIncomplete = (d: { organization: string; organizationType: string; country: string }) =>
+  !d.organization.trim() || !d.organizationType || !d.country;
 
 type GoogleCredentialResponse = { credential: string };
 type GoogleIdAPI = {
@@ -93,6 +61,10 @@ const Register = () => {
   const handleGoogleCredential = async ({ credential }: GoogleCredentialResponse) => {
     const current = formDataRef.current;
     setError('');
+    if (googleFieldsIncomplete(current)) {
+      setError(GOOGLE_REQUIRED_MSG);
+      return;
+    }
     setLoading(true);
     try {
       const { ok, data } = await authApi.googleAuth(credential, {
@@ -103,7 +75,7 @@ const Register = () => {
         ...getAttribution(),
       });
       if (ok) {
-        navigate('/cursos');
+        navigate(needsProfileCompletion(data.user) ? '/completar-perfil' : '/cursos');
       } else {
         setError(data.detail || 'No fue posible iniciar sesión con Google.');
       }
@@ -157,6 +129,10 @@ const Register = () => {
   const handleGoogleClick = () => {
     if (!GOOGLE_CLIENT_ID) {
       setError('Google Sign-In no está configurado (falta VITE_GOOGLE_OAUTH_CLIENT_ID).');
+      return;
+    }
+    if (googleFieldsIncomplete(formData)) {
+      setError(GOOGLE_REQUIRED_MSG);
       return;
     }
     const inner = googleBtnRef.current?.querySelector<HTMLElement>('div[role="button"], button');
@@ -233,6 +209,11 @@ const Register = () => {
       </div>
     );
   }
+
+  // Only let the transparent GSI overlay capture clicks once the required profile
+  // fields are filled; otherwise clicks fall through to the styled button, which
+  // shows the inline error instead of opening the Google popup.
+  const googleOverlayActive = gsiRendered && !googleFieldsIncomplete(formData);
 
   return (
     <div className="reg2-page">
@@ -318,7 +299,7 @@ const Register = () => {
           <p className="reg2-required-note">*Obligatorio</p>
 
           <div style={{ position: 'relative' }}>
-            <button type="button" className="reg2-google" onClick={handleGoogleClick} disabled={loading} tabIndex={gsiRendered ? -1 : 0}>
+            <button type="button" className="reg2-google" onClick={handleGoogleClick} disabled={loading} tabIndex={googleOverlayActive ? -1 : 0}>
               <img src={googleG} alt="" aria-hidden="true" />
               <span>Continuar con Google</span>
             </button>
@@ -327,7 +308,7 @@ const Register = () => {
               style={{
                 position: 'absolute', inset: 0, opacity: 0, overflow: 'hidden',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                pointerEvents: gsiRendered ? 'auto' : 'none',
+                pointerEvents: googleOverlayActive ? 'auto' : 'none',
               }}
             />
           </div>

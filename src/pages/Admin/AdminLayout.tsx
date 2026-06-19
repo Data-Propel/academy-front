@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAdmin } from './AdminContext';
-import { isSuperuser, isMarketingAdmin } from '../../services/api';
+import { isSuperuser, isMarketingAdmin, adminApi } from '../../services/api';
+import { startRecorder, stopRecorder, recordNav, getRecordedSteps } from '../../utils/actionRecorder';
 import './AdminLayout.css';
 
 const SIDEBAR_STORAGE_KEY = 'admin_sidebar_open';
@@ -160,8 +161,12 @@ const navItems: NavSection[] = [
 ];
 
 export default function AdminLayout() {
-  const { error, success } = useAdmin();
+  const { error, success, showSuccess, showError } = useAdmin();
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(getInitialSidebarOpen);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportText, setReportText] = useState('');
+  const [reportSending, setReportSending] = useState(false);
+  const location = useLocation();
   const fullAdmin = isSuperuser();
   const marketing = !fullAdmin && isMarketingAdmin();
   const allowedPaths = marketing
@@ -179,6 +184,37 @@ export default function AdminLayout() {
   useEffect(() => {
     window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarOpen));
   }, [sidebarOpen]);
+
+  // Record the team's steps inside the admin panel so problem reports
+  // can include what they did before the issue.
+  useEffect(() => {
+    startRecorder();
+    return stopRecorder;
+  }, []);
+
+  useEffect(() => {
+    recordNav(location.pathname);
+  }, [location.pathname]);
+
+  const submitReport = async () => {
+    const description = reportText.trim();
+    if (!description) return;
+    setReportSending(true);
+    try {
+      const { ok } = await adminApi.sendDebugReport(description, getRecordedSteps());
+      if (ok) {
+        setReportOpen(false);
+        setReportText('');
+        showSuccess('Reporte enviado. ¡Gracias!');
+      } else {
+        showError('Error al enviar el reporte.');
+      }
+    } catch {
+      showError('Error de conexión.');
+    } finally {
+      setReportSending(false);
+    }
+  };
 
   const toggleSidebar = useCallback(() => {
     setSidebarOpen((prev) => !prev);
@@ -235,6 +271,14 @@ export default function AdminLayout() {
         </nav>
 
         <div className="admin-sidebar-footer">
+          <button className="admin-nav-link admin-report-btn" onClick={() => setReportOpen(true)}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            Reportar problema
+          </button>
           <NavLink to="/" className="admin-nav-link" onClick={closeOnMobile}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="19" y1="12" x2="5" y2="12" />
@@ -250,6 +294,39 @@ export default function AdminLayout() {
         {success && <div className="admin-success">{success}</div>}
         <Outlet />
       </main>
+
+      {reportOpen && (
+        <div className="report-overlay" onClick={() => setReportOpen(false)}>
+          <div className="report-dialog" onClick={(e) => e.stopPropagation()}>
+            <h3 className="report-title">Reportar un problema</h3>
+            <p className="report-message">
+              Describe qué intentabas hacer y qué salió mal. Se adjuntarán
+              automáticamente tus últimos pasos en el panel (clicks, navegación
+              y llamadas al servidor) para ayudar a diagnosticarlo.
+            </p>
+            <textarea
+              className="report-textarea"
+              rows={5}
+              value={reportText}
+              onChange={(e) => setReportText(e.target.value)}
+              placeholder="Ej: Entré al curso X, hice clic en Agregar recurso y no pasó nada..."
+              autoFocus
+            />
+            <div className="report-actions">
+              <button className="report-btn cancel" onClick={() => setReportOpen(false)}>
+                Cancelar
+              </button>
+              <button
+                className="report-btn send"
+                onClick={submitReport}
+                disabled={reportSending || !reportText.trim()}
+              >
+                {reportSending ? 'Enviando...' : 'Enviar reporte'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

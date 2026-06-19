@@ -11,7 +11,6 @@ import tileExpertos from '../../assets/home/tile-expertos.jpg';
 import tileDigitaliza from '../../assets/home/tile-digitaliza.jpg';
 import tileGratis from '../../assets/home/tile-gratis.jpg';
 import testimonialAlba from '../../assets/home/testimonial-alba.jpg';
-import fellowshipLogo from '../../assets/home/fellowship-logo.png';
 import './Home.css';
 
 type Course = {
@@ -30,6 +29,7 @@ const COURSES: Course[] = [
     instructor: 'Herman Marin',
     duration: '40 min',
     description: 'Lidera el cambio digital en tu ONG y crea procesos más ágiles con IA.',
+    badge: 'Liderazgo',
   },
   {
     img: courseAsistente,
@@ -195,11 +195,6 @@ const Home = () => {
               </svg>
             </a>
           </div>
-          <div className="home-testimonial__dots" aria-hidden="true">
-            <span className="is-active" />
-            <span />
-            <span />
-          </div>
         </figure>
       </section>
 
@@ -208,9 +203,8 @@ const Home = () => {
         <h2 className="home-fellowship__title">
           ¿Buscas una experiencia de aprendizaje más profunda y aplicada?
         </h2>
-        <img className="home-fellowship__logo" src={fellowshipLogo} alt="Propel Fellowship" />
         <p className="home-fellowship__subtitle">
-          Programa de 6 semanas para líderes sociales
+          <strong>Propel Fellowship:</strong> Programa de 6 semanas para líderes sociales
         </p>
         <a
           href="https://www.wepropel.org/propel-fellowship"
@@ -256,11 +250,7 @@ const Home = () => {
           <div className="home-footer__brand">
             <img src="/landing/propel-logo.webp" alt="Propel" className="home-footer__logo" />
             <p className="home-footer__legal">
-              PropL es una corporación sin fines de lucro de beneficio público en California,
-              reconocida por el IRS como una organización benéfica pública exenta de impuestos
-              bajo la Sección 501(c)(3) del Código de Impuestos Internos (ID Fiscal Federal:
-              87-1457736). Las contribuciones a PropL califican como deducibles de impuestos en
-              la mayor medida permitida por la ley.
+              © PropL, una organización sin fines de lucro 501 (c) (3).
             </p>
           </div>
 

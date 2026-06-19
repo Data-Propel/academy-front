@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi, isAuthenticated } from '../../services/api';
+import { needsProfileCompletion } from '../../utils/profileOptions';
 import PageHead from '../../utils/PageHead';
 import propelLogo from '../../assets/register/propel-logo.png';
 import tileAsistenteIA from '../../assets/register/tile-asistente-ia.png';
@@ -58,7 +59,9 @@ const Login = () => {
     try {
       const { ok, data } = await authApi.googleAuth(credential);
       if (ok) {
-        navigate('/cursos');
+        // A brand-new account created via Google has no organization/type/country
+        // yet, so send it to finish the profile before reaching the catalog.
+        navigate(needsProfileCompletion(data.user) ? '/completar-perfil' : '/cursos');
       } else {
         setError(data.detail || 'No fue posible iniciar sesión con Google.');
       }

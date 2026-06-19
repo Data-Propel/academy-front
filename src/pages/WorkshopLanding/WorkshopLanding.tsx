@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { authApi, getToken, isAuthenticated } from '../../services/api';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
-import propelSquare from '../../assets/workshop/propel-square.png';
 import googleOrg from '../../assets/workshop/google-org.png';
-import heroTeam from '../../assets/workshop/hero-team.jpg';
 import lideraCard from '../../assets/workshop/lidera-card.jpg';
+import iconCalendar from '../../assets/workshop/icons/calendar.svg';
 import iconClock from '../../assets/workshop/icons/clock.svg';
 import iconVideo from '../../assets/workshop/icons/video.svg';
 import './WorkshopLanding.css';
@@ -113,7 +112,7 @@ const WorkshopLanding = () => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/workshops/lidera-ia/path/');
+        const res = await fetch('/api/workshops/lidera-ia-25/path/');
         if (!res.ok || cancelled) return;
         const data = await res.json() as PathCourse[];
         if (!cancelled) setPathCourses(data);
@@ -133,7 +132,7 @@ const WorkshopLanding = () => {
       const token = getToken();
       const [profileRes, statusRes] = await Promise.all([
         authApi.getProfile(),
-        fetch('/api/workshops/lidera-ia/my-status/', {
+        fetch('/api/workshops/lidera-ia-25/my-status/', {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }),
       ]);
@@ -180,7 +179,7 @@ const WorkshopLanding = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/workshops/lidera-ia/register/', {
+      const res = await fetch('/api/workshops/lidera-ia-25/register/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -219,7 +218,7 @@ const WorkshopLanding = () => {
       thumbnail: lideraCard,
       alt: 'Lidera con un IA mindset',
       live: true,
-      fecha: '18 de junio',
+      fecha: '25 de junio',
       metaLabel: 'Hora',
       metaValue: '10 AM CH | 11 AM ARG',
     },
@@ -257,15 +256,25 @@ const WorkshopLanding = () => {
               {zoomJoinUrl && (
                 <p>
                   <a href={zoomJoinUrl} target="_blank" rel="noopener noreferrer" className="ws-modal__zoom-link">
-                    Únete al Zoom el 18 de junio →
+                    Únete al Zoom el 25 de junio
                   </a>
                 </p>
               )}
-              <p><strong>Para iniciar tu certificación, crea tu cuenta en la Nonprofit Academy.</strong></p>
+              <p><strong>
+                {isAuthenticated()
+                  ? 'Mientras tanto, comienza tu certificación en la Nonprofit Academy.'
+                  : 'Para iniciar tu certificación, crea tu cuenta en la Nonprofit Academy.'}
+              </strong></p>
             </div>
             <div className="ws-modal__actions">
-              <a href="/register" className="ws-btn ws-btn--modal-primary">Crear cuenta</a>
-              <a href="/login" className="ws-btn ws-btn--modal-secondary">Ya tengo cuenta</a>
+              {isAuthenticated() ? (
+                <a href="/cursos" className="ws-btn ws-btn--modal-primary">Ir a mis cursos</a>
+              ) : (
+                <>
+                  <a href="/register" className="ws-btn ws-btn--modal-primary">Crear cuenta</a>
+                  <a href="/login" className="ws-btn ws-btn--modal-secondary">Ya tengo cuenta</a>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -278,7 +287,6 @@ const WorkshopLanding = () => {
         <div className="ws-hero__left">
           <div className="ws-hero__badge-row">
             <span className="ws-badge">Workshop</span>
-            <span className="ws-hero__date">18 de junio</span>
           </div>
           <h1 className="ws-hero__title">
             <span className="ws-hero__title-light">Lidera con un</span>
@@ -288,6 +296,10 @@ const WorkshopLanding = () => {
           <p className="ws-hero__subtitle">Aprende a usar IA en tu organización social</p>
 
           <div className="ws-hero__details">
+            <div className="ws-hero__detail">
+              <img src={iconCalendar} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
+              <p className="ws-detail-line">25 de junio</p>
+            </div>
             <div className="ws-hero__detail">
               <img src={iconClock} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
               <p className="ws-detail-line">11 AM AR/UR | 10 AM CH</p>
@@ -302,13 +314,7 @@ const WorkshopLanding = () => {
             <img src={googleOrg} alt="with support from Google.org" className="ws-hero__google" />
           </div>
 
-          <img src={heroTeam} alt="" aria-hidden="true" className="ws-hero__photo" />
-        </div>
-
-        {/* Centre: strip with propel square sitting at the bottom (photo level) */}
-        <div className="ws-hero__strip">
-          <img src={propelSquare} alt="" aria-hidden="true" className="ws-hero__strip-img" />
-          <div className="ws-hero__strip-block" />
+          <img src="/thumbnails/landinglidera.jpg" alt="" aria-hidden="true" className="ws-hero__photo" />
         </div>
 
         {/* Right: white form panel */}
@@ -318,7 +324,7 @@ const WorkshopLanding = () => {
           ) : alreadyRegistered ? (
             <div className="ws-form ws-form--registered">
               <h2 className="ws-modal__title">¡Ya estás registrado!</h2>
-              <p>Te esperamos en el workshop: Lidera con un IA mindset el 18 de junio.</p>
+              <p>Te esperamos en el workshop: Lidera con un IA mindset el 25 de junio.</p>
               {alreadyRegistered.zoomJoinUrl && (
                 <p>
                   <a
@@ -327,14 +333,12 @@ const WorkshopLanding = () => {
                     rel="noopener noreferrer"
                     className="ws-modal__zoom-link"
                   >
-                    Únete al Zoom el 18 de junio →
+                    Únete al Zoom el 25 de junio
                   </a>
                 </p>
               )}
               <p><strong>Mientras tanto, comienza tu certificación en la Nonprofit Academy.</strong></p>
-              <div className="ws-modal__actions">
-                <a href="/cursos" className="ws-btn ws-btn--modal-primary">Ir a mis cursos</a>
-              </div>
+              <a href="/cursos" className="ws-btn ws-btn--submit">Ver cursos disponibles</a>
             </div>
           ) : (
           <form className="ws-form" onSubmit={handleSubmit}>
@@ -453,7 +457,7 @@ const WorkshopLanding = () => {
           </div>
 
           <div className="ws-courses__cta">
-            <a href="/register" className="ws-btn ws-btn--cta">Crea tu cuenta</a>
+            <a href="/register" className="ws-btn ws-btn--cta">Empieza aquí</a>
           </div>
         </section>
       )}

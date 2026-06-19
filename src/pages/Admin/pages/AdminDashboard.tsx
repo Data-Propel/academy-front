@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../AdminContext';
 import PageHeader from '../components/PageHeader';
 
-const fontHeading = "'Libre Franklin', 'Libre Franklin Fallback', 'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-const fontBody = "'Poppins', 'Poppins Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const fontHeading = "'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const fontBody = "'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
 const levelLabels: Record<string, string> = {
   beginner: 'Principiante',

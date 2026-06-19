@@ -23,8 +23,8 @@
   box-sizing: border-box;
 }
 
-/* On the home route, render the shared Topbar in Libre Franklin too so the
-   whole front door uses one typeface (other routes keep the Poppins nav). */
+/* Home route renders the shared Topbar in Libre Franklin (matches the
+   site-wide typeface). */
 .app--home .topbar,
 .app--home .topbar * {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
@@ -318,10 +318,10 @@
 
 .home-testimonial__quote {
   margin: 0 0 28px;
-  font-size: 20px;
+  font-size: 25px;
   line-height: 1.5;
-  font-weight: 400;
-  max-width: 640px;
+  font-weight: 500;
+  max-width: 700px;
 }
 
 .home-testimonial__author {
@@ -352,27 +352,6 @@
   opacity: 1;
 }
 
-.home-testimonial__dots {
-  position: absolute;
-  bottom: -28px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  gap: 13px;
-}
-
-.home-testimonial__dots span {
-  width: 8px;
-  height: 8px;
-  border-radius: 9999px;
-  background: rgba(22, 98, 91, 0.6);
-}
-
-.home-testimonial__dots span.is-active {
-  background: var(--orange-accent);
-}
-
 /* ── Fellowship band (orange) ── */
 .home-fellowship {
   background: var(--orange-band);
@@ -387,12 +366,6 @@
   font-weight: 500;
   line-height: 1.35;
   color: var(--light);
-}
-
-.home-fellowship__logo {
-  height: 46px;
-  width: auto;
-  margin-bottom: 28px;
 }
 
 .home-fellowship__subtitle {
@@ -514,7 +487,7 @@
 }
 
 .home-footer__heading {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: 15px;
   font-weight: 400;
 }
