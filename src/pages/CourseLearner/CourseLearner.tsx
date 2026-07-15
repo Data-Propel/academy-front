@@ -991,6 +991,7 @@ const CourseLearner = () => {
                         key={currentItem.id}
                         ref={videoIframeRef}
                         src={embedUrl}
+                        referrerPolicy="strict-origin-when-cross-origin"
                         allow="autoplay; fullscreen; picture-in-picture"
                         allowFullScreen
                         title={currentItem.title}
