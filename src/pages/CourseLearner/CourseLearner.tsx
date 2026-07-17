@@ -976,7 +976,7 @@ const CourseLearner = () => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M15 18l-6-6 6-6"/>
                     </svg>
-                    Lección Anterior
+                    Anterior lección
                   </Link>
                 )}
               </div>
@@ -1195,14 +1195,14 @@ const CourseLearner = () => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M15 18l-6-6 6-6" />
                     </svg>
-                    Lecci&oacute;n Anterior
+                    Anterior lecci&oacute;n
                   </Link>
                 ) : (
                   <div />
                 )}
                 {nextItem ? (
                   <button onClick={handleNextClick} className="cl-nav-btn cl-nav-next">
-                    Siguiente Lecci&oacute;n
+                    Siguiente lecci&oacute;n
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M9 18l6-6-6-6" />
                     </svg>
