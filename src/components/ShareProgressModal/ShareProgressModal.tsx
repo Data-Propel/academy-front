@@ -159,23 +159,10 @@ const drawShareImage = async (
 const ShareProgressModal = ({ courseTitle, courseUrl, thumbnailUrls, progressPercent, onClose }: ShareProgressModalProps) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [note, setNote] = useState<string | null>(null);
-  const canNativeShare = typeof navigator.share === 'function';
 
   const shareText = `¡Estoy aprendiendo «${courseTitle}» en la Nonprofit Academy de Propel! Llevo un ${progressPercent}% del curso 🚀`;
-
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      if (!canvasRef.current) return;
-      await drawShareImage(canvasRef.current, courseTitle, thumbnailUrls, progressPercent);
-      if (alive) setImageUrl(canvasRef.current.toDataURL('image/png'));
-    })();
-    return () => { alive = false; };
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [courseTitle, progressPercent]);
 
   const close = useCallback(() => onClose(), [onClose]);
 
@@ -203,34 +190,17 @@ const ShareProgressModal = ({ courseTitle, courseUrl, thumbnailUrls, progressPer
     return () => document.removeEventListener('keydown', onKeyDown, true);
   }, [close]);
 
-  const downloadImage = () => {
-    if (!imageUrl) return;
+  const downloadImage = async () => {
+    if (!canvasRef.current) return;
+    await drawShareImage(canvasRef.current, courseTitle, thumbnailUrls, progressPercent);
     const a = document.createElement('a');
-    a.href = imageUrl;
+    a.href = canvasRef.current.toDataURL('image/png');
     a.download = 'mi-avance-nonprofit-academy.png';
     a.click();
   };
 
-  const nativeShare = async () => {
-    if (!canvasRef.current) return;
-    const blob: Blob | null = await new Promise((r) => canvasRef.current!.toBlob(r, 'image/png'));
-    if (blob) {
-      const file = new File([blob], 'mi-avance-nonprofit-academy.png', { type: 'image/png' });
-      if (navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], text: shareText });
-          return;
-        } catch { /* user cancelled or unsupported — fall through */ }
-      }
-    }
-    try {
-      await navigator.share({ text: shareText, url: courseUrl });
-    } catch { /* user cancelled */ }
-  };
-
-  // Social intents share the course link + text; the image itself is for
-  // download / native share (Instagram has no web share intent, so we
-  // download the image and tell the user to post it).
+  // Social intents share the course link + text. Instagram has no web share
+  // intent, so it falls back to downloading the card for the user to post.
   const shareTo = (network: 'linkedin' | 'instagram' | 'facebook' | 'whatsapp') => {
     const url = encodeURIComponent(courseUrl);
     const text = encodeURIComponent(shareText);
@@ -245,7 +215,7 @@ const ShareProgressModal = ({ courseTitle, courseUrl, thumbnailUrls, progressPer
         window.open(`https://wa.me/?text=${text}%20${url}`, '_blank', 'noopener');
         break;
       case 'instagram':
-        downloadImage();
+        void downloadImage();
         setNote('Imagen descargada: súbela a tu historia o publicación de Instagram.');
         break;
     }
@@ -294,32 +264,6 @@ const ShareProgressModal = ({ courseTitle, courseUrl, thumbnailUrls, progressPer
           </button>
         </div>
 
-        <div className="spm-preview">
-          {imageUrl ? (
-            <img src={imageUrl} alt={`Imagen de avance: ${progressPercent}% del curso ${courseTitle}`} />
-          ) : (
-            <div className="spm-preview-loading">Generando imagen…</div>
-          )}
-        </div>
-        <div className="spm-image-actions">
-          <button className="spm-btn spm-btn--outline" onClick={downloadImage} disabled={!imageUrl}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Descargar imagen
-          </button>
-          {canNativeShare && (
-            <button className="spm-btn spm-btn--outline" onClick={nativeShare} disabled={!imageUrl}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                <line x1="8.6" y1="10.5" x2="15.4" y2="6.5" /><line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
-              </svg>
-              Compartir
-            </button>
-          )}
-        </div>
         {note && <p className="spm-note" role="status">{note}</p>}
 
         <p className="spm-subtitle">Sugiere este curso a otras personas</p>
@@ -336,7 +280,14 @@ const ShareProgressModal = ({ courseTitle, courseUrl, thumbnailUrls, progressPer
           </button>
         </div>
 
-        {/* Hidden canvas used to render the share image */}
+        <button className="spm-skip" onClick={close}>
+          Saltar
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+          </svg>
+        </button>
+
+        {/* Rendered on demand for the Instagram fallback only */}
         <canvas ref={canvasRef} className="spm-canvas" aria-hidden="true" />
       </div>
     </div>,
