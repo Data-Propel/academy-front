@@ -2,9 +2,12 @@ import { useEffect, useState, useCallback, useRef, type MouseEvent } from 'react
 import { Link, useLocation } from 'react-router-dom';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
-import { coursesApi, isAuthenticated, authApi, tracksApi, workshopsApi, type Track, type WorkshopRoute } from '../../services/api';
+import { coursesApi, isAuthenticated, authApi, canAccessAdmin, tracksApi, workshopsApi, type Track, type WorkshopRoute } from '../../services/api';
 import { matchesSearch } from '../../utils/searchAliases';
+import { visibleGoalCategories } from '../../utils/goalOptions';
 import CoursePreviewModal from './CoursePreviewModal';
+import GoalSurveyModal, { type GoalCategory } from '../../components/GoalSurveyModal/GoalSurveyModal';
+import GoalProgressBar from './GoalProgressBar';
 import TrackHero from './TrackHero';
 import './Dashboard.css';
 import portadaHero from '../../assets/PortadaAcademy-1920.webp';
@@ -43,6 +46,10 @@ interface User {
   first_name: string;
   last_name: string;
   email: string;
+  goal_hours_per_week?: string;
+  goal_courses_per_month?: string;
+  goal_categories?: string[];
+  goal_set_at?: string | null;
 }
 
 interface Course {
@@ -89,7 +96,7 @@ const CourseCard = ({ course, status, progress, isFavorite, onToggleFavorite, on
   const statusLabel = status === 'completed' ? 'Completado' : status === 'in-progress' ? 'En progreso' : null;
   const statusClass = status === 'completed' ? 'status-completed' : status === 'in-progress' ? 'status-in-progress' : '';
 
-  const buttonLabel = status === 'completed' ? 'Revisar' : status === 'in-progress' ? 'Continuar' : 'Conoce más';
+  const buttonLabel = status === 'completed' ? 'Retomar curso' : status === 'in-progress' ? 'Continuar' : 'Conoce más';
   const durationText = course.duration_display || (course.duration_hours > 0 ? `${course.duration_hours}h` : '');
   const metaText = [course.instructor, durationText].filter(Boolean).join(' · ');
 
@@ -315,6 +322,11 @@ const Dashboard = () => {
   const isCatalogRoute = location.pathname === '/cursos';
   const [showAllCatalog, setShowAllCatalog] = useState(isCatalogRoute);
   const [previewSlug, setPreviewSlug] = useState<string | null>(null);
+  // Learning goal (onboarding survey): categories for the survey chips,
+  // completion dates for the progress bar, and the modal's open state.
+  const [goalCategories, setGoalCategories] = useState<GoalCategory[]>([]);
+  const [completionDates, setCompletionDates] = useState<string[]>([]);
+  const [surveyOpen, setSurveyOpen] = useState(false);
 
   useEffect(() => {
     if (isCatalogRoute) setShowAllCatalog(true);
@@ -338,27 +350,41 @@ const Dashboard = () => {
             .then((r) => { if (r.ok && Array.isArray(r.data)) setRoutes(r.data); })
             .catch(() => { /* silently leave routes empty */ });
 
-          const [profileRes, enrollmentsRes, trackRes] = await Promise.all([
+          const [profileRes, enrollmentsRes, trackRes, categoriesRes] = await Promise.all([
             authApi.getProfile(),
             coursesApi.getMyEnrollments(),
             tracksApi.getFeatured().catch(() => ({ ok: false, data: null })),
+            coursesApi.getCategories().catch(() => ({ ok: false, data: null })),
           ]);
 
           if (trackRes.ok && trackRes.data) {
             setFeaturedTrack(trackRes.data);
           }
 
+          if (categoriesRes.ok && Array.isArray(categoriesRes.data)) {
+            setGoalCategories(categoriesRes.data);
+          }
+
           if (profileRes.ok) {
             setUser(profileRes.data);
+            // User with no learning goal → onboarding survey opens over the
+            // catalog. Server-side goal_set_at drives this, so it survives
+            // logout and can't be skipped via URL/localStorage.
+            if (!profileRes.data.goal_set_at && !canAccessAdmin()) {
+              setSurveyOpen(true);
+            }
           }
 
           if (enrollmentsRes.ok) {
             const slugMap = new Map<string, number>();
-            enrollmentsRes.data.forEach((e: { course?: Course; slug?: string; progress?: number }) => {
+            const completions: string[] = [];
+            enrollmentsRes.data.forEach((e: { course?: Course; slug?: string; progress?: number; completed_at?: string | null }) => {
               const slug = e.course?.slug || e.slug || '';
               if (slug) slugMap.set(slug, e.progress ?? 0);
+              if (e.completed_at) completions.push(e.completed_at);
             });
             setEnrolledSlugs(slugMap);
+            setCompletionDates(completions);
           }
 
           const favoritesRes = await coursesApi.getMyFavorites();
@@ -517,6 +543,22 @@ const Dashboard = () => {
         ogImage={PAGE_META.home.ogImage}
         canonicalPath={PAGE_META.home.canonicalPath}
       />
+
+      {/* Learning-goal progress: real completions this cycle vs. the goal
+          from the onboarding survey */}
+      {loggedIn && user?.goal_set_at && (
+        <GoalProgressBar
+          goal={{
+            goal_hours_per_week: user.goal_hours_per_week,
+            goal_courses_per_month: user.goal_courses_per_month,
+            goal_categories: user.goal_categories,
+            goal_set_at: user.goal_set_at,
+          }}
+          categories={goalCategories}
+          completionDates={completionDates}
+          onEdit={() => setSurveyOpen(true)}
+        />
+      )}
 
       {/* Catalog hero band ("Explora nuestros cursos") — hidden when the user
           is on a ruta de aprendizaje (their TrackHero renders instead) */}
@@ -832,6 +874,26 @@ const Dashboard = () => {
 
       {previewSlug && (
         <CoursePreviewModal slug={previewSlug} onClose={() => setPreviewSlug(null)} />
+      )}
+
+      {surveyOpen && (
+        <GoalSurveyModal
+          categories={visibleGoalCategories(goalCategories, courses)}
+          courses={courses.map((c) => ({
+            id: c.id,
+            title: c.title,
+            slug: c.slug,
+            thumbnail: c.thumbnail_url || localThumbnails[c.slug],
+            categoryName: c.category?.name,
+          }))}
+          initial={user?.goal_set_at ? {
+            goal_hours_per_week: user.goal_hours_per_week,
+            goal_courses_per_month: user.goal_courses_per_month,
+            goal_categories: user.goal_categories,
+          } : undefined}
+          onClose={() => setSurveyOpen(false)}
+          onSaved={(updated) => setUser((prev) => prev ? { ...prev, ...updated } : prev)}
+        />
       )}
     </div>
   );
