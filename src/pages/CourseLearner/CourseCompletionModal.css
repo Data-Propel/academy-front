@@ -354,9 +354,141 @@
   background: #0E4B43;
 }
 
+/* ===== Next-course recommendation (post-NPS) ===== */
+.ccm-modal--wide {
+  max-width: 720px;
+}
+
+.ccm-next {
+  display: flex;
+  flex-direction: column;
+}
+
+.ccm-next-title {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #0E4B43;
+  margin: 0 0 28px;
+}
+
+.ccm-next-card {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.ccm-next-thumb {
+  width: 240px;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ccm-next-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.ccm-next-course {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 6px;
+}
+
+.ccm-next-meta {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 10px;
+}
+
+.ccm-next-desc {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.ccm-next-cta {
+  display: inline-block;
+  padding: 11px 24px;
+  background: #FF5A2F;
+  color: #ffffff;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.ccm-next-cta:hover {
+  background: #e64d24;
+}
+
+.ccm-next-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.ccm-next-cert {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  color: #0E4B43;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ccm-next-cert:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.ccm-next-cert:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.ccm-next-back {
+  color: #FF5A2F;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.ccm-next-back:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 600px) {
   .ccm-modal {
     padding: 32px 20px 24px;
+  }
+
+  .ccm-next-card {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ccm-next-thumb {
+    width: 100%;
+  }
+
+  .ccm-next-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
   .ccm-title {
