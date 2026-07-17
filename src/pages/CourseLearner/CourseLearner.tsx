@@ -239,7 +239,7 @@ const getEmbedUrl = (url: string): string | null => {
 
 const buildNavItems = (lessons: Lesson[]): NavItem[] => {
   const items: NavItem[] = [];
-  const sorted = [...lessons].sort((a, b) => a.order_index - b.order_index);
+  const sorted = [...lessons].sort((a, b) => a.order_index - b.order_index || a.id - b.id);
   for (const lesson of sorted) {
     if (lesson.video_url || lesson.content) {
       items.push({
@@ -253,7 +253,7 @@ const buildNavItems = (lessons: Lesson[]): NavItem[] => {
       });
     }
     if (lesson.topics) {
-      const sortedTopics = [...lesson.topics].sort((a, b) => a.order_index - b.order_index);
+      const sortedTopics = [...lesson.topics].sort((a, b) => a.order_index - b.order_index || a.id - b.id);
       for (const topic of sortedTopics) {
         items.push({
           type: 'topic',
@@ -606,7 +606,7 @@ const CourseLearner = () => {
   }
 
   const sortedLessons = [...(course.lessons || [])].sort(
-    (a, b) => a.order_index - b.order_index
+    (a, b) => a.order_index - b.order_index || a.id - b.id
   );
 
   const toggleLesson = (id: number) => {
@@ -749,11 +749,11 @@ const CourseLearner = () => {
       <aside className={`cl-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <nav className="cl-sidebar-nav" ref={sidebarNavRef}>
           <div className="cl-sidebar-section-title">{course.title}</div>
+          <div className="cl-sidebar-panel">
           {sortedLessons.map((lesson) => {
             const hasContent = !!(lesson.video_url || lesson.content);
             const hasTopics = lesson.topics && lesson.topics.length > 0;
             const isExpanded = expandedLessons.has(lesson.id);
-            const lessonCompleted = isCompleted('lesson', lesson.id);
             const lessonActive = hasContent && isActive('lesson', lesson.id);
             // Per-lesson topic progress
             const topicCount = lesson.topics?.length || 0;
@@ -764,19 +764,10 @@ const CourseLearner = () => {
             return (
               <div key={lesson.id} className="cl-sidebar-lesson" ref={lessonActive ? activeItemRef as React.Ref<HTMLDivElement> : undefined}>
                 <div className={`cl-sidebar-lesson-header ${lessonActive ? 'active' : ''} ${!hasContent && !hasTopics ? 'empty' : ''}`}>
-                  <div className={`cl-module-icon ${lessonCompleted ? 'completed' : lessonActive ? 'active' : ''}`}>
-                    {lessonCompleted ? (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                        <path d="M20 6L9 17l-5-5" />
-                      </svg>
-                    ) : lessonActive ? (
-                      <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="currentColor"/></svg>
-                    ) : null}
-                  </div>
+                  <span className={`cl-module-icon ${lessonLocked ? 'locked' : ''}`} />
                   {hasContent ? (
                     lessonLocked ? (
                       <span className="cl-sidebar-lesson-link cl-sidebar-lesson-link--locked">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         {lesson.title}
                       </span>
                     ) : (
@@ -828,13 +819,13 @@ const CourseLearner = () => {
                 )}
                 {isExpanded && hasTopics && (
                   <div className="cl-sidebar-topics">
-                    {[...(lesson.topics || [])].sort((a, b) => a.order_index - b.order_index).map((topic) => {
+                    {[...(lesson.topics || [])].sort((a, b) => a.order_index - b.order_index || a.id - b.id).map((topic) => {
                       const topicNavIdx = navItemIndexMap.get(`topic-${topic.id}`) ?? -1;
                       const topicLocked = progressLoaded && topicNavIdx >= 0 && !isNavItemUnlocked(topicNavIdx);
                       if (topicLocked) {
                         return (
                           <div key={topic.id} className="cl-sidebar-topic-link cl-sidebar-topic-link--locked">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span className="cl-radio locked" />
                             <span>{topic.title}</span>
                           </div>
                         );
@@ -846,16 +837,7 @@ const CourseLearner = () => {
                           className={`cl-sidebar-topic-link ${isActive('topic', topic.id) ? 'active' : ''} ${isCompleted('topic', topic.id) ? 'completed' : ''}`}
                           ref={isActive('topic', topic.id) ? activeItemRef as React.Ref<HTMLAnchorElement> : undefined}
                         >
-                          {isCompleted('topic', topic.id) ? (
-                            <svg className="cl-completed-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                              <path d="M20 6L9 17l-5-5" />
-                            </svg>
-                          ) : (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <circle cx="12" cy="12" r="10" />
-                              <polygon points="10 8 16 12 10 16 10 8" />
-                            </svg>
-                          )}
+                          <span className="cl-radio" />
                           <span>{topic.title}</span>
                         </Link>
                       );
@@ -926,6 +908,7 @@ const CourseLearner = () => {
               )}
             </div>
           )}
+          </div>
         </nav>
 
         {/* Global nav footer — visible on mobile where Topbar hamburger is hidden */}
