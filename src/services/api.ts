@@ -355,7 +355,12 @@ export const authApi = {
     organization?: string;
     organization_type?: string;
     country?: string;
+    job_title?: string;
+    phone?: string;
     newsletter_opt_in?: boolean;
+    goal_hours_per_week?: string;
+    goal_courses_per_month?: string;
+    goal_categories?: string[];
   }) => {
     const response = await apiFetch('/users/profile/', {
       method: 'PATCH',
@@ -503,6 +508,11 @@ export const coursesApi = {
       method: 'POST',
       body: JSON.stringify({ answers }),
     });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  getNextCourse: async (slug: string) => {
+    const response = await apiFetch(`/courses/${slug}/next-course/`);
     return { ok: response.ok, data: await response.json() };
   },
 
