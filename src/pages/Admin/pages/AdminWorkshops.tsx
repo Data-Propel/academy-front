@@ -45,6 +45,9 @@ interface Stats {
   stage_3_enrolled: number;
   stage_4_completed: number;
   stage_5_certified: number;
+  // S6-08 live route funnel
+  attended?: number;
+  path_courses?: { order: number; slug: string; title: string; completed: number }[];
 }
 
 interface ZoomParticipant {
@@ -100,6 +103,7 @@ export default function AdminWorkshops() {
   const { showError } = useAdmin();
   const [regs, setRegs] = useState<Registration[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [statsUpdatedAt, setStatsUpdatedAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<number | ''>('');
@@ -176,10 +180,22 @@ export default function AdminWorkshops() {
       setLoading(false);
       if (r.ok) setRegs(r.data as Registration[]);
       else showError('No se pudieron cargar las inscripciones.');
-      if (s.ok) setStats(s.data as Stats);
+      if (s.ok) { setStats(s.data as Stats); setStatsUpdatedAt(new Date()); }
       if (p.ok) setPath(p.data as PathCourse[]);
     })();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [workshopSlug]);
+
+  // S6-08: keep the route funnel "en vivo" — refresh the aggregate stats
+  // every 60s while the page is open.
+  useEffect(() => {
+    if (!workshopSlug) return;
+    const tick = async () => {
+      const s = await adminApi.getWorkshopStats(workshopSlug);
+      if (s.ok) { setStats(s.data as Stats); setStatsUpdatedAt(new Date()); }
+    };
+    const id = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(id);
   }, [workshopSlug]);
 
   // Courses available to add = all courses minus those already on the path.
@@ -386,6 +402,16 @@ export default function AdminWorkshops() {
   return (
     <>
       <style>{`
+        .wk-live { margin-bottom: 28px; }
+        .wk-live-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+        .wk-live-head h3 { display: flex; align-items: center; gap: 8px; font-family: 'Libre Franklin', sans-serif; font-size: 1.05rem; color: #F2F2F2; margin: 0; }
+        .wk-live-head span { font-family: 'Libre Franklin', sans-serif; font-size: 0.78rem; color: rgba(242,242,242,0.6); }
+        .wk-live-dot { width: 9px; height: 9px; border-radius: 50%; background: #A3C94A; animation: wk-live-pulse 2s ease-in-out infinite; }
+        @keyframes wk-live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+        .wk-live-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+        @media (max-width: 1100px) { .wk-live-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 700px) { .wk-live-grid { grid-template-columns: repeat(2, 1fr); } }
+        .wk-live-course { display: block; font-size: 0.72rem; color: rgba(242,242,242,0.5); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .wk-funnel { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 28px; }
         @media (max-width: 900px) { .wk-funnel { grid-template-columns: repeat(2, 1fr); } }
         .wk-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 18px 16px; }
@@ -655,6 +681,47 @@ export default function AdminWorkshops() {
             </button>
           </div>
         </section>
+
+        {/* S6-08 · Seguimiento en vivo de la ruta */}
+        {stats && (
+          <section className="wk-live">
+            <div className="wk-live-head">
+              <h3>
+                <span className="wk-live-dot" aria-hidden="true" />
+                Seguimiento en vivo de la ruta
+              </h3>
+              {statsUpdatedAt && (
+                <span>
+                  Actualizado a las {statsUpdatedAt.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })} · se refresca cada minuto
+                </span>
+              )}
+            </div>
+            <div className="wk-live-grid">
+              <div className="wk-card">
+                <div className="wk-card-value">{stats.total_registered}</div>
+                <div className="wk-card-label">Registrados en la ruta</div>
+              </div>
+              <div className="wk-card">
+                <div className="wk-card-value">{stats.attended ?? 0}</div>
+                <div className="wk-card-label">Asistieron al workshop (en vivo o grabación)</div>
+              </div>
+              {(stats.path_courses ?? []).map((pc) => (
+                <div className="wk-card" key={pc.slug}>
+                  <div className="wk-card-value">{pc.completed}</div>
+                  <div className="wk-card-label">
+                    Terminaron el {pc.order}
+                    {pc.order === 1 ? 'er' : pc.order === 3 ? 'er' : 'º'} curso
+                    <span className="wk-live-course" title={pc.title}> · {pc.title}</span>
+                  </div>
+                </div>
+              ))}
+              <div className="wk-card">
+                <div className="wk-card-value">{stats.stage_5_certified}</div>
+                <div className="wk-card-label">Certificados de la ruta</div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <div className="wk-funnel">
           {funnel.map((f, i) => (
