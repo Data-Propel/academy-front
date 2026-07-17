@@ -713,7 +713,7 @@ const CourseLearner = () => {
           </svg>
           Volver
         </Link>
-        <span className="cl-topbar-title">{course.title}</span>
+        <div className="cl-topbar-spacer" />
         <div className="cl-topbar-right">
           <div className="cl-topbar-progress">
             <div className="cl-topbar-progress-bar">
@@ -748,7 +748,7 @@ const CourseLearner = () => {
       {/* Sidebar */}
       <aside className={`cl-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <nav className="cl-sidebar-nav" ref={sidebarNavRef}>
-          <div className="cl-sidebar-section-title">Contenido del Curso</div>
+          <div className="cl-sidebar-section-title">{course.title}</div>
           {sortedLessons.map((lesson) => {
             const hasContent = !!(lesson.video_url || lesson.content);
             const hasTopics = lesson.topics && lesson.topics.length > 0;

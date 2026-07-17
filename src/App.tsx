@@ -124,7 +124,7 @@ export function AppContent() {
         </Routes>
         )}
       </Suspense>
-      {!isLearnerRoute && !isAdminRoute && !isFormRoute && !isWorkshopRoute && !isAuthRoute && !isHomeRoute && <Footer />}
+      {!isAdminRoute && !isFormRoute && !isWorkshopRoute && !isAuthRoute && !isHomeRoute && <Footer />}
     </div>
   );
 }
