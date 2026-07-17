@@ -5,6 +5,9 @@ import { coursesApi, isAuthenticated, isSuperuser, authApi } from '../../service
 import PageHead from '../../utils/PageHead';
 import CourseCompletionModal from './CourseCompletionModal';
 import './CourseLearner.css';
+import ExternalLinkGuard from '../../components/ExternalLinkGuard/ExternalLinkGuard';
+import ShareProgressModal from '../../components/ShareProgressModal/ShareProgressModal';
+import { localThumbnails } from '../../utils/courseThumbnails';
 
 /** Rewrite WordPress upload URLs to local /pdfs/ path */
 function localizeUrl(url: string): string {
@@ -194,6 +197,7 @@ interface Course {
   id: number;
   title: string;
   slug: string;
+  thumbnail_url?: string | null;
   is_enrolled?: boolean;
   lessons?: Lesson[];
   resources?: Array<{
@@ -284,6 +288,7 @@ const CourseLearner = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [expandedLessons, setExpandedLessons] = useState<Set<number>>(new Set());
   const [completedLessons, setCompletedLessons] = useState<Set<number>>(new Set());
   const [completedTopics, setCompletedTopics] = useState<Set<number>>(new Set());
@@ -685,7 +690,7 @@ const CourseLearner = () => {
   const hasMaterials = googleLinks.length > 0 || currentResources.length > 0 || courseMaterials.length > 0;
 
   return (
-    <div className="cl-page">
+    <ExternalLinkGuard className="cl-page">
       <PageHead title={course.title} noIndex />
       {/* Top bar — unified dark bar */}
       <div className="cl-topbar">
@@ -719,6 +724,14 @@ const CourseLearner = () => {
             </div>
             <span className="cl-topbar-progress-label">{progressPercent}% completado</span>
           </div>
+          {/* S6-04: share-progress popup trigger */}
+          <button className="cl-topbar-share" onClick={() => setShareOpen(true)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+              <line x1="8.6" y1="10.5" x2="15.4" y2="6.5" /><line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
+            </svg>
+            <span>Compartir avance</span>
+          </button>
           <Link to={`/courses/${slug}`} className="cl-topbar-close" aria-label="Cerrar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -1304,7 +1317,18 @@ const CourseLearner = () => {
           </div>
         </div>
       )}
-    </div>
+
+      {/* Share-progress popup (S6-04) */}
+      {shareOpen && (
+        <ShareProgressModal
+          courseTitle={course.title}
+          courseUrl={`${window.location.origin}/courses/${slug}`}
+          thumbnailUrls={[course.thumbnail_url, slug ? localThumbnails[slug] : null]}
+          progressPercent={progressPercent}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
+    </ExternalLinkGuard>
   );
 };
 

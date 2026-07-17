@@ -8,29 +8,11 @@ import takeIcon1 from '../../assets/course/take-1.png';
 import takeIcon2 from '../../assets/course/take-2.png';
 import takeIcon3 from '../../assets/course/take-3.png';
 import './CourseDetail.css';
+import ExternalLinkGuard from '../../components/ExternalLinkGuard/ExternalLinkGuard';
+import AddToCalendarModal from '../../components/AddToCalendarModal/AddToCalendarModal';
+import { localThumbnails } from '../../utils/courseThumbnails';
 
 const TAKEAWAY_ICONS = [takeIcon1, takeIcon2, takeIcon3];
-
-const localThumbnails: Record<string, string> = {
-  'conecta-con-nuevos-donantes': '/thumbnails/Conacta-con-donantes-portada.webp',
-  'crea-contenido-para-redes-sociales-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-may.webp',
-  'aprende-a-liderar-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-oct.webp',
-  'growth-marketing-para-ongs': '/thumbnails/Imagen-destacada.webp',
-  'impact-accelerator': '/thumbnails/Copy-of-Imagen-destacada-1.webp',
-  'propel-fellowship': '/thumbnails/Thumbnail-Propel-Fellowship-C8-1.webp',
-  'team-handbook': '/thumbnails/Portadas-cursos-1.webp',
-  'guia-de-procesos-internos': '/thumbnails/Portadas-cursos.webp',
-  'introduccion-a-chatgpt-para-organizaciones-sociale': '/thumbnails/Introduccion-a-CHATGPT.webp',
-  'define-tus-metas-con-okrs': '/thumbnails/okr.webp',
-  'atrae-mas-vistas-con-seo': '/thumbnails/alcanzamasvistasconseo.png',
-  'lean-data-para-impacto-social': '/thumbnails/Imagen-destacada-10-1.webp',
-  'construye-indicadores-para-medir-impacto': '/thumbnails/Imagen-destacada-14.webp',
-  'convierte-tus-ideas-en-un-pitch-ganador': '/thumbnails/conviertetusideasenunpitchganador.png',
-  'potencia-tu-teoria-de-cambio': '/thumbnails/Imagen-destacada-11.webp',
-  'aplica-a-tu-siguiente-grant-con-ia': '/thumbnails/aplicaatusiguientegrantconia.png',
-  'identifica-a-tu-donante-ideal': '/thumbnails/Imagen-destacada-13-1.webp',
-  'crea-tu-asistente-ia': '/thumbnails/Asistente-IA-portada.webp',
-};
 
 /** Rewrite WordPress upload URLs to local /pdfs/ path */
 function localizeUrl(url: string): string {
@@ -206,6 +188,7 @@ const CourseDetail = () => {
   const [certError, setCertError] = useState<string | null>(null);
   const [showEnrollPrompt, setShowEnrollPrompt] = useState(false);
   const [evalStatus, setEvalStatus] = useState<{ has_evaluation_form: boolean; has_submitted: boolean } | null>(null);
+  const [showCalModal, setShowCalModal] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -445,6 +428,21 @@ const CourseDetail = () => {
       }
     : null;
 
+  // S6-06: the course counts as completed when every content item is done.
+  const courseCompleted = (() => {
+    if (!course.is_enrolled || !course.lessons) return false;
+    const allLessons = course.lessons.filter(l => l.video_url || l.content);
+    const allTopics = course.lessons.flatMap(l => l.topics || []);
+    if (allLessons.length + allTopics.length === 0) return false;
+    return allLessons.every(l => completedLessons.has(l.id)) &&
+      allTopics.every(t => completedTopics.has(t.id));
+  })();
+
+  // S6-05: default calendar block = the course duration, in minutes.
+  const courseDurationMinutes =
+    course.duration_minutes ||
+    (course.duration_hours ? Math.round(course.duration_hours * 60) : 60);
+
   const seoTitle = course.seo_title || `${course.title} — Propel Academy`;
   const seoDescription =
     course.seo_description ||
@@ -488,7 +486,7 @@ const CourseDetail = () => {
   };
 
   return (
-    <div className="course-detail-page">
+    <ExternalLinkGuard className="course-detail-page">
       <Helmet>
         <title>{seoTitle}</title>
         <meta name="description" content={seoDescription} />
@@ -976,16 +974,9 @@ const CourseDetail = () => {
                   </div>
                 )}
 
-                {(() => {
-                  if (!course.is_enrolled || !course.lessons) return false;
-                  const allLessons = course.lessons.filter(l => l.video_url || l.content);
-                  const allTopics = course.lessons.flatMap(l => l.topics || []);
-                  const totalItems = allLessons.length + allTopics.length;
-                  if (totalItems === 0) return false;
-                  return allLessons.every(l => completedLessons.has(l.id)) &&
-                    allTopics.every(t => completedTopics.has(t.id));
-                })() && (
+                {courseCompleted && (
                   <>
+                    <p className="sidebar-completed-note">¡Ya terminaste este curso!</p>
                     {evalStatus?.has_evaluation_form && !evalStatus.has_submitted ? (
                       <a
                         href={`/courses/${slug}/evaluate`}
@@ -1066,8 +1057,8 @@ const CourseDetail = () => {
                     }
                   }
                   return (
-                    <Link to={firstPath} className="sidebar-cta enrolled">
-                      Continuar
+                    <Link to={firstPath} className={`sidebar-cta${courseCompleted ? '' : ' enrolled'}`}>
+                      {courseCompleted ? 'Retomar curso' : 'Continuar'}
                     </Link>
                   );
                 })() : (
@@ -1086,11 +1077,26 @@ const CourseDetail = () => {
                     )}
                   </button>
                 )}
+
+                {/* S6-05: block time for the course in the user's calendar */}
+                <button className="sidebar-calendar-link" onClick={() => setShowCalModal(true)}>
+                  Agregar a mi calendario
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Add-to-calendar modal (S6-05) */}
+      {showCalModal && (
+        <AddToCalendarModal
+          courseTitle={course.title}
+          courseUrl={`${window.location.origin}/courses/${course.slug}`}
+          defaultDurationMinutes={courseDurationMinutes}
+          onClose={() => setShowCalModal(false)}
+        />
+      )}
 
       {/* Enroll prompt popup */}
       {showEnrollPrompt && (
@@ -1122,7 +1128,7 @@ const CourseDetail = () => {
           </div>
         </div>
       )}
-    </div>
+    </ExternalLinkGuard>
   );
 };
 

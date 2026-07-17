@@ -726,6 +726,34 @@
   text-align: right;
 }
 
+/* Completed-course note above the certificate button (S6-06) */
+.sidebar-completed-note {
+  text-align: center;
+  color: #11544f;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 4px 0 14px;
+}
+
+/* "Agregar a mi calendario" text link under the CTA (S6-05) */
+.sidebar-calendar-link {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  margin-top: 14px;
+  padding: 4px 0;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--cd-orange);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  text-align: center;
+}
+.sidebar-calendar-link:hover { color: var(--cd-orange-dark); }
+
 /* Certificate / eval button */
 .sidebar-certificate-btn {
   width: 100%;

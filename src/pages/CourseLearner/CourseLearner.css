@@ -85,6 +85,27 @@
   white-space: nowrap;
 }
 
+/* "Compartir avance" trigger (S6-04) */
+.cl-topbar-share {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+  padding: 7px 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.cl-topbar-share:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #ffffff;
+}
+
 .cl-topbar-close {
   display: flex;
   align-items: center;
@@ -1335,6 +1356,14 @@
 
   .cl-topbar-progress-label {
     font-size: 9px;
+  }
+
+  .cl-topbar-share {
+    padding: 6px 8px;
+  }
+
+  .cl-topbar-share span {
+    display: none;
   }
 
   .cl-certificate-banner {
