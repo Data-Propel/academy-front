@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi, isAuthenticated, coursesApi, MEDIA_URL } from '../../services/api';
+import { GOAL_HOURS_OPTIONS, GOAL_COURSES_OPTIONS, visibleGoalCategories } from '../../utils/goalOptions';
 import PageHead from '../../utils/PageHead';
 import './Profile.css';
 
@@ -14,8 +15,14 @@ interface User {
   organization: string;
   organization_type: string;
   country: string;
+  job_title: string;
+  phone: string;
   created_at: string;
   avatar: string | null;
+  goal_hours_per_week?: string;
+  goal_courses_per_month?: string;
+  goal_categories?: string[];
+  goal_set_at?: string | null;
 }
 
 interface Enrollment {
@@ -38,7 +45,7 @@ interface Favorite {
   };
 }
 
-type ProfileTab = 'learning' | 'list' | 'settings';
+type ProfileTab = 'learning' | 'list' | 'settings' | 'goal';
 
 const localThumbnails: Record<string, string> = {
   'conecta-con-nuevos-donantes': '/thumbnails/Conacta-con-donantes-portada.webp',
@@ -118,14 +125,23 @@ const Profile = () => {
   // Profile form
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [bio, setBio] = useState('');
   const [organization, setOrganization] = useState('');
   const [organizationType, setOrganizationType] = useState('');
   const [country, setCountry] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [phone, setPhone] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [profileError, setProfileError] = useState('');
+
+  // Learning goal (Meta de aprendizaje)
+  const [goalHours, setGoalHours] = useState('');
+  const [goalCourses, setGoalCourses] = useState('');
+  const [goalCats, setGoalCats] = useState<string[]>([]);
+  const [goalCategories, setGoalCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
+  const [goalSaving, setGoalSaving] = useState(false);
+  const [goalMessage, setGoalMessage] = useState('');
+  const [goalError, setGoalError] = useState('');
 
   // Password form
   const [currentPassword, setCurrentPassword] = useState('');
@@ -153,10 +169,12 @@ const Profile = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [profileRes, enrollRes, favRes] = await Promise.all([
+      const [profileRes, enrollRes, favRes, categoriesRes, coursesRes] = await Promise.all([
         authApi.getProfile(),
         coursesApi.getMyEnrollments(),
         coursesApi.getMyFavorites(),
+        coursesApi.getCategories().catch(() => ({ ok: false, data: null })),
+        coursesApi.list().catch(() => ({ ok: false, data: null })),
       ]);
 
       if (profileRes.ok) {
@@ -164,11 +182,21 @@ const Profile = () => {
         setUser(u);
         setFirstName(u.first_name || '');
         setLastName(u.last_name || '');
-        setDisplayName(u.display_name || '');
-        setBio(u.bio || '');
         setOrganization(u.organization || '');
         setOrganizationType(u.organization_type || '');
         setCountry(u.country || '');
+        setJobTitle(u.job_title || '');
+        setPhone(u.phone || '');
+        setGoalHours(u.goal_hours_per_week || '');
+        setGoalCourses(u.goal_courses_per_month || '');
+        setGoalCats(Array.isArray(u.goal_categories) ? u.goal_categories : []);
+      }
+      if (categoriesRes.ok && Array.isArray(categoriesRes.data)) {
+        // Only offer categories that actually have visible courses.
+        const catalog = coursesRes.ok && Array.isArray(coursesRes.data) ? coursesRes.data : [];
+        setGoalCategories(catalog.length > 0
+          ? visibleGoalCategories(categoriesRes.data, catalog)
+          : categoriesRes.data);
       }
       if (enrollRes.ok) {
         setEnrollments(enrollRes.data);
@@ -199,8 +227,8 @@ const Profile = () => {
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName.trim() || !lastName.trim()) {
-      setProfileError('Nombre y apellido son obligatorios.');
+    if (!firstName.trim() || !lastName.trim() || !organization.trim() || !organizationType || !country) {
+      setProfileError('Completa los campos obligatorios.');
       return;
     }
 
@@ -212,11 +240,11 @@ const Profile = () => {
       const res = await authApi.updateProfile({
         first_name: firstName.trim(),
         last_name: lastName.trim(),
-        display_name: displayName.trim(),
-        bio: bio.trim(),
         organization: organization.trim(),
         organization_type: organizationType,
         country: country,
+        job_title: jobTitle.trim(),
+        phone: phone.trim(),
       });
 
       if (res.ok) {
@@ -233,6 +261,40 @@ const Profile = () => {
       setProfileError('Error de conexión.');
     }
     setProfileSaving(false);
+  };
+
+  const handleGoalSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!goalHours || !goalCourses || goalCats.length === 0) {
+      setGoalError('Elige categorías, cursos por mes y horas por semana.');
+      return;
+    }
+
+    setGoalSaving(true);
+    setGoalError('');
+    setGoalMessage('');
+
+    try {
+      const res = await authApi.updateProfile({
+        goal_hours_per_week: goalHours,
+        goal_courses_per_month: goalCourses,
+        goal_categories: goalCats,
+      });
+
+      if (res.ok) {
+        setUser(res.data);
+        setGoalMessage('Meta actualizada exitosamente.');
+      } else {
+        const errors = res.data;
+        const msg = typeof errors === 'object'
+          ? Object.values(errors).flat().join(' ')
+          : 'Error al guardar.';
+        setGoalError(msg);
+      }
+    } catch {
+      setGoalError('Error de conexión.');
+    }
+    setGoalSaving(false);
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -291,7 +353,6 @@ const Profile = () => {
     }
   };
 
-  const inProgress = enrollments.filter((e) => !e.completed_at && e.progress < 100);
   const completed = enrollments.filter((e) => e.completed_at || e.progress === 100);
   const certificatesCount = completed.filter((e) =>
     !evalStatuses[e.course.slug]?.has_evaluation_form ||
@@ -334,9 +395,9 @@ const Profile = () => {
   return (
     <div className="profile-page">
       <PageHead title="Mi perfil" noIndex />
-      <div className="profile-container">
-        {/* Hero */}
-        <div className="profile-hero">
+      {/* Hero band */}
+      <div className="profile-hero-band">
+        <div className="profile-container profile-hero">
           <div
             className="profile-avatar"
             style={{ background: user ? getAvatarGradient(user.id) : GRADIENTS[0] }}
@@ -349,16 +410,22 @@ const Profile = () => {
             <h1 className="profile-hero-name">
               {user?.display_name || `${user?.first_name} ${user?.last_name}`}
             </h1>
-            {user?.organization && (
-              <p className="profile-hero-org">{user.organization}</p>
-            )}
             <p className="profile-hero-email">{user?.email}</p>
             {user?.created_at && (
               <p className="profile-hero-since">{formatMemberSince(user.created_at)}</p>
             )}
           </div>
+          <button className="profile-hero-edit" onClick={() => switchTab('settings')}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Editar tu perfil
+          </button>
         </div>
+      </div>
 
+      <div className="profile-container">
         {/* Stats */}
         <div className="profile-stats">
           <button className="profile-stat-card" onClick={() => switchTab('learning')}>
@@ -381,7 +448,7 @@ const Profile = () => {
             className={`profile-tab${activeTab === 'learning' ? ' active' : ''}`}
             onClick={() => setActiveTab('learning')}
           >
-            Mi Aprendizaje
+            Mi aprendizaje
           </button>
           <button
             className={`profile-tab${activeTab === 'list' ? ' active' : ''}`}
@@ -395,6 +462,12 @@ const Profile = () => {
           >
             Configuración
           </button>
+          <button
+            className={`profile-tab${activeTab === 'goal' ? ' active' : ''}`}
+            onClick={() => setActiveTab('goal')}
+          >
+            Meta
+          </button>
         </div>
 
         {/* Tab content */}
@@ -402,150 +475,85 @@ const Profile = () => {
           {/* Mi Aprendizaje */}
           {activeTab === 'learning' && (
             <div className="profile-learning">
-              {/* In Progress */}
-              <section className="profile-section">
-                <h2 className="profile-section-title">En progreso</h2>
-                {inProgress.length > 0 ? (
-                  <div className="profile-course-cards">
-                    {inProgress.map((enrollment) => {
-                      const thumb = getThumbnail(enrollment.course.slug, enrollment.course.thumbnail_url);
-                      return (
-                        <Link
-                          to={`/courses/${enrollment.course.slug}`}
-                          key={enrollment.course.id}
-                          className="profile-course-card"
-                        >
-                          <div className="profile-course-thumb">
-                            {thumb ? (
-                              <img src={thumb} alt={enrollment.course.title} />
-                            ) : (
-                              <div className="profile-course-thumb-placeholder">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                                </svg>
-                              </div>
-                            )}
-                          </div>
-                          <div className="profile-course-card-body">
-                            <span className="profile-course-card-title">{enrollment.course.title}</span>
-                            <div className="profile-course-card-progress">
-                              <div className="profile-course-card-bar">
-                                <div
-                                  className="profile-course-card-fill"
-                                  style={{ width: `${enrollment.progress}%` }}
-                                />
-                              </div>
-                              <span className="profile-course-card-pct">{enrollment.progress}%</span>
-                            </div>
-                          </div>
+              {certError && (
+                <p style={{ color: '#e53e3e', fontSize: '0.9rem', marginBottom: '0.75rem' }}>{certError}</p>
+              )}
+              {enrollments.length > 0 ? (
+                <div className="profile-learn-rows">
+                  {enrollments.map((enrollment) => {
+                    const thumb = getThumbnail(enrollment.course.slug, enrollment.course.thumbnail_url);
+                    const done = !!enrollment.completed_at || enrollment.progress === 100;
+                    const status = evalStatuses[enrollment.course.slug];
+                    const evalPending = done && status?.has_evaluation_form && !status?.has_submitted;
+                    const canDownload = done && !evalPending;
+                    return (
+                      <div key={enrollment.course.id} className="profile-learn-row">
+                        <Link to={`/courses/${enrollment.course.slug}`} className="profile-learn-thumb">
+                          {thumb ? (
+                            <img
+                              src={thumb}
+                              alt={enrollment.course.title}
+                              // Staging serves no course media — fall back to the placeholder bg
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          ) : (
+                            <span className="profile-course-thumb-placeholder">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                              </svg>
+                            </span>
+                          )}
                         </Link>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="profile-empty">
-                    <svg className="profile-empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                    </svg>
-                    <p className="profile-empty-text">Aún no estás inscrito en ningún curso</p>
-                    <Link to="/cursos" className="profile-empty-cta">Explorar cursos</Link>
-                  </div>
-                )}
-              </section>
-
-              {/* Completed */}
-              <section className="profile-section">
-                <h2 className="profile-section-title">Completados</h2>
-                {certError && (
-                  <p style={{ color: '#e53e3e', fontSize: '0.9rem', marginBottom: '0.75rem' }}>{certError}</p>
-                )}
-                {completed.length > 0 ? (
-                  <div className="profile-course-cards">
-                    {completed.map((enrollment) => {
-                      const thumb = getThumbnail(enrollment.course.slug, enrollment.course.thumbnail_url);
-                      return (
-                        <div key={enrollment.course.id} className="profile-course-card profile-course-card--completed">
-                          <div className="profile-course-thumb">
-                            {thumb ? (
-                              <img src={thumb} alt={enrollment.course.title} />
-                            ) : (
-                              <div className="profile-course-thumb-placeholder">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                                </svg>
-                              </div>
-                            )}
-                          </div>
-                          <div className="profile-course-card-body">
-                            <div className="profile-course-card-titlerow">
-                              <Link to={`/courses/${enrollment.course.slug}`} className="profile-course-card-title">
-                                {enrollment.course.title}
+                        <div className="profile-learn-info">
+                          <Link to={`/courses/${enrollment.course.slug}`} className="profile-learn-title">
+                            {enrollment.course.title}
+                          </Link>
+                          <div className="profile-learn-progress">
+                            <div className="profile-learn-bar">
+                              <div className="profile-learn-fill" style={{ width: `${enrollment.progress}%` }} />
+                            </div>
+                            <span className="profile-learn-pct">{enrollment.progress}%</span>
+                            {evalPending ? (
+                              <Link to={`/courses/${enrollment.course.slug}/evaluate`} className="profile-learn-cert profile-learn-cert--eval">
+                                Evaluar
                               </Link>
-                              <span className="profile-course-badge-done">Completado</span>
-                            </div>
-                            <div className="profile-course-actions">
-                              {(!evalStatuses[enrollment.course.slug]?.has_evaluation_form || evalStatuses[enrollment.course.slug]?.has_submitted) && (
-                                <button
-                                  className="profile-certificate-btn"
-                                  disabled={downloadingCertSlug === enrollment.course.slug}
-                                  onClick={async () => {
-                                    setDownloadingCertSlug(enrollment.course.slug);
-                                    setCertError(null);
-                                    try {
-                                      const result = await coursesApi.downloadCertificate(enrollment.course.slug);
-                                      if (result && !result.ok) {
-                                        setCertError(result.detail || 'No se pudo descargar el certificado.');
-                                      }
-                                    } finally {
-                                      setDownloadingCertSlug(null);
+                            ) : (
+                              <button
+                                className="profile-learn-cert"
+                                disabled={!canDownload || downloadingCertSlug === enrollment.course.slug}
+                                onClick={async () => {
+                                  setDownloadingCertSlug(enrollment.course.slug);
+                                  setCertError(null);
+                                  try {
+                                    const result = await coursesApi.downloadCertificate(enrollment.course.slug);
+                                    if (result && !result.ok) {
+                                      setCertError(result.detail || 'No se pudo descargar el certificado.');
                                     }
-                                  }}
-                                >
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                    <polyline points="7 10 12 15 17 10" />
-                                    <line x1="12" y1="15" x2="12" y2="3" />
-                                  </svg>
-                                  {downloadingCertSlug === enrollment.course.slug ? 'Descargando...' : 'Certificado'}
-                                </button>
-                              )}
-                              {evalStatuses[enrollment.course.slug]?.has_evaluation_form && !evalStatuses[enrollment.course.slug]?.has_submitted && (
-                                <Link to={`/courses/${enrollment.course.slug}/evaluate`} className="profile-evaluate-btn">
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                  </svg>
-                                  Evaluar
-                                </Link>
-                              )}
-                              {evalStatuses[enrollment.course.slug]?.has_evaluation_form && evalStatuses[enrollment.course.slug]?.has_submitted && (
-                                <span className="profile-evaluated-badge">
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <path d="M20 6L9 17l-5-5" />
-                                  </svg>
-                                  Evaluado
-                                </span>
-                              )}
-                            </div>
+                                  } finally {
+                                    setDownloadingCertSlug(null);
+                                  }
+                                }}
+                              >
+                                {downloadingCertSlug === enrollment.course.slug ? 'Descargando...' : 'Certificado'}
+                              </button>
+                            )}
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="profile-empty">
-                    <svg className="profile-empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <circle cx="12" cy="8" r="7" />
-                      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
-                    </svg>
-                    <p className="profile-empty-text">Completa tu primer curso para obtener un certificado</p>
-                    <Link to="/cursos" className="profile-empty-cta">Explorar cursos</Link>
-                  </div>
-                )}
-              </section>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="profile-empty">
+                  <svg className="profile-empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                  </svg>
+                  <p className="profile-empty-text">Aún no estás inscrito en ningún curso</p>
+                  <Link to="/cursos" className="profile-empty-cta">Explorar cursos</Link>
+                </div>
+              )}
             </div>
           )}
 
@@ -610,7 +618,7 @@ const Profile = () => {
                   <h2 className="profile-card-title">Información personal</h2>
                   <form onSubmit={handleProfileSave}>
                     <div className="profile-field">
-                      <label htmlFor="firstName">Nombre</label>
+                      <label htmlFor="firstName">*Nombre</label>
                       <input
                         id="firstName"
                         type="text"
@@ -620,7 +628,7 @@ const Profile = () => {
                       />
                     </div>
                     <div className="profile-field">
-                      <label htmlFor="lastName">Apellido</label>
+                      <label htmlFor="lastName">*Apellido</label>
                       <input
                         id="lastName"
                         type="text"
@@ -630,31 +638,32 @@ const Profile = () => {
                       />
                     </div>
                     <div className="profile-field">
-                      <label htmlFor="displayName">Nombre visible</label>
+                      <label htmlFor="jobTitle">Cargo</label>
                       <input
-                        id="displayName"
+                        id="jobTitle"
                         type="text"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder="Ej: Juan Pérez, Dr. García..."
+                        value={jobTitle}
+                        onChange={(e) => setJobTitle(e.target.value)}
+                        placeholder="Ej: Fundador"
                       />
-                      <span className="profile-field-hint">Se muestra en tu perfil en lugar de nombre y apellido</span>
                     </div>
                     <div className="profile-field">
-                      <label htmlFor="organization">Organización</label>
+                      <label htmlFor="organization">*Organización</label>
                       <input
                         id="organization"
                         type="text"
                         value={organization}
                         onChange={(e) => setOrganization(e.target.value)}
+                        required
                       />
                     </div>
                     <div className="profile-field">
-                      <label htmlFor="organizationType">Tipo de organización</label>
+                      <label htmlFor="organizationType">*Tipo de organización</label>
                       <select
                         id="organizationType"
                         value={organizationType}
                         onChange={(e) => setOrganizationType(e.target.value)}
+                        required
                       >
                         <option value="">Selecciona un tipo</option>
                         <option value="ong">ONG / Organización sin fines de lucro</option>
@@ -669,11 +678,12 @@ const Profile = () => {
                       </select>
                     </div>
                     <div className="profile-field">
-                      <label htmlFor="country">País</label>
+                      <label htmlFor="country">*País</label>
                       <select
                         id="country"
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
+                        required
                       >
                         <option value="">Selecciona un país</option>
                         <option value="AR">Argentina</option>
@@ -702,12 +712,13 @@ const Profile = () => {
                       </select>
                     </div>
                     <div className="profile-field">
-                      <label htmlFor="bio">Bio</label>
-                      <textarea
-                        id="bio"
-                        value={bio}
-                        onChange={(e) => setBio(e.target.value)}
-                        rows={3}
+                      <label htmlFor="phone">Celular</label>
+                      <input
+                        id="phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="Ej: +51 986 913 451"
                       />
                     </div>
                     {profileError && <div className="profile-error">{profileError}</div>}
@@ -715,6 +726,7 @@ const Profile = () => {
                     <button type="submit" className="profile-btn" disabled={profileSaving}>
                       {profileSaving ? 'Guardando...' : 'Guardar cambios'}
                     </button>
+                    <p className="profile-required-note">*Estos campos son obligatorios.</p>
                   </form>
                 </section>
 
@@ -723,7 +735,7 @@ const Profile = () => {
                   <h2 className="profile-card-title">Cambiar contraseña</h2>
                   <form onSubmit={handlePasswordChange}>
                     <div className="profile-field">
-                      <label htmlFor="currentPassword">Contraseña actual</label>
+                      <label htmlFor="currentPassword">*Contraseña actual</label>
                       <input
                         id="currentPassword"
                         type="password"
@@ -731,9 +743,10 @@ const Profile = () => {
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         required
                       />
+                      <Link to="/reset-password" className="profile-forgot-link">¿Olvidaste tu contraseña?</Link>
                     </div>
                     <div className="profile-field">
-                      <label htmlFor="newPassword">Nueva contraseña</label>
+                      <label htmlFor="newPassword">*Nueva contraseña</label>
                       <input
                         id="newPassword"
                         type="password"
@@ -760,7 +773,7 @@ const Profile = () => {
                       <span className="profile-field-hint">Mínimo 8 caracteres</span>
                     </div>
                     <div className="profile-field">
-                      <label htmlFor="confirmPassword">Confirmar nueva contraseña</label>
+                      <label htmlFor="confirmPassword">*Confirmar nueva contraseña</label>
                       <input
                         id="confirmPassword"
                         type="password"
@@ -775,9 +788,73 @@ const Profile = () => {
                     <button type="submit" className="profile-btn" disabled={passwordSaving}>
                       {passwordSaving ? 'Actualizando...' : 'Cambiar contraseña'}
                     </button>
+                    <p className="profile-required-note">*Estos campos son obligatorios.</p>
                   </form>
                 </section>
               </div>
+            </div>
+          )}
+
+          {/* Meta */}
+          {activeTab === 'goal' && (
+            <div className="profile-goal">
+              <h2 className="profile-goal-title">Edita tu meta</h2>
+              <form onSubmit={handleGoalSave}>
+                <div className="profile-goal-question">
+                  <p className="profile-goal-q">1. ¿Cuántas horas a la semana quieres dedicarle a aprender?</p>
+                  <div className="profile-goal-chips">
+                    {GOAL_HOURS_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`profile-goal-chip${goalHours === opt.value ? ' profile-goal-chip--selected' : ''}`}
+                        onClick={() => setGoalHours(opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="profile-goal-question">
+                  <p className="profile-goal-q">2. ¿Cuántos cursos quieres llevar por mes?</p>
+                  <p className="profile-goal-hint">Cada curso dura entre 30 min a 50 min.</p>
+                  <div className="profile-goal-chips">
+                    {GOAL_COURSES_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`profile-goal-chip${goalCourses === opt.value ? ' profile-goal-chip--selected' : ''}`}
+                        onClick={() => setGoalCourses(opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="profile-goal-question">
+                  <p className="profile-goal-q">3. ¿Qué temas te gustaría aprender más?</p>
+                  <p className="profile-goal-hint">Elige al menos un tema:</p>
+                  <div className="profile-goal-chips">
+                    {goalCategories.map((cat) => (
+                      <button
+                        key={cat.slug}
+                        type="button"
+                        className={`profile-goal-chip${goalCats.includes(cat.slug) ? ' profile-goal-chip--selected' : ''}`}
+                        onClick={() => setGoalCats((prev) =>
+                          prev.includes(cat.slug) ? prev.filter((s) => s !== cat.slug) : [...prev, cat.slug]
+                        )}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {goalError && <div className="profile-error">{goalError}</div>}
+                {goalMessage && <div className="profile-success">{goalMessage}</div>}
+                <button type="submit" className="profile-btn profile-goal-btn" disabled={goalSaving}>
+                  {goalSaving ? 'Guardando...' : 'Actualizar'}
+                </button>
+              </form>
             </div>
           )}
         </div>
