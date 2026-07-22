@@ -1326,7 +1326,13 @@ const CourseLearner = () => {
         <ShareProgressModal
           courseTitle={course.title}
           courseUrl={`${window.location.origin}/courses/${slug}`}
-          thumbnailUrls={[course.thumbnail_url, slug ? localThumbnails[slug] : null]}
+          thumbnailUrls={[
+            // Same-origin proxy first: the S3 bucket sends no CORS headers,
+            // so loading thumbnail_url directly fails on the share canvas.
+            slug ? `/api/courses/${slug}/thumbnail/` : null,
+            course.thumbnail_url,
+            slug ? localThumbnails[slug] : null,
+          ]}
           progressPercent={progressPercent}
           onClose={() => setShareOpen(false)}
         />
