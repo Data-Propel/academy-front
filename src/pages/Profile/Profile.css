@@ -1,28 +1,34 @@
 .profile-page {
   min-height: 60vh;
   min-height: 60dvh;
-  background: linear-gradient(135deg, #043A37 28%, #032220 95%);
-  padding: 40px 0 60px;
+  background: #F5F5F3;
+  padding: 0 0 60px;
   overflow-x: hidden;
 }
 
 .profile-container {
-  max-width: 960px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 0 30px;
 }
 
-/* ========== Hero ========== */
+/* ========== Hero band ========== */
+.profile-hero-band {
+  background: #007066;
+  padding: 36px 0;
+  margin-bottom: 40px;
+}
+
 .profile-hero {
   display: flex;
   align-items: center;
   gap: 24px;
-  margin-bottom: 32px;
 }
 
 .profile-avatar {
-  width: 80px;
-  height: 80px;
+  position: relative;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -30,9 +36,32 @@
   flex-shrink: 0;
 }
 
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Camera badge on the avatar's bottom-right corner → /profile/foto (Figma S6-03) */
+.profile-avatar-camera {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
+.profile-avatar-camera img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .profile-avatar-initials {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #fff;
   letter-spacing: 1px;
@@ -41,50 +70,65 @@
 
 .profile-hero-info {
   min-width: 0;
+  flex: 1;
 }
 
 .profile-hero-name {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 2rem;
   font-weight: 600;
-  color: #F2F2F2;
+  color: #ffffff;
   margin: 0;
   line-height: 1.2;
 }
 
-.profile-hero-org {
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 0.95rem;
-  color: rgba(242, 242, 242, 0.7);
-  margin: 4px 0 0;
-}
-
 .profile-hero-email {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 0.85rem;
-  color: rgba(242, 242, 242, 0.5);
-  margin: 4px 0 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 8px 0 0;
 }
 
 .profile-hero-since {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 0.8rem;
-  color: rgba(242, 242, 242, 0.35);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
   margin: 4px 0 0;
+}
+
+.profile-hero-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-end;
+  background: #093630;
+  border: none;
+  color: #ffffff;
+  padding: 10px 16px;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.profile-hero-edit:hover {
+  background: #062a25;
 }
 
 /* ========== Stats ========== */
 .profile-stats {
   display: flex;
   gap: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
 }
 
 .profile-stat-card {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #656565;
-  padding: 16px 20px;
+  background: transparent;
+  border: 1px solid #0E4B43;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -95,26 +139,28 @@
 }
 
 .profile-stat-card:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #FD6A44;
+  background: rgba(14, 75, 67, 0.05);
 }
 
 .profile-stat-card:focus-visible {
-  outline: 2px solid #FD6A44;
+  outline: 2px solid #FF5A2F;
   outline-offset: 2px;
 }
 
 .profile-stat-number {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #FD6A44;
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 28px;
+  text-align: center;
+  color: #FC5C3A;
 }
 
 .profile-stat-label {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 0.8rem;
-  color: rgba(242, 242, 242, 0.6);
+  font-size: 0.9rem;
+  color: #0E4B43;
   text-align: center;
 }
 
@@ -123,14 +169,14 @@
   display: flex;
   gap: 0;
   margin-bottom: 0;
-  border-bottom: 1px solid #656565;
+  border-bottom: 1px solid #c9c9c5;
 }
 
 .profile-tab {
   background: transparent;
   border: none;
-  color: rgba(242, 242, 242, 0.6);
-  padding: 16px 24px;
+  color: #0E4B43;
+  padding: 14px 28px;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.95rem;
   font-weight: 500;
@@ -141,16 +187,16 @@
 }
 
 .profile-tab:hover {
-  color: #F2F2F2;
+  color: #FF5A2F;
 }
 
 .profile-tab.active {
-  color: #FD6A44;
-  border-bottom-color: #FD6A44;
+  color: #FF5A2F;
+  border-bottom-color: #FF5A2F;
 }
 
 .profile-tab-content {
-  padding-top: 32px;
+  padding-top: 36px;
 }
 
 /* ========== Section headings ========== */
@@ -162,8 +208,131 @@
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #F2F2F2;
+  color: #0E4B43;
   margin: 0 0 16px 0;
+}
+
+/* ========== Mi aprendizaje rows ========== */
+.profile-learn-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.profile-learn-row {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+
+.profile-learn-thumb {
+  width: 200px;
+  aspect-ratio: 16 / 10;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #efefec;
+  display: block;
+}
+
+.profile-learn-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-learn-thumb .profile-course-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c4c4c0;
+}
+
+.profile-learn-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-learn-title {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0E4B43;
+  text-decoration: none;
+  line-height: 1.35;
+  align-self: flex-start;
+}
+
+.profile-learn-title:hover {
+  color: #FF5A2F;
+}
+
+.profile-learn-progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-learn-bar {
+  flex: 1;
+  height: 12px;
+  background: #dcdcd8;
+  overflow: hidden;
+}
+
+.profile-learn-fill {
+  height: 100%;
+  background: #F49E6B;
+  transition: width 0.3s ease;
+}
+
+.profile-learn-pct {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  color: #1f1f1f;
+  white-space: nowrap;
+  min-width: 42px;
+}
+
+.profile-learn-cert {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #0E4B43;
+  color: #0E4B43;
+  padding: 10px 22px;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.profile-learn-cert:hover:not(:disabled) {
+  background: rgba(14, 75, 67, 0.06);
+}
+
+.profile-learn-cert:disabled {
+  border-color: #c9c9c5;
+  color: #b0b0ac;
+  cursor: default;
+}
+
+.profile-learn-cert--eval {
+  border-color: #FF5A2F;
+  color: #FF5A2F;
+}
+
+.profile-learn-cert--eval:hover {
+  background: rgba(255, 90, 47, 0.06);
 }
 
 /* ========== Course cards ========== */
@@ -176,15 +345,16 @@
 .profile-course-card {
   display: flex;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #656565;
+  background: #ffffff;
+  border: 1px solid #e2e2df;
   padding: 12px;
   text-decoration: none;
-  transition: background 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 a.profile-course-card:hover {
-  background: rgba(255, 255, 255, 0.08);
+  border-color: #0E4B43;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .profile-course-thumb {
@@ -193,7 +363,7 @@ a.profile-course-card:hover {
   flex-shrink: 0;
   overflow: hidden;
   position: relative;
-  background: rgba(255, 255, 255, 0.03);
+  background: #efefec;
 }
 
 .profile-course-thumb img {
@@ -209,16 +379,16 @@ a.profile-course-card:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(242, 242, 242, 0.2);
+  color: #c4c4c0;
 }
 
 .profile-course-badge-done {
   flex-shrink: 0;
-  background: rgba(34, 197, 94, 0.9);
-  color: #fff;
+  background: #A3C94A;
+  color: #0E4B43;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.65rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 2px 8px;
   border-radius: 2px;
   text-transform: uppercase;
@@ -246,13 +416,13 @@ a.profile-course-card:hover {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #F2F2F2;
+  color: #1f1f1f;
   text-decoration: none;
   line-height: 1.3;
 }
 
 a.profile-course-card-title:hover {
-  color: #FD6A44;
+  color: #FF5A2F;
 }
 
 /* Progress bar inside card */
@@ -264,15 +434,15 @@ a.profile-course-card-title:hover {
 
 .profile-course-card-bar {
   flex: 1;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  height: 5px;
+  background: #e8e8e5;
   border-radius: 2px;
   overflow: hidden;
 }
 
 .profile-course-card-fill {
   height: 100%;
-  background: #22c55e;
+  background: #FF5A2F;
   border-radius: 2px;
   transition: width 0.3s ease;
 }
@@ -280,7 +450,7 @@ a.profile-course-card-title:hover {
 .profile-course-card-pct {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.75rem;
-  color: rgba(242, 242, 242, 0.5);
+  color: #6b6b6b;
   white-space: nowrap;
   min-width: 32px;
   text-align: right;
@@ -292,8 +462,8 @@ a.profile-course-card-title:hover {
   align-items: center;
   gap: 6px;
   background: transparent;
-  border: 1.5px solid #FD6A44;
-  color: #FD6A44;
+  border: 1.5px solid #FF5A2F;
+  color: #FF5A2F;
   padding: 6px 14px;
   border-radius: 4px;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -306,7 +476,7 @@ a.profile-course-card-title:hover {
 }
 
 .profile-certificate-btn:hover {
-  background: rgba(253, 106, 68, 0.1);
+  background: rgba(255, 90, 47, 0.08);
 }
 
 .profile-course-actions {
@@ -344,8 +514,8 @@ a.profile-course-card-title:hover {
   gap: 4px;
   padding: 4px 10px;
   border-radius: 4px;
-  background: rgba(163, 201, 74, 0.15);
-  color: #6b8e23;
+  background: rgba(163, 201, 74, 0.25);
+  color: #4c6b12;
   font-family: 'Libre Franklin', sans-serif;
   font-size: 0.75rem;
   font-weight: 500;
@@ -358,8 +528,8 @@ a.profile-course-card-title:hover {
   align-items: center;
   justify-content: center;
   background: transparent;
-  border: 1px solid #656565;
-  color: rgba(242, 242, 242, 0.5);
+  border: 1px solid #d1d1cd;
+  color: #8a8a86;
   width: 32px;
   height: 32px;
   border-radius: 4px;
@@ -384,23 +554,22 @@ a.profile-course-card-title:hover {
 }
 
 .profile-empty-icon {
-  color: rgba(242, 242, 242, 0.2);
+  color: #c4c4c0;
   margin-bottom: 16px;
 }
 
 .profile-empty-text {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
-  color: rgba(242, 242, 242, 0.5);
+  color: #6b6b6b;
   margin: 0 0 20px;
 }
 
 .profile-empty-cta {
   display: inline-block;
-  background: #FD6A44;
+  background: #FF5A2F;
   color: #fff;
   padding: 10px 24px;
-  border-radius: 4px;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   font-weight: 600;
@@ -409,34 +578,34 @@ a.profile-course-card-title:hover {
 }
 
 .profile-empty-cta:hover {
-  background: #e55a36;
+  background: #e64d24;
 }
 
 /* ========== Settings tab ========== */
 .profile-settings-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 64px;
 }
 
-/* Cards (settings) */
+/* Columns (settings) */
 .profile-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #656565;
-  padding: 28px;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .profile-card-title {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #F2F2F2;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0E4B43;
   margin: 0 0 24px 0;
 }
 
 /* Form fields */
 .profile-field {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .profile-field label {
@@ -444,17 +613,17 @@ a.profile-course-card-title:hover {
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(242, 242, 242, 0.8);
-  margin-bottom: 6px;
+  color: #333333;
+  margin-bottom: 8px;
 }
 
 .profile-field input,
 .profile-field textarea,
 .profile-field select {
   width: 100%;
-  padding: 10px 14px;
+  padding: 11px 14px;
   background: #ffffff;
-  border: 1px solid #656565;
+  border: 1px solid #e2e2df;
   border-radius: 0;
   color: #1a1a1a;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -483,19 +652,54 @@ a.profile-course-card-title:hover {
 .profile-field input:focus,
 .profile-field textarea:focus,
 .profile-field select:focus {
-  border-color: #FD6A44;
+  border-color: #0E4B43;
 }
 
 .profile-field textarea {
   resize: vertical;
 }
 
+/* Celular field (S6-03): country dial-code dropdown + number input */
+.profile-phone {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-phone .profile-phone-code {
+  width: auto;
+  flex: 0 0 auto;
+  min-width: 98px;
+  padding-right: 2rem;
+  background-position: right 10px center;
+}
+
+.profile-phone input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .profile-field-hint {
   display: block;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.75rem;
-  color: rgba(242, 242, 242, 0.4);
-  margin-top: 4px;
+  color: #6b6b6b;
+  margin-top: 6px;
+}
+
+.profile-forgot-link {
+  display: inline-block;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.8rem;
+  color: #FF5A2F;
+  text-decoration: underline;
+  margin-top: 8px;
+}
+
+.profile-required-note {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.8rem;
+  color: #333333;
+  margin: 14px 0 0;
 }
 
 /* Password strength bar */
@@ -509,7 +713,7 @@ a.profile-course-card-title:hover {
 .profile-strength-bar {
   flex: 1;
   height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: #e8e8e5;
   border-radius: 2px;
   overflow: hidden;
 }
@@ -553,9 +757,9 @@ a.profile-course-card-title:hover {
 
 /* Messages */
 .profile-error {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
+  background: #fdecea;
+  border: 1px solid #f5c6c0;
+  color: #b3261e;
   padding: 10px 14px;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
@@ -563,9 +767,9 @@ a.profile-course-card-title:hover {
 }
 
 .profile-success {
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  color: #86efac;
+  background: #edf5dc;
+  border: 1px solid #cde39c;
+  color: #4c6b12;
   padding: 10px 14px;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.85rem;
@@ -576,11 +780,10 @@ a.profile-course-card-title:hover {
 .profile-btn {
   display: block;
   width: 100%;
-  background: #FD6A44;
+  background: #FF5A2F;
   border: none;
   color: #ffffff;
-  padding: 12px;
-  border-radius: 4px;
+  padding: 13px;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
@@ -589,12 +792,180 @@ a.profile-course-card-title:hover {
 }
 
 .profile-btn:hover:not(:disabled) {
-  background: #e55a36;
+  background: #e64d24;
 }
 
 .profile-btn:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+/* ========== Meta tab ========== */
+.profile-goal {
+  max-width: 720px;
+}
+
+.profile-goal-title {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0E4B43;
+  margin: 0 0 28px 0;
+}
+
+.profile-goal-question {
+  margin-bottom: 32px;
+}
+
+.profile-goal-q {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f1f1f;
+  margin: 0 0 12px;
+}
+
+.profile-goal-hint {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.8rem;
+  color: #6b6b6b;
+  margin: -6px 0 12px;
+}
+
+.profile-goal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.profile-goal-chip {
+  padding: 11px 26px;
+  border: none;
+  background: #E4E4E1;
+  color: #1f1f1f;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.profile-goal-chip:hover { background: #d8d8d4; }
+
+.profile-goal-chip--selected,
+.profile-goal-chip--selected:hover {
+  background: #0E4B43;
+  color: #ffffff;
+}
+
+.profile-goal-btn {
+  display: inline-block;
+  width: auto;
+  padding: 13px 40px;
+  margin-top: 4px;
+}
+
+/* Goal summary band (Figma S6-01) — sits atop the Meta tab. */
+.goal-band {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px 40px;
+  background: #ffffff;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 36px;
+}
+
+.goal-band__progress {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 240px;
+}
+
+.goal-band__title {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #144a46;
+  margin: 0;
+}
+
+.goal-band__bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.goal-band__track {
+  width: 240px;
+  max-width: 100%;
+  height: 14px;
+  background: #d9d9d9;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.goal-band__fill {
+  height: 100%;
+  background: #16625b;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.goal-band__pct {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #16625b;
+}
+
+.goal-band__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #144a46;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.goal-band__summary p {
+  margin: 0;
+}
+
+.goal-band__label {
+  font-weight: 700;
+}
+
+.goal-band__edit {
+  margin-left: auto;
+  align-self: center;
+  background: #FD6A44;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 13px 32px;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.goal-band__edit:hover {
+  background: #e55a36;
+}
+
+@media (max-width: 640px) {
+  .goal-band {
+    align-items: stretch;
+  }
+  .goal-band__edit {
+    margin-left: 0;
+    width: 100%;
+  }
 }
 
 /* ========== Skeleton ========== */
@@ -604,7 +975,7 @@ a.profile-course-card-title:hover {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
   background-size: 800px 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -614,7 +985,7 @@ a.profile-course-card-title:hover {
   display: flex;
   align-items: center;
   gap: 24px;
-  margin-bottom: 32px;
+  margin: 40px 0 32px;
 }
 
 .profile-avatar-skeleton {
@@ -648,12 +1019,17 @@ a.profile-course-card-title:hover {
     text-align: center;
   }
 
+  .profile-hero-edit {
+    align-self: center;
+  }
+
   .profile-hero-name {
     font-size: 1.5rem;
   }
 
   .profile-settings-grid {
     grid-template-columns: 1fr;
+    gap: 48px;
   }
 
   .profile-tabs {
@@ -675,11 +1051,39 @@ a.profile-course-card-title:hover {
     width: 100%;
     height: 140px;
   }
+
+  .profile-learn-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .profile-learn-thumb {
+    width: 100%;
+  }
+
+  .profile-learn-progress {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .profile-learn-bar {
+    flex-basis: calc(100% - 60px);
+  }
+
+  .profile-learn-cert {
+    align-self: flex-start;
+  }
 }
 
 @media (max-width: 480px) {
   .profile-page {
-    padding: 20px 0 40px;
+    padding: 0 0 40px;
+  }
+
+  .profile-hero-band {
+    padding: 28px 0;
+    margin-bottom: 28px;
   }
 
   .profile-container {
@@ -707,8 +1111,13 @@ a.profile-course-card-title:hover {
     padding: 12px 16px;
   }
 
-  .profile-card {
-    padding: 20px;
+  .profile-goal-chips {
+    gap: 8px;
+  }
+
+  .profile-goal-chip {
+    padding: 10px 18px;
+    font-size: 0.85rem;
   }
 }
 

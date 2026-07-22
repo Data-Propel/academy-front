@@ -20,20 +20,31 @@ interface Props {
   onEvaluationSubmitted?: () => void;
 }
 
+interface NextCourse {
+  id: number;
+  title: string;
+  slug: string;
+  thumbnail_url?: string | null;
+  instructor?: string;
+  duration_display?: string;
+  short_description?: string;
+}
+
 const CONFETTI_COLORS = ['#FF5A2F', '#A3C94A', '#0E4B43', '#FFD700', '#4FC3F7', '#F48FB1', '#ffffff'];
 
 export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvaluated, onClose, onEvaluationSubmitted }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [formTitle, setFormTitle] = useState('');
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [loadingForm, setLoadingForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState('');
-  const [step, setStep] = useState<'form' | 'done'>(
+  const [step, setStep] = useState<'form' | 'done' | 'next'>(
     !hasEvalForm || alreadyEvaluated ? 'done' : 'form'
   );
   const [downloadingCert, setDownloadingCert] = useState(false);
+  const [nextCourse, setNextCourse] = useState<NextCourse | null>(null);
+  const nextCoursePromise = useRef<Promise<NextCourse | null> | null>(null);
 
   // Confetti animation
   useEffect(() => {
@@ -86,13 +97,21 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
     return () => { alive = false; };
   }, []);
 
+  // Prefetch the recommended second course so the "Continúa aprendiendo"
+  // step shows instantly after submitting the evaluation.
+  useEffect(() => {
+    if (!hasEvalForm || alreadyEvaluated) return;
+    nextCoursePromise.current = coursesApi.getNextCourse(slug)
+      .then(({ ok, data }) => (ok ? (data.course as NextCourse | null) : null))
+      .catch(() => null);
+  }, [slug, hasEvalForm, alreadyEvaluated]);
+
   // Load evaluation form
   useEffect(() => {
     if (!hasEvalForm || alreadyEvaluated) return;
     setLoadingForm(true);
     coursesApi.getEvaluationForm(slug).then(({ ok, data }) => {
       if (ok && data.form) {
-        setFormTitle(data.form.title);
         setQuestions(data.form.questions.sort((a: Question, b: Question) => a.order_index - b.order_index));
       } else {
         setStep('done');
@@ -116,8 +135,14 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
     const { ok, data } = await coursesApi.submitEvaluation(slug, answersList);
     setSubmitting(false);
     if (ok) {
-      setStep('done');
       onEvaluationSubmitted?.();
+      const next = nextCoursePromise.current ? await nextCoursePromise.current : null;
+      if (next) {
+        setNextCourse(next);
+        setStep('next');
+      } else {
+        setStep('done');
+      }
     } else {
       setValidationError(data?.detail || 'Error al enviar la evaluación.');
     }
@@ -133,14 +158,50 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
     <div className="ccm-overlay">
       <canvas ref={canvasRef} className="ccm-canvas" />
 
-      <div className="ccm-modal">
+      <div className={`ccm-modal${step === 'next' ? ' ccm-modal--wide' : ''}${step === 'form' ? ' ccm-modal--form' : ''}`}>
         <button className="ccm-close" onClick={onClose} aria-label="Cerrar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
 
-        {step === 'done' ? (
+        {step === 'next' && nextCourse ? (
+          <div className="ccm-next">
+            <h2 className="ccm-next-title">Continúa aprendiendo con este curso</h2>
+            <div className="ccm-next-card">
+              {nextCourse.thumbnail_url && (
+                <img
+                  className="ccm-next-thumb"
+                  src={nextCourse.thumbnail_url}
+                  alt={nextCourse.title}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              )}
+              <div className="ccm-next-info">
+                <h3 className="ccm-next-course">{nextCourse.title}</h3>
+                {(nextCourse.instructor || nextCourse.duration_display) && (
+                  <p className="ccm-next-meta">
+                    {[nextCourse.instructor, nextCourse.duration_display].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                {nextCourse.short_description && (
+                  <p className="ccm-next-desc">{nextCourse.short_description}</p>
+                )}
+                <Link to={`/courses/${nextCourse.slug}`} className="ccm-next-cta" onClick={onClose}>
+                  Empieza aquí
+                </Link>
+              </div>
+            </div>
+            <div className="ccm-next-footer">
+              <button className="ccm-next-cert" onClick={handleDownloadCert} disabled={downloadingCert}>
+                {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
+              </button>
+              <Link to="/cursos" className="ccm-next-back" onClick={onClose}>
+                Volver a la Nonprofit Academy <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+        ) : step === 'done' ? (
           <div className="ccm-done">
             <div className="ccm-trophy">🎉</div>
             <h2 className="ccm-title">¡Felicidades!</h2>
@@ -163,16 +224,13 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
           <div className="ccm-loading">Cargando evaluación...</div>
         ) : (
           <div className="ccm-form">
-            <div className="ccm-trophy">🎉</div>
-            <h2 className="ccm-title">¡Completaste el curso!</h2>
-            {formTitle && <p className="ccm-subtitle">{formTitle}</p>}
+            <h2 className="ccm-form-title">¡Completaste el curso! <span aria-hidden="true">🎉</span></h2>
 
             <div className="ccm-questions">
               {questions.map(q => (
                 <div key={q.id} className="ccm-question">
                   <p className="ccm-question-text">
                     {q.question_text}
-                    {q.is_required && <span className="ccm-required"> *</span>}
                   </p>
                   <QuestionInput question={q} value={answers[q.id] || ''} onChange={val => setAnswer(q.id, val)} />
                 </div>
@@ -181,8 +239,8 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
 
             {validationError && <p className="ccm-error">{validationError}</p>}
 
-            <button className="ccm-btn ccm-btn-primary ccm-submit" onClick={handleSubmit} disabled={submitting}>
-              {submitting ? 'Enviando...' : 'Enviar evaluación'}
+            <button className="ccm-submit-btn" onClick={handleSubmit} disabled={submitting}>
+              {submitting ? 'Enviando...' : 'Enviar respuestas'}
             </button>
           </div>
         )}
@@ -199,7 +257,7 @@ function QuestionInput({ question, value, onChange }: { question: Question; valu
     case 'yes_no': return <YesNoInput value={value} onChange={onChange} />;
     case 'multiple_choice': return <MultipleChoiceInput options={question.options} value={value} onChange={onChange} />;
     case 'text':
-      return <textarea className="ccm-textarea" value={value} onChange={e => onChange(e.target.value)} placeholder="Escribe tu respuesta..." />;
+      return <textarea className="ccm-textarea" value={value} onChange={e => onChange(e.target.value)} placeholder="Escribe tu respuesta" />;
     default: return null;
   }
 }
@@ -237,7 +295,7 @@ function ScaleInput({ value, onChange }: { value: string; onChange: (v: string) 
         ))}
       </div>
       <div className="ccm-nps-labels">
-        <span>Muy bajo</span>
+        <span>Muy baja</span>
         <span>Muy alta</span>
       </div>
     </div>
@@ -246,14 +304,12 @@ function ScaleInput({ value, onChange }: { value: string; onChange: (v: string) 
 
 function NpsInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const selected = value !== '' ? Number(value) : -1;
-  const getColor = (n: number) => n <= 6 ? '#e74c3c' : n <= 8 ? '#f39c12' : '#27ae60';
   return (
     <div>
       <div className="ccm-nps">
         {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
           <button key={n} type="button"
             className={`ccm-nps-btn${selected === n ? ' active' : ''}`}
-            style={selected === n ? { background: getColor(n), borderColor: getColor(n), color: '#fff' } : undefined}
             onClick={() => onChange(String(n))}>{n}</button>
         ))}
       </div>

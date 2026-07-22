@@ -5,6 +5,9 @@ import { coursesApi, isAuthenticated, isSuperuser, authApi } from '../../service
 import PageHead from '../../utils/PageHead';
 import CourseCompletionModal from './CourseCompletionModal';
 import './CourseLearner.css';
+import ShareProgressModal from '../../components/ShareProgressModal/ShareProgressModal';
+import { localThumbnails } from '../../utils/courseThumbnails';
+import alertTriangle from '../../assets/course/alert-triangle.svg';
 
 /** Rewrite WordPress upload URLs to local /pdfs/ path */
 function localizeUrl(url: string): string {
@@ -104,6 +107,25 @@ function extractGoogleLinks(html: string): { html: string; googleLinks: Extracte
   return { html: cleaned, googleLinks };
 }
 
+// "Lectura recomendada" disclaimer (Figma S6-07, nodes 1029:24124/24123/24079):
+// recommended readings don't count toward the certificate, so an outlined
+// notice is injected right after each reading block in the lesson HTML.
+const READING_DISCLAIMER_HTML =
+  `<div class="cl-reading-disclaimer"><img src="${alertTriangle}" alt="" /><span>Esta lectura no es obligatoria para obtener tu certificado</span></div>`;
+
+function injectReadingDisclaimer(html: string): string {
+  if (!/lectura recomendada/i.test(html)) return html;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.body.querySelectorAll('h1, h2, h3, h4, h5, h6, p').forEach((el) => {
+    if (!/^lectura recomendada:?$/i.test((el.textContent || '').trim())) return;
+    // Place the notice after the reading link that follows the label
+    const anchor = el.nextElementSibling || el;
+    if (anchor.nextElementSibling?.classList.contains('cl-reading-disclaimer')) return;
+    anchor.insertAdjacentHTML('afterend', READING_DISCLAIMER_HTML);
+  });
+  return doc.body.innerHTML;
+}
+
 /** Replace [pdfjs-viewer url="..."] shortcodes with embedded PDF.js viewer */
 function processContent(html: string): string {
   let result = html.replace(
@@ -194,6 +216,7 @@ interface Course {
   id: number;
   title: string;
   slug: string;
+  thumbnail_url?: string | null;
   is_enrolled?: boolean;
   lessons?: Lesson[];
   resources?: Array<{
@@ -235,7 +258,7 @@ const getEmbedUrl = (url: string): string | null => {
 
 const buildNavItems = (lessons: Lesson[]): NavItem[] => {
   const items: NavItem[] = [];
-  const sorted = [...lessons].sort((a, b) => a.order_index - b.order_index);
+  const sorted = [...lessons].sort((a, b) => a.order_index - b.order_index || a.id - b.id);
   for (const lesson of sorted) {
     if (lesson.video_url || lesson.content) {
       items.push({
@@ -249,7 +272,7 @@ const buildNavItems = (lessons: Lesson[]): NavItem[] => {
       });
     }
     if (lesson.topics) {
-      const sortedTopics = [...lesson.topics].sort((a, b) => a.order_index - b.order_index);
+      const sortedTopics = [...lesson.topics].sort((a, b) => a.order_index - b.order_index || a.id - b.id);
       for (const topic of sortedTopics) {
         items.push({
           type: 'topic',
@@ -284,6 +307,7 @@ const CourseLearner = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [expandedLessons, setExpandedLessons] = useState<Set<number>>(new Set());
   const [completedLessons, setCompletedLessons] = useState<Set<number>>(new Set());
   const [completedTopics, setCompletedTopics] = useState<Set<number>>(new Set());
@@ -601,7 +625,7 @@ const CourseLearner = () => {
   }
 
   const sortedLessons = [...(course.lessons || [])].sort(
-    (a, b) => a.order_index - b.order_index
+    (a, b) => a.order_index - b.order_index || a.id - b.id
   );
 
   const toggleLesson = (id: number) => {
@@ -667,7 +691,7 @@ const CourseLearner = () => {
   if (currentItem?.content) {
     const processed = processContent(currentItem.content);
     const extracted = extractGoogleLinks(processed);
-    cleanedHtml = DOMPurify.sanitize(extracted.html);
+    cleanedHtml = injectReadingDisclaimer(DOMPurify.sanitize(extracted.html));
     googleLinks = extracted.googleLinks;
     hasHtmlContent = cleanedHtml.replace(/<[^>]*>/g, '').trim().length > 0;
   }
@@ -708,7 +732,7 @@ const CourseLearner = () => {
           </svg>
           Volver
         </Link>
-        <span className="cl-topbar-title">{course.title}</span>
+        <div className="cl-topbar-spacer" />
         <div className="cl-topbar-right">
           <div className="cl-topbar-progress">
             <div className="cl-topbar-progress-bar">
@@ -719,6 +743,14 @@ const CourseLearner = () => {
             </div>
             <span className="cl-topbar-progress-label">{progressPercent}% completado</span>
           </div>
+          {/* S6-04: share-progress popup trigger */}
+          <button className="cl-topbar-share" onClick={() => setShareOpen(true)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+              <line x1="8.6" y1="10.5" x2="15.4" y2="6.5" /><line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
+            </svg>
+            <span>Compartir avance</span>
+          </button>
           <Link to={`/courses/${slug}`} className="cl-topbar-close" aria-label="Cerrar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -735,12 +767,12 @@ const CourseLearner = () => {
       {/* Sidebar */}
       <aside className={`cl-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <nav className="cl-sidebar-nav" ref={sidebarNavRef}>
-          <div className="cl-sidebar-section-title">Contenido del Curso</div>
+          <div className="cl-sidebar-section-title">{course.title}</div>
+          <div className="cl-sidebar-panel">
           {sortedLessons.map((lesson) => {
             const hasContent = !!(lesson.video_url || lesson.content);
             const hasTopics = lesson.topics && lesson.topics.length > 0;
             const isExpanded = expandedLessons.has(lesson.id);
-            const lessonCompleted = isCompleted('lesson', lesson.id);
             const lessonActive = hasContent && isActive('lesson', lesson.id);
             // Per-lesson topic progress
             const topicCount = lesson.topics?.length || 0;
@@ -751,19 +783,10 @@ const CourseLearner = () => {
             return (
               <div key={lesson.id} className="cl-sidebar-lesson" ref={lessonActive ? activeItemRef as React.Ref<HTMLDivElement> : undefined}>
                 <div className={`cl-sidebar-lesson-header ${lessonActive ? 'active' : ''} ${!hasContent && !hasTopics ? 'empty' : ''}`}>
-                  <div className={`cl-module-icon ${lessonCompleted ? 'completed' : lessonActive ? 'active' : ''}`}>
-                    {lessonCompleted ? (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                        <path d="M20 6L9 17l-5-5" />
-                      </svg>
-                    ) : lessonActive ? (
-                      <svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="currentColor"/></svg>
-                    ) : null}
-                  </div>
+                  <span className={`cl-module-icon ${lessonLocked ? 'locked' : ''}`} />
                   {hasContent ? (
                     lessonLocked ? (
                       <span className="cl-sidebar-lesson-link cl-sidebar-lesson-link--locked">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         {lesson.title}
                       </span>
                     ) : (
@@ -815,13 +838,13 @@ const CourseLearner = () => {
                 )}
                 {isExpanded && hasTopics && (
                   <div className="cl-sidebar-topics">
-                    {[...(lesson.topics || [])].sort((a, b) => a.order_index - b.order_index).map((topic) => {
+                    {[...(lesson.topics || [])].sort((a, b) => a.order_index - b.order_index || a.id - b.id).map((topic) => {
                       const topicNavIdx = navItemIndexMap.get(`topic-${topic.id}`) ?? -1;
                       const topicLocked = progressLoaded && topicNavIdx >= 0 && !isNavItemUnlocked(topicNavIdx);
                       if (topicLocked) {
                         return (
                           <div key={topic.id} className="cl-sidebar-topic-link cl-sidebar-topic-link--locked">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <span className="cl-radio locked" />
                             <span>{topic.title}</span>
                           </div>
                         );
@@ -833,16 +856,7 @@ const CourseLearner = () => {
                           className={`cl-sidebar-topic-link ${isActive('topic', topic.id) ? 'active' : ''} ${isCompleted('topic', topic.id) ? 'completed' : ''}`}
                           ref={isActive('topic', topic.id) ? activeItemRef as React.Ref<HTMLAnchorElement> : undefined}
                         >
-                          {isCompleted('topic', topic.id) ? (
-                            <svg className="cl-completed-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                              <path d="M20 6L9 17l-5-5" />
-                            </svg>
-                          ) : (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <circle cx="12" cy="12" r="10" />
-                              <polygon points="10 8 16 12 10 16 10 8" />
-                            </svg>
-                          )}
+                          <span className="cl-radio" />
                           <span>{topic.title}</span>
                         </Link>
                       );
@@ -913,6 +927,7 @@ const CourseLearner = () => {
               )}
             </div>
           )}
+          </div>
         </nav>
 
         {/* Global nav footer — visible on mobile where Topbar hamburger is hidden */}
@@ -963,25 +978,13 @@ const CourseLearner = () => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M15 18l-6-6 6-6"/>
                     </svg>
-                    Lección Anterior
+                    Anterior lección
                   </Link>
                 )}
               </div>
             ) : (
             <>
-              <h1 className="cl-title">{currentItem.title}</h1>
-
-              {/* HTML content */}
-              {hasHtmlContent && (
-                <>
-                  <div
-                    className="cl-content-html"
-                    dangerouslySetInnerHTML={{ __html: cleanedHtml }}
-                  />
-                </>
-              )}
-
-              {/* Video */}
+              {/* Video (on top per Figma course view) */}
               {currentItem.video_url && (() => {
                 const embedUrl = getEmbedUrl(currentItem.video_url);
                 if (embedUrl) {
@@ -1014,6 +1017,18 @@ const CourseLearner = () => {
                   </div>
                 );
               })()}
+
+              <h1 className="cl-title">{currentItem.title}</h1>
+
+              {/* HTML content (description + lectura recomendada below the video) */}
+              {hasHtmlContent && (
+                <>
+                  <div
+                    className="cl-content-html"
+                    dangerouslySetInnerHTML={{ __html: cleanedHtml }}
+                  />
+                </>
+              )}
 
               {/* Completed indicator after video ends */}
               {currentItem.video_url && course?.is_enrolled && videoHasEnded && (
@@ -1183,14 +1198,14 @@ const CourseLearner = () => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M15 18l-6-6 6-6" />
                     </svg>
-                    Lecci&oacute;n Anterior
+                    Anterior lecci&oacute;n
                   </Link>
                 ) : (
                   <div />
                 )}
                 {nextItem ? (
                   <button onClick={handleNextClick} className="cl-nav-btn cl-nav-next">
-                    Siguiente Lecci&oacute;n
+                    Siguiente lecci&oacute;n
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M9 18l6-6-6-6" />
                     </svg>
@@ -1304,6 +1319,17 @@ const CourseLearner = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Share-progress popup (S6-04) */}
+      {shareOpen && (
+        <ShareProgressModal
+          courseTitle={course.title}
+          courseUrl={`${window.location.origin}/courses/${slug}`}
+          thumbnailUrls={[course.thumbnail_url, slug ? localThumbnails[slug] : null]}
+          progressPercent={progressPercent}
+          onClose={() => setShareOpen(false)}
+        />
       )}
     </div>
   );

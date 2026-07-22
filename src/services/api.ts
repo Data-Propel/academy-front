@@ -355,11 +355,31 @@ export const authApi = {
     organization?: string;
     organization_type?: string;
     country?: string;
+    job_title?: string;
+    phone?: string;
     newsletter_opt_in?: boolean;
+    goal_hours_per_week?: string;
+    goal_courses_per_month?: string;
+    goal_categories?: string[];
   }) => {
     const response = await apiFetch('/users/profile/', {
       method: 'PATCH',
       body: JSON.stringify(profileData),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  uploadAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiFetchFormData('/users/profile/avatar/', formData);
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  setAvatarPreset: async (preset: string) => {
+    const response = await apiFetch('/users/profile/avatar/', {
+      method: 'POST',
+      body: JSON.stringify({ preset }),
     });
     return { ok: response.ok, data: await response.json() };
   },
@@ -503,6 +523,11 @@ export const coursesApi = {
       method: 'POST',
       body: JSON.stringify({ answers }),
     });
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  getNextCourse: async (slug: string) => {
+    const response = await apiFetch(`/courses/${slug}/next-course/`);
     return { ok: response.ok, data: await response.json() };
   },
 

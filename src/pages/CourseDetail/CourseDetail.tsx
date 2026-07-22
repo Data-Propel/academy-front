@@ -8,29 +8,10 @@ import takeIcon1 from '../../assets/course/take-1.png';
 import takeIcon2 from '../../assets/course/take-2.png';
 import takeIcon3 from '../../assets/course/take-3.png';
 import './CourseDetail.css';
+import AddToCalendarModal from '../../components/AddToCalendarModal/AddToCalendarModal';
+import { localThumbnails } from '../../utils/courseThumbnails';
 
 const TAKEAWAY_ICONS = [takeIcon1, takeIcon2, takeIcon3];
-
-const localThumbnails: Record<string, string> = {
-  'conecta-con-nuevos-donantes': '/thumbnails/Conacta-con-donantes-portada.webp',
-  'crea-contenido-para-redes-sociales-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-may.webp',
-  'aprende-a-liderar-con-ia': '/thumbnails/Thumbnail-Cursos-Nonprofit-Academy-3-oct.webp',
-  'growth-marketing-para-ongs': '/thumbnails/Imagen-destacada.webp',
-  'impact-accelerator': '/thumbnails/Copy-of-Imagen-destacada-1.webp',
-  'propel-fellowship': '/thumbnails/Thumbnail-Propel-Fellowship-C8-1.webp',
-  'team-handbook': '/thumbnails/Portadas-cursos-1.webp',
-  'guia-de-procesos-internos': '/thumbnails/Portadas-cursos.webp',
-  'introduccion-a-chatgpt-para-organizaciones-sociale': '/thumbnails/Introduccion-a-CHATGPT.webp',
-  'define-tus-metas-con-okrs': '/thumbnails/okr.webp',
-  'atrae-mas-vistas-con-seo': '/thumbnails/alcanzamasvistasconseo.png',
-  'lean-data-para-impacto-social': '/thumbnails/Imagen-destacada-10-1.webp',
-  'construye-indicadores-para-medir-impacto': '/thumbnails/Imagen-destacada-14.webp',
-  'convierte-tus-ideas-en-un-pitch-ganador': '/thumbnails/conviertetusideasenunpitchganador.png',
-  'potencia-tu-teoria-de-cambio': '/thumbnails/Imagen-destacada-11.webp',
-  'aplica-a-tu-siguiente-grant-con-ia': '/thumbnails/aplicaatusiguientegrantconia.png',
-  'identifica-a-tu-donante-ideal': '/thumbnails/Imagen-destacada-13-1.webp',
-  'crea-tu-asistente-ia': '/thumbnails/Asistente-IA-portada.webp',
-};
 
 /** Rewrite WordPress upload URLs to local /pdfs/ path */
 function localizeUrl(url: string): string {
@@ -205,7 +186,7 @@ const CourseDetail = () => {
   const [downloadingCert, setDownloadingCert] = useState(false);
   const [certError, setCertError] = useState<string | null>(null);
   const [showEnrollPrompt, setShowEnrollPrompt] = useState(false);
-  const [evalStatus, setEvalStatus] = useState<{ has_evaluation_form: boolean; has_submitted: boolean } | null>(null);
+  const [showCalModal, setShowCalModal] = useState(false);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -238,21 +219,6 @@ const CourseDetail = () => {
               const doneTopics = new Set<number>(progressRes.data.completed_topics);
               setCompletedLessons(doneLessons);
               setCompletedTopics(doneTopics);
-
-              // Fetch evaluation status if course is fully completed
-              if (courseData.is_enrolled) {
-                const allLessons = (courseData.lessons || []).filter((l: Lesson) => l.video_url || l.content);
-                const allTopics = (courseData.lessons || []).flatMap((l: Lesson) => l.topics || []);
-                const totalItems = allLessons.length + allTopics.length;
-                const allDone = totalItems > 0 &&
-                  allLessons.every((l: Lesson) => doneLessons.has(l.id)) &&
-                  allTopics.every((t: Topic) => doneTopics.has(t.id));
-                if (allDone) {
-                  coursesApi.getEvaluationStatus(slug).then(res => {
-                    if (res.ok) setEvalStatus(res.data);
-                  });
-                }
-              }
             }
           }
 
@@ -444,6 +410,21 @@ const CourseDetail = () => {
         avatar: (course.instructor.name && localAvatars[course.instructor.name]) || course.instructor.avatar,
       }
     : null;
+
+  // S6-06: the course counts as completed when every content item is done.
+  const courseCompleted = (() => {
+    if (!course.is_enrolled || !course.lessons) return false;
+    const allLessons = course.lessons.filter(l => l.video_url || l.content);
+    const allTopics = course.lessons.flatMap(l => l.topics || []);
+    if (allLessons.length + allTopics.length === 0) return false;
+    return allLessons.every(l => completedLessons.has(l.id)) &&
+      allTopics.every(t => completedTopics.has(t.id));
+  })();
+
+  // S6-05: default calendar block = the course duration, in minutes.
+  const courseDurationMinutes =
+    course.duration_minutes ||
+    (course.duration_hours ? Math.round(course.duration_hours * 60) : 60);
 
   const seoTitle = course.seo_title || `${course.title} — Propel Academy`;
   const seoDescription =
@@ -976,52 +957,32 @@ const CourseDetail = () => {
                   </div>
                 )}
 
-                {(() => {
-                  if (!course.is_enrolled || !course.lessons) return false;
-                  const allLessons = course.lessons.filter(l => l.video_url || l.content);
-                  const allTopics = course.lessons.flatMap(l => l.topics || []);
-                  const totalItems = allLessons.length + allTopics.length;
-                  if (totalItems === 0) return false;
-                  return allLessons.every(l => completedLessons.has(l.id)) &&
-                    allTopics.every(t => completedTopics.has(t.id));
-                })() && (
+                {courseCompleted && (
                   <>
-                    {evalStatus?.has_evaluation_form && !evalStatus.has_submitted ? (
-                      <a
-                        href={`/courses/${slug}/evaluate`}
-                        className="sidebar-certificate-btn"
-                        style={{ textDecoration: 'none', textAlign: 'center' }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-                        </svg>
-                        Completar evaluación
-                      </a>
-                    ) : (
-                      <button
-                        className="sidebar-certificate-btn"
-                        disabled={downloadingCert}
-                        onClick={async () => {
-                          setDownloadingCert(true);
-                          setCertError(null);
-                          try {
-                            const result = await coursesApi.downloadCertificate(course.slug);
-                            if (result && !result.ok) {
-                              setCertError(result.detail || 'No se pudo descargar el certificado.');
-                            }
-                          } finally {
-                            setDownloadingCert(false);
+                    <p className="sidebar-completed-note">¡Ya terminaste este curso!</p>
+                    <button
+                      className="sidebar-certificate-btn"
+                      disabled={downloadingCert}
+                      onClick={async () => {
+                        setDownloadingCert(true);
+                        setCertError(null);
+                        try {
+                          const result = await coursesApi.downloadCertificate(course.slug);
+                          if (result && !result.ok) {
+                            setCertError(result.detail || 'No se pudo descargar el certificado.');
                           }
-                        }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                          <polyline points="7 10 12 15 17 10" />
-                          <line x1="12" y1="15" x2="12" y2="3" />
-                        </svg>
-                        {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
-                      </button>
-                    )}
+                        } finally {
+                          setDownloadingCert(false);
+                        }
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                      {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
+                    </button>
                     {certError && <p style={{ color: '#e53e3e', fontSize: '0.85rem', marginTop: '0.5rem' }}>{certError}</p>}
                   </>
                 )}
@@ -1066,8 +1027,8 @@ const CourseDetail = () => {
                     }
                   }
                   return (
-                    <Link to={firstPath} className="sidebar-cta enrolled">
-                      Continuar
+                    <Link to={firstPath} className={`sidebar-cta${courseCompleted ? '' : ' enrolled'}`}>
+                      {courseCompleted ? 'Retomar curso' : 'Continuar'}
                     </Link>
                   );
                 })() : (
@@ -1086,11 +1047,26 @@ const CourseDetail = () => {
                     )}
                   </button>
                 )}
+
+                {/* S6-05: block time for the course in the user's calendar */}
+                <button className="sidebar-calendar-link" onClick={() => setShowCalModal(true)}>
+                  Agregar a mi calendario
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Add-to-calendar modal (S6-05) */}
+      {showCalModal && (
+        <AddToCalendarModal
+          courseTitle={course.title}
+          courseUrl={`${window.location.origin}/courses/${course.slug}`}
+          defaultDurationMinutes={courseDurationMinutes}
+          onClose={() => setShowCalModal(false)}
+        />
+      )}
 
       {/* Enroll prompt popup */}
       {showEnrollPrompt && (

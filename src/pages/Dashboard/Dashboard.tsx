@@ -2,12 +2,16 @@ import { useEffect, useState, useCallback, useRef, type MouseEvent } from 'react
 import { Link, useLocation } from 'react-router-dom';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
-import { coursesApi, isAuthenticated, authApi, tracksApi, workshopsApi, type Track, type WorkshopRoute } from '../../services/api';
+import { coursesApi, isAuthenticated, authApi, canAccessAdmin, tracksApi, workshopsApi, type Track, type WorkshopRoute } from '../../services/api';
 import { matchesSearch } from '../../utils/searchAliases';
+import { visibleGoalCategories } from '../../utils/goalOptions';
 import CoursePreviewModal from './CoursePreviewModal';
+import GoalSurveyModal, { type GoalCategory } from '../../components/GoalSurveyModal/GoalSurveyModal';
+import GoalProgressBar from './GoalProgressBar';
 import TrackHero from './TrackHero';
 import './Dashboard.css';
 import portadaHero from '../../assets/PortadaAcademy-1920.webp';
+import goalNudgeBell from '../../assets/goal-nudge-bell.svg';
 import trackImgCreaAsistente from '../../assets/track/crea-tu-asistente-ia.png';
 import trackImgDefineUi from '../../assets/track/define-tu-ui-con-ia.png';
 import trackImgDataImpacto from '../../assets/track/data-para-el-impacto-social.png';
@@ -43,6 +47,10 @@ interface User {
   first_name: string;
   last_name: string;
   email: string;
+  goal_hours_per_week?: string;
+  goal_courses_per_month?: string;
+  goal_categories?: string[];
+  goal_set_at?: string | null;
 }
 
 interface Course {
@@ -89,7 +97,7 @@ const CourseCard = ({ course, status, progress, isFavorite, onToggleFavorite, on
   const statusLabel = status === 'completed' ? 'Completado' : status === 'in-progress' ? 'En progreso' : null;
   const statusClass = status === 'completed' ? 'status-completed' : status === 'in-progress' ? 'status-in-progress' : '';
 
-  const buttonLabel = status === 'completed' ? 'Revisar' : status === 'in-progress' ? 'Continuar' : 'Conoce más';
+  const buttonLabel = status === 'completed' ? 'Retomar curso' : status === 'in-progress' ? 'Continuar' : 'Conoce más';
   const durationText = course.duration_display || (course.duration_hours > 0 ? `${course.duration_hours}h` : '');
   const metaText = [course.instructor, durationText].filter(Boolean).join(' · ');
 
@@ -148,7 +156,7 @@ const CourseCard = ({ course, status, progress, isFavorite, onToggleFavorite, on
             <div className="course-progress-bar">
               <div className="course-progress-fill" style={{ width: `${progress}%` }} />
             </div>
-            <span className="course-progress-text">{progress}% completado</span>
+            <span className="course-progress-text">{progress}%</span>
           </div>
         )}
         <span className={`course-button ${status === 'in-progress' ? 'course-button-enrolled' : ''}`}>
@@ -315,6 +323,12 @@ const Dashboard = () => {
   const isCatalogRoute = location.pathname === '/cursos' || location.pathname === '/cursos/';
   const [showAllCatalog, setShowAllCatalog] = useState(isCatalogRoute);
   const [previewSlug, setPreviewSlug] = useState<string | null>(null);
+  // Learning goal (onboarding survey): categories for the survey chips,
+  // completion dates for the progress bar, and the modal's open state.
+  const [goalCategories, setGoalCategories] = useState<GoalCategory[]>([]);
+  const [completionDates, setCompletionDates] = useState<string[]>([]);
+  const [surveyOpen, setSurveyOpen] = useState(false);
+  const [goalNudgeOpen, setGoalNudgeOpen] = useState(false);
 
   useEffect(() => {
     if (isCatalogRoute) setShowAllCatalog(true);
@@ -338,27 +352,42 @@ const Dashboard = () => {
             .then((r) => { if (r.ok && Array.isArray(r.data)) setRoutes(r.data); })
             .catch(() => { /* silently leave routes empty */ });
 
-          const [profileRes, enrollmentsRes, trackRes] = await Promise.all([
+          const [profileRes, enrollmentsRes, trackRes, categoriesRes] = await Promise.all([
             authApi.getProfile(),
             coursesApi.getMyEnrollments(),
             tracksApi.getFeatured().catch(() => ({ ok: false, data: null })),
+            coursesApi.getCategories().catch(() => ({ ok: false, data: null })),
           ]);
 
           if (trackRes.ok && trackRes.data) {
             setFeaturedTrack(trackRes.data);
           }
 
+          if (categoriesRes.ok && Array.isArray(categoriesRes.data)) {
+            setGoalCategories(categoriesRes.data);
+          }
+
           if (profileRes.ok) {
             setUser(profileRes.data);
+            // User with no learning goal → show the "Establece tus metas" nudge
+            // card atop the catalog (Continuar opens the survey). Server-side
+            // goal_set_at drives this, so it survives logout / can't be skipped
+            // via URL. Admins are exempt.
+            if (!profileRes.data.goal_set_at && !canAccessAdmin()) {
+              setGoalNudgeOpen(true);
+            }
           }
 
           if (enrollmentsRes.ok) {
             const slugMap = new Map<string, number>();
-            enrollmentsRes.data.forEach((e: { course?: Course; slug?: string; progress?: number }) => {
+            const completions: string[] = [];
+            enrollmentsRes.data.forEach((e: { course?: Course; slug?: string; progress?: number; completed_at?: string | null }) => {
               const slug = e.course?.slug || e.slug || '';
               if (slug) slugMap.set(slug, e.progress ?? 0);
+              if (e.completed_at) completions.push(e.completed_at);
             });
             setEnrolledSlugs(slugMap);
+            setCompletionDates(completions);
           }
 
           const favoritesRes = await coursesApi.getMyFavorites();
@@ -517,6 +546,39 @@ const Dashboard = () => {
         ogImage={PAGE_META[isCatalogRoute ? 'cursos' : 'home'].ogImage}
         canonicalPath={PAGE_META[isCatalogRoute ? 'cursos' : 'home'].canonicalPath}
       />
+
+      {/* No goal yet → "Establece tus metas" nudge card (Figma S6-01) at the
+          top of the screen; Continuar opens the survey, Omitir hides it. */}
+      {loggedIn && goalNudgeOpen && !user?.goal_set_at && (
+        <div className="goal-nudge">
+          <img className="goal-nudge__bell" src={goalNudgeBell} alt="" aria-hidden="true" />
+          <h2 className="goal-nudge__title">Establece tus metas para aumentar tu aprendizaje</h2>
+          <div className="goal-nudge__footer">
+            <button type="button" className="goal-nudge__skip" onClick={() => setGoalNudgeOpen(false)}>
+              Omitir
+            </button>
+            <button type="button" className="goal-nudge__cta" onClick={() => setSurveyOpen(true)}>
+              Continuar <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Learning-goal progress: real completions this cycle vs. the goal
+          from the onboarding survey */}
+      {loggedIn && user?.goal_set_at && (
+        <GoalProgressBar
+          goal={{
+            goal_hours_per_week: user.goal_hours_per_week,
+            goal_courses_per_month: user.goal_courses_per_month,
+            goal_categories: user.goal_categories,
+            goal_set_at: user.goal_set_at,
+          }}
+          categories={goalCategories}
+          completionDates={completionDates}
+          onEdit={() => setSurveyOpen(true)}
+        />
+      )}
 
       {/* Catalog hero band ("Explora nuestros cursos") — hidden when the user
           is on a ruta de aprendizaje (their TrackHero renders instead) */}
@@ -831,6 +893,26 @@ const Dashboard = () => {
 
       {previewSlug && (
         <CoursePreviewModal slug={previewSlug} onClose={() => setPreviewSlug(null)} />
+      )}
+
+      {surveyOpen && (
+        <GoalSurveyModal
+          categories={visibleGoalCategories(goalCategories, courses)}
+          courses={courses.map((c) => ({
+            id: c.id,
+            title: c.title,
+            slug: c.slug,
+            thumbnail: c.thumbnail_url || localThumbnails[c.slug],
+            categoryName: c.category?.name,
+          }))}
+          initial={user?.goal_set_at ? {
+            goal_hours_per_week: user.goal_hours_per_week,
+            goal_courses_per_month: user.goal_courses_per_month,
+            goal_categories: user.goal_categories,
+          } : undefined}
+          onClose={() => setSurveyOpen(false)}
+          onSaved={(updated) => setUser((prev) => prev ? { ...prev, ...updated } : prev)}
+        />
       )}
     </div>
   );

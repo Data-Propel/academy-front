@@ -1,0 +1,120 @@
+/* Learning-goal progress widget (Figma S6-01) */
+
+.gpb-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: #093630;
+  color: #F2F2F2;
+  padding: 14px 24px;
+  font-size: 16px;
+}
+
+.gpb-strip__track {
+  width: 180px;
+  height: 14px;
+  background: #4a6b65;
+  overflow: hidden;
+}
+
+.gpb-strip__fill {
+  height: 100%;
+  background: #EFE97E;
+  transition: width 0.4s ease;
+}
+
+.gpb-strip__pct {
+  font-weight: 600;
+}
+
+.gpb-panel {
+  position: relative;
+  background: #F5F5F3;
+  padding: 32px 2rem;
+}
+
+/* Same container as .topbar-container so the panel content aligns with the logo */
+.gpb-panel__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.gpb-panel__close {
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  border: none;
+  background: none;
+  color: #6b6b6b;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px;
+}
+.gpb-panel__close:hover { color: #0E4B43; }
+
+.gpb-panel__title {
+  margin: 0 0 40px;
+  color: #0E4B43;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.gpb-panel__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 32px;
+}
+
+.gpb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #0E4B43;
+  font-size: 16px;
+}
+
+.gpb-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: #0E4B43;
+}
+
+.gpb-panel__edit {
+  flex-shrink: 0;
+  padding: 14px 28px;
+  border: none;
+  background: #FF5A2F;
+  color: #fff;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.gpb-panel__edit:hover { background: #e64d24; }
+
+@media (max-width: 768px) {
+  .gpb-strip {
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+  .gpb-strip__track { width: 120px; }
+  .gpb-panel {
+    padding: 28px 1rem;
+  }
+  .gpb-panel__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .gpb-panel__title { font-size: 21px; }
+  .gpb-panel__edit { width: 100%; text-align: center; }
+}

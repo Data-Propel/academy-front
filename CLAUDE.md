@@ -88,7 +88,7 @@ Backend deploys by restarting `sudo systemctl restart academy-api`.
 
 - **Colors**: Teal dark `#0E4B43`, Orange accent `#FF5A2F`, Green progress `#A3C94A`, Background `#F5F5F3`
 - **Fonts**: 'Libre Franklin' everywhere (all UI text — headings and body), via the chain `'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`. Form controls use `font-family: inherit`. Poppins is being phased out.
-- **Sidebar**: Dark teal `#0E4B43`, 380px wide on desktop
+- **Sidebar**: 380px wide on desktop. CourseLearner's sidebar is light (`#F2F2F2` page, white `#FFFFFF` module cards) per the Figma course-view redesign; it collapses to a drawer under 900px. Other dark-teal `#0E4B43` sidebars are pre-redesign.
 - **All UI text is in Spanish**
 
 ## Data Model (key relationships)

@@ -1,0 +1,123 @@
+/* Exit-intent confirmation modal (S6-07) */
+
+.elg-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 75, 67, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 24px;
+  animation: elg-fade 0.2s ease-out;
+}
+
+@keyframes elg-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.elg-modal {
+  position: relative;
+  background: #F5F5F3;
+  width: 100%;
+  max-width: 520px;
+  padding: 44px 48px 36px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  animation: elg-pop 0.25s ease-out;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@keyframes elg-pop {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.elg-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border: none;
+  background: none;
+  color: #6b6b6b;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px;
+}
+.elg-close:hover { color: #0E4B43; }
+
+.elg-icon {
+  color: #FF5A2F;
+  margin-bottom: 12px;
+}
+
+.elg-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #0E4B43;
+  margin: 0 0 12px;
+  line-height: 1.3;
+}
+
+.elg-text {
+  font-size: 15px;
+  color: #333333;
+  margin: 0 0 28px;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+.elg-host {
+  font-weight: 600;
+  color: #0E4B43;
+}
+
+.elg-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.elg-btn {
+  min-width: 130px;
+  padding: 12px 24px;
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.elg-btn--secondary {
+  background: #E4E4E1;
+  color: #1f1f1f;
+}
+.elg-btn--secondary:hover { background: #d8d8d4; }
+
+.elg-btn--primary {
+  background: #FF5A2F;
+  color: #ffffff;
+}
+.elg-btn--primary:hover { background: #e64d24; }
+
+.elg-btn:focus-visible {
+  outline: 2px solid #0E4B43;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .elg-modal {
+    padding: 36px 22px 28px;
+  }
+
+  .elg-title { font-size: 19px; }
+
+  .elg-actions {
+    flex-direction: column-reverse;
+  }
+
+  .elg-btn { width: 100%; }
+}
