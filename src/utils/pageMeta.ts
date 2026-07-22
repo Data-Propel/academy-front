@@ -16,7 +16,7 @@ export interface PageMeta {
   canonicalPath: string;
 }
 
-export const PAGE_META: Record<'home' | 'register' | 'workshop', PageMeta> = {
+export const PAGE_META: Record<'home' | 'cursos' | 'register' | 'login' | 'profile' | 'workshop', PageMeta> = {
   home: {
     title: 'Propel Nonprofit Academy | Cursos para organizaciones sociales',
     description: 'Explora los cursos de la Nonprofit Academy. Capacítate junto a tu equipo en IA y herramientas digitales para aumentar el impacto de tu organización social.',
@@ -30,6 +30,27 @@ export const PAGE_META: Record<'home' | 'register' | 'workshop', PageMeta> = {
     ogDescription: 'Ingresa con tu correo y accede a cursos de IA.',
     ogImage: '/og/register.jpg',
     canonicalPath: '/register',
+  },
+  cursos: {
+    title: 'Cursos para líderes sociales | Propel Nonprofit Academy',
+    description: 'Explora nuestros cursos de IA para organizaciones sociales. Desde recaudación de fondos hasta estrategia: encuentra capacitaciones para crecer.',
+    ogDescription: 'Explora los cursos de la Nonprofit Academy y capacita a tu equipo en IA.',
+    ogImage: '/og/cursos.jpg',
+    canonicalPath: '/cursos',
+  },
+  login: {
+    title: 'Ingresa a tu cuenta | Propel Nonprofit Academy',
+    description: 'Te damos la bienvenida a la Nonprofit Academy. Accede a cursos de IA y gestiona tu perfil al ingresar con tu correo.',
+    ogDescription: 'Ingresa con tu correo y accede a cursos de IA.',
+    ogImage: '/og/login.jpg',
+    canonicalPath: '/login',
+  },
+  profile: {
+    title: 'Mi perfil | Propel Nonprofit Academy',
+    description: 'La Nonprofit Academy equipa a organizaciones sociales para usar IA, con cursos en línea para potenciar sus habilidades digitales y escalar su impacto.',
+    ogDescription: 'Conoce cómo la Nonprofit Academy equipa a organizaciones con IA.',
+    ogImage: '/og/profile.jpg',
+    canonicalPath: '/profile',
   },
   workshop: {
     title: 'Lidera con un IA mindset | Propel Nonprofit Academy',

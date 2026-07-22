@@ -1,176 +1,156 @@
 .footer {
-  background-color: #032927;
-  color: #F2F2F2;
-  padding: 60px 0 30px;
+  background-color: #043a37;
+  color: #f2f2f2;
   font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   scroll-snap-align: start;
-}
-
-.footer-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 30px;
-}
-
-.footer-main {
   display: flex;
-  justify-content: space-between;
-  gap: 60px;
-  margin-bottom: 40px;
 }
 
+/* Propel brand sits in the dark left half; the two-tone panel is the right half. */
 .footer-brand {
-  flex: 1;
-  max-width: 300px;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.footer-brand-inner {
+  max-width: 320px;
 }
 
 .footer-logo {
-  height: 50px;
   width: auto;
+  height: 56px;
+  display: block;
   margin-bottom: 20px;
 }
 
 .footer-tagline {
-  font-size: 14px;
-  line-height: 1.6;
-  color: rgba(242, 242, 242, 0.8);
   margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(242, 242, 242, 0.75);
 }
 
-.footer-nav {
-  display: flex;
-  gap: 60px;
+.footer-panel {
+  width: 50%;
+}
+
+.footer-panel-top {
+  background-color: #11544f;
+  min-height: 273px;
+  padding: 82px 40px 40px 71px;
+  box-sizing: border-box;
 }
 
 .footer-column {
-  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 23.625px;
+  max-width: 200px;
 }
 
 .footer-heading {
-  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: #F2F2F2;
-  margin: 0 0 20px 0;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  color: #f2f2f2;
 }
 
 .footer-links {
   list-style: none;
   padding: 0;
   margin: 0;
-}
-
-.footer-links li {
-  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 11.025px;
 }
 
 .footer-links a {
-  color: rgba(242, 242, 242, 0.8);
+  color: #f2f2f2;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 15px;
   transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
-  color: #FD6A44;
+  color: #fd6a44;
+}
+
+.footer-panel-bottom {
+  background-color: #116d66;
+  min-height: 127px;
+  padding: 30px 40px 24px 71px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .footer-social {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 30px 0;
-  border-top: 1px solid rgba(242, 242, 242, 0.2);
-  border-bottom: 1px solid rgba(242, 242, 242, 0.2);
-  margin-bottom: 30px;
+  gap: 18px;
 }
 
 .footer-social a {
-  color: rgba(242, 242, 242, 0.8);
-  transition: color 0.3s ease, transform 0.3s ease;
+  display: inline-flex;
+  transition: transform 0.3s ease;
 }
 
 .footer-social a:hover {
-  color: #FD6A44;
   transform: translateY(-2px);
 }
 
+.footer-social img {
+  width: 27px;
+  height: 27px;
+  display: block;
+}
+
 .footer-legal {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  font-size: 14px;
+  margin: 0;
+  font-size: 15px;
+  color: #f2f2f2;
 }
 
 .footer-legal a {
-  color: rgba(242, 242, 242, 0.8);
+  color: #f2f2f2;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .footer-legal a:hover {
-  color: #FD6A44;
+  color: #fd6a44;
 }
 
 .footer-divider {
-  color: rgba(242, 242, 242, 0.4);
+  color: #f2f2f2;
 }
 
-/* Tablet */
-@media (max-width: 992px) {
-  .footer-main {
+/* Below the desktop breakpoint the brand stacks above the full-width panel. */
+@media (max-width: 768px) {
+  .footer {
     flex-direction: column;
-    gap: 40px;
   }
 
   .footer-brand {
-    max-width: 100%;
-    text-align: center;
+    width: 100%;
+    justify-content: flex-start;
+    padding: 32px 24px 8px;
   }
 
-  .footer-logo {
-    margin: 0 auto 20px;
-    display: block;
+  .footer-panel {
+    width: 100%;
   }
 
-  .footer-nav {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 40px;
+  .footer-panel-top {
+    min-height: 0;
+    padding: 40px 24px 32px;
   }
 
-  .footer-column {
-    text-align: center;
-  }
-}
-
-/* Mobile */
-@media (max-width: 576px) {
-  .footer {
-    padding: 40px 0 20px;
-  }
-
-  .footer-container {
-    padding: 0 16px;
-  }
-
-  .footer-nav {
-    flex-direction: column;
-    gap: 30px;
-  }
-
-  .footer-social {
-    gap: 15px;
-    padding: 20px 0;
-  }
-
-  .footer-legal {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .footer-divider {
-    display: none;
+  .footer-panel-bottom {
+    padding: 24px;
   }
 }

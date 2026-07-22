@@ -35,6 +35,35 @@
   font-weight: 700;
 }
 
+/* ---- Progress summary (X de N cursos completados) ---- */
+.track-hero__progress {
+  max-width: 420px;
+  margin: 0 auto 44px;
+  text-align: center;
+}
+
+.track-hero__progress-label {
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #144a46;
+  margin: 0 0 10px;
+}
+
+.track-hero__progress-track {
+  height: 8px;
+  background: #ececea;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.track-hero__progress-fill {
+  height: 100%;
+  background: #A3C94A;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
 /* ---- Stepper (ruta de aprendizaje timeline) ---- */
 .track-stepper {
   list-style: none;
@@ -86,7 +115,8 @@
   justify-content: center;
 }
 
-/* Connecting line — runs through the centre of the node row to the next node. */
+/* Connector line — grey while the route is in progress, turning solid blue the
+   whole way through only once every course is completed (.track-stepper--complete). */
 .track-step:not(:last-child) .track-step__node::after {
   content: '';
   position: absolute;
@@ -100,8 +130,7 @@
   z-index: 0;
 }
 
-/* Completed segments fill blue to convey progress along the route. */
-.track-step--done:not(:last-child) .track-step__node::after {
+.track-stepper--complete .track-step:not(:last-child) .track-step__node::after {
   background: #2C59B7;
 }
 
@@ -117,19 +146,25 @@
   justify-content: center;
   z-index: 1;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
-.track-step--active .track-step__dot {
-  background: #2C59B7;
-  box-shadow: 0 0 0 6px rgba(44, 89, 183, 0.16);
-}
-
+/* Only completed steps are filled. The current step is a hollow blue ring
+   (with a glow to mark "you are here") and upcoming steps are hollow gray, so
+   the route never looks finished when it isn't. */
 .track-step--done .track-step__dot {
   background: #2C59B7;
 }
 
-.track-step--pending .track-step__dot {
-  background: #C7C7C7;
+.track-step--in-progress .track-step__dot {
+  background: #fff;
+  border: 3px solid #2C59B7;
+  box-shadow: 0 0 0 5px rgba(44, 89, 183, 0.18);
+}
+
+.track-step--not-started .track-step__dot {
+  background: #fff;
+  border: 2px solid #C7C7C7;
 }
 
 /* Final milestone — the certification badge sits on the end of the line. */
@@ -140,6 +175,29 @@
   height: 84px;
   object-fit: contain;
   flex-shrink: 0;
+}
+
+/* The badge is a transparent PNG and wider than the dots, so the blue connector
+   would show through to its centre. A page-coloured disc behind it — above the
+   line, below the badge — masks the overlap, so the line reads as stopping at
+   the badge's edge. Invisible because the stepper sits on the #F5F5F3 hero bg. */
+.track-step--badge .track-step__node::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 84px;
+  height: 84px;
+  transform: translate(-50%, -50%);
+  background: #F5F5F3;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+/* The badge is the reward — dimmed until the whole route is completed, so it
+   reads as a goal rather than something already earned. */
+.track-step--pending .track-step__badge-img {
+  opacity: 0.4;
 }
 
 /* ---- Cards ---- */
@@ -286,6 +344,42 @@
   margin: 0 0 18px;
   line-height: 1.45;
   flex: 1;
+}
+
+.track-card__deadline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0 0 14px;
+  font-family: 'Libre Franklin', sans-serif;
+  font-size: 13px;
+  color: #16625b;
+}
+
+.track-card__deadline-icon {
+  flex-shrink: 0;
+}
+
+.track-card__deadline-text strong {
+  font-weight: 700;
+}
+
+.track-card__deadline-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #FF5A2F;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.track-card__deadline-add:hover,
+.track-card__deadline-add:focus-visible {
+  color: #e0440f;
+  outline: none;
 }
 
 .track-card__progress {
@@ -437,7 +531,7 @@
 
   .track-step__badge-img { width: 60px; height: 60px; }
 
-  /* swap the horizontal connector for a vertical one down the dot column */
+  /* hide the desktop horizontal connector; draw a vertical one (grey, blue once complete) */
   .track-step:not(:last-child) .track-step__node::after { display: none; }
   .track-step:not(:last-child)::after {
     content: '';
@@ -447,11 +541,61 @@
     bottom: -50%;
     width: 8px;
     transform: translateX(-50%);
-    background: #c7c7c7;
+    background: #C7C7C7;
     border-radius: 4px;
     z-index: 0;
   }
-  .track-step--done:not(:last-child)::after { background: #2c59b7; }
+
+  .track-stepper--complete .track-step:not(:last-child)::after {
+    background: #2C59B7;
+  }
 
   .track-hero__enroll-btn { min-width: 0; width: 100%; }
+}
+
+/* ---- Certificate download (shown when the ruta is complete) ---- */
+.track-hero__cert {
+  text-align: center;
+  margin: 8px auto 28px;
+}
+
+.track-hero__cert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.track-hero__cert-btn {
+  font-family: 'Libre Franklin', sans-serif;
+  display: inline-block;
+  background: #FF5A2F;
+  color: #fff;
+  border: none;
+  padding: 13px 30px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.track-hero__cert-btn:hover { background: #e94f28; }
+.track-hero__cert-btn:disabled { opacity: 0.6; cursor: default; }
+
+/* Secondary (outline) variant — the "Ver tu insignia digital" link. Border
+   compensates the padding so its box matches the filled certificate button. */
+.track-hero__cert-btn--outline {
+  background: transparent;
+  color: #FF5A2F;
+  border: 2px solid #FF5A2F;
+  padding: 11px 28px;
+  text-decoration: none;
+}
+.track-hero__cert-btn--outline:hover { background: #FF5A2F; color: #fff; }
+
+.track-hero__cert-error {
+  margin: 8px 0 0;
+  color: #c0392b;
+  font-size: 14px;
 }

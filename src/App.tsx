@@ -18,8 +18,8 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword/ResetPassword'));
 const AutoLogin = lazy(() => import('./pages/AutoLogin/AutoLogin'));
 const FormPage = lazy(() => import('./pages/FormPage/FormPage'));
 const CourseEvaluation = lazy(() => import('./pages/CourseEvaluation/CourseEvaluation'));
-const WorkshopLanding = lazy(() => import('./pages/WorkshopLanding/WorkshopLanding'));
 const Home = lazy(() => import('./pages/Home/Home'));
+const VerifyCredential = lazy(() => import('./pages/VerifyCredential/VerifyCredential'));
 
 import './App.css';
 
@@ -73,7 +73,7 @@ export function AppContent() {
   const isWorkshopRoute = location.pathname === '/lidera-con-ia-mindset';
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/completar-perfil';
   const isHomeRoute = location.pathname === '/';
-  const isCatalogRoute = location.pathname === '/cursos';
+  const isCatalogRoute = location.pathname === '/cursos' || location.pathname === '/cursos/';
   const isCourseDetailRoute = /^\/courses\/[^/]+$/.test(location.pathname);
 
   // A learner who signed in (e.g. with Google) but hasn't filled the required
@@ -118,7 +118,8 @@ export function AppContent() {
           <Route path="/auto-login" element={<AutoLogin />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/forms/:slug" element={<FormPage />} />
-          <Route path="/lidera-con-ia-mindset" element={<WorkshopLanding />} />
+          <Route path="/lidera-con-ia-mindset" element={<Navigate to="/register" replace />} />
+          <Route path="/verify/:code" element={<VerifyCredential />} />
           <Route path="/admin/*" element={isAuthenticated() ? <Admin /> : <Navigate to="/login" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -286,14 +286,21 @@
   color: var(--dark);
 }
 
-/* ── Testimonial ── */
+/* ── Testimonial (own white section) ── */
+.home-testimonial-section {
+  background: #fff;
+  padding: 80px 40px;
+}
+
 .home-testimonial {
   max-width: 1107px;
-  margin: 80px auto 0;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 305px 1fr;
   background: var(--teal-section);
   position: relative;
+  border-radius: 5px;
+  overflow: hidden;
 }
 
 .home-testimonial__photo {
@@ -565,6 +572,10 @@
   .home-courses__grid,
   .home-academy__grid {
     grid-template-columns: minmax(0, 420px);
+  }
+
+  .home-testimonial-section {
+    padding: 56px 24px;
   }
 
   .home-testimonial {

@@ -1376,6 +1376,10 @@ export interface TrackCourse {
   is_completed: boolean;
   is_locked: boolean;
   progress: number;
+  // Per-course "complete by" deadline shown as a calendar invite on the card.
+  // ISO date for building the calendar link; deadline_text is the human label.
+  deadline?: string | null;
+  deadline_text?: string;
   // Optional override for the card link; defaults to `/courses/${slug}` in
   // TrackHero. Used for non-course steps like a workshop event whose card
   // should point at the landing page rather than a non-existent course route.
@@ -1416,7 +1420,11 @@ export interface Track {
   completed_count: number;
   total_count: number;
   courses: TrackCourse[];
+  // Admin only: set when a Workshop owns this Track's ruta. The course list is
+  // then read-only here and edited from /admin/workshops instead.
+  managed_by_workshop?: { name: string; slug: string } | null;
   certificate_template_url: string | null;
+  certificate_svg_url: string | null;
   medal_image_url: string | null;
   cert_name_x: number;
   cert_name_y: number;
@@ -1438,7 +1446,7 @@ export interface TrackWritePayload {
   journey_steps?: TrackJourneyStep[];
 }
 
-export type TrackEmailTrigger = 'track_enrolled' | 'course_completed' | 'course_inactive' | 'track_completed';
+export type TrackEmailTrigger = 'track_enrolled' | 'workshop_attended' | 'course_not_started' | 'course_completed' | 'course_inactive' | 'track_completed';
 
 export interface TrackEmail {
   id: number;
@@ -1448,14 +1456,22 @@ export interface TrackEmail {
   days_after: number;
   name: string;
   subject: string;
+  preview_text: string;
   body: string;
   cta_label: string;
   is_active: boolean;
   sent_count: number;
+  last_sent_at: string | null;
   updated_at: string;
 }
 
-export type TrackEmailPayload = Omit<TrackEmail, 'id' | 'course_title' | 'sent_count' | 'updated_at'>;
+export type TrackEmailPayload = Omit<TrackEmail, 'id' | 'course_title' | 'sent_count' | 'last_sent_at' | 'updated_at'>;
+
+export interface TrackEmailRecipients {
+  count: number;
+  event_based: boolean;
+  recipients: { email: string; name: string }[];
+}
 
 export const tracksApi = {
   getFeatured: async (): Promise<{ ok: boolean; data: Track | null }> => {
@@ -1474,6 +1490,20 @@ export const tracksApi = {
     const response = await apiFetch(`/courses/admin/tracks/${slug}/engagement/csv/?completed=${completed}`);
     return { ok: response.ok, blob: response.ok ? await response.blob() : null };
   },
+  engagementUsers: async (slug: string, completed: number | 'all'): Promise<{ ok: boolean; data: TrackEngagementUsers | null }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/engagement/users/?completed=${completed}`);
+    return { ok: response.ok, data: response.ok ? await response.json() : null };
+  },
+  getEvolution: async (slug: string): Promise<{ ok: boolean; data: TrackEvolution | null }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/evolution/`);
+    return { ok: response.ok, data: response.ok ? await response.json() : null };
+  },
+  evolutionPeople: async (slug: string, people: string, cohort: string): Promise<{ ok: boolean; data: TrackEngagementUsers | null }> => {
+    const response = await apiFetch(
+      `/courses/admin/tracks/${slug}/evolution/?people=${encodeURIComponent(people)}&cohort=${encodeURIComponent(cohort)}`,
+    );
+    return { ok: response.ok, data: response.ok ? await response.json() : null };
+  },
   listAdmin: async (): Promise<{ ok: boolean; data: Track[] }> => {
     const response = await apiFetch('/courses/admin/tracks/');
     return { ok: response.ok, data: await response.json() };
@@ -1483,6 +1513,34 @@ export const tracksApi = {
     return { ok: response.ok, data: await response.json() };
   },
   certificateUrl: (slug: string) => `${API_URL}/courses/tracks/${slug}/certificate/`,
+  downloadCertificate: async (slug: string) => {
+    const token = getToken();
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const url = `${API_URL}/courses/tracks/${slug}/certificate/`;
+    let response = await fetch(url, { headers });
+
+    if (response.status === 401) {
+      const refreshed = await refreshToken();
+      if (refreshed) {
+        headers['Authorization'] = `Bearer ${getToken()}`;
+        response = await fetch(url, { headers });
+      } else {
+        clearTokens();
+        window.location.href = '/login';
+        return;
+      }
+    }
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      return { ok: false, detail: data.detail as string | undefined };
+    }
+
+    triggerBlobDownload(await response.blob(), `certificado-${slug}.png`);
+    return { ok: true };
+  },
   updateConfig: async (slug: string, formData: FormData) => {
     const response = await apiFetchFormData(`/courses/admin/tracks/${slug}/config/`, formData, 'PATCH');
     return { ok: response.ok, data: await response.json() };
@@ -1537,9 +1595,17 @@ export const tracksApi = {
     const response = await apiFetch(`/courses/admin/tracks/${slug}/emails/${id}/`, { method: 'DELETE' });
     return { ok: response.ok };
   },
-  testEmail: async (slug: string, id: number): Promise<{ ok: boolean; data: { detail: string } }> => {
-    const response = await apiFetch(`/courses/admin/tracks/${slug}/emails/${id}/test/`, { method: 'POST' });
+  testEmail: async (slug: string, id: number, email?: string): Promise<{ ok: boolean; data: { detail: string } }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/emails/${id}/test/`, {
+      method: 'POST',
+      body: JSON.stringify({ email: email ?? '' }),
+    });
     return { ok: response.ok, data: await response.json() };
+  },
+  emailRecipients: async (slug: string, id: number): Promise<{ ok: boolean; data: TrackEmailRecipients }> => {
+    const response = await apiFetch(`/courses/admin/tracks/${slug}/emails/${id}/recipients/`);
+    const fallback: TrackEmailRecipients = { count: 0, event_based: false, recipients: [] };
+    return { ok: response.ok, data: response.ok ? await response.json() : fallback };
   },
   listMailchimpTemplates: async (): Promise<{ ok: boolean; data: MailchimpTemplate[] }> => {
     const response = await apiFetch('/courses/admin/mailchimp/templates/');
@@ -1587,7 +1653,65 @@ export const tracksApi = {
     });
     return { ok: response.ok, data: await response.json() };
   },
+  getEngagementSlots: async (): Promise<{ ok: boolean; data: EngagementSlot[] }> => {
+    const response = await apiFetch('/courses/admin/engagement/slots/');
+    return { ok: response.ok, data: response.ok ? await response.json() : [] };
+  },
+  updateEngagementSlot: async (
+    id: number,
+    payload: Partial<
+      Pick<EngagementSlot, 'template_id' | 'template_name' | 'subject' | 'preview_text' | 'body' | 'is_active'>
+    >,
+  ): Promise<{ ok: boolean; data: EngagementSlot }> => {
+    const response = await apiFetch(`/courses/admin/engagement/slots/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+  createEngagementSlot: async (
+    bucket: EngagementSlot['bucket'],
+    day_offset: number,
+  ): Promise<{ ok: boolean; data: EngagementSlot | null; error?: string }> => {
+    const response = await apiFetch('/courses/admin/engagement/slots/', {
+      method: 'POST',
+      body: JSON.stringify({ bucket, day_offset }),
+    });
+    if (response.ok) return { ok: true, data: await response.json() };
+    let error: string | undefined;
+    try {
+      const body = await response.json();
+      if (body?.non_field_errors?.length) error = body.non_field_errors[0];
+    } catch {
+      /* non-JSON error body — fall back to a generic message in the UI */
+    }
+    return { ok: false, data: null, error };
+  },
+  deleteEngagementSlot: async (id: number): Promise<{ ok: boolean }> => {
+    const response = await apiFetch(`/courses/admin/engagement/slots/${id}/`, {
+      method: 'DELETE',
+    });
+    return { ok: response.ok };
+  },
+  getEngagementConversion: async (): Promise<{ ok: boolean; data: EngagementConversion | null }> => {
+    const response = await apiFetch('/courses/admin/engagement/conversion/');
+    return { ok: response.ok, data: response.ok ? await response.json() : null };
+  },
 };
+
+export interface EngagementConversionRow {
+  slot_id?: number;
+  day_offset?: number;
+  recipients: number;
+  started_7d: number;
+  started_30d: number;
+  started_ever: number;
+}
+
+export interface EngagementConversion {
+  slots: EngagementConversionRow[];
+  overall: EngagementConversionRow | null;
+}
 
 export interface MailchimpTemplate {
   id: number;
@@ -1599,6 +1723,22 @@ export interface MailchimpTemplateContent {
   plain_text: string;
   mailchimp_url?: string;
   detail?: string;
+}
+
+export interface EngagementSlot {
+  id: number;
+  bucket: 'activacion' | 'engagement' | 'retencion' | 'inactivo';
+  bucket_display: string;
+  day_offset: number;
+  template_id: number | null;
+  template_name: string;
+  subject: string;
+  preview_text: string;
+  body: string;
+  is_active: boolean;
+  updated_at: string;
+  sent_count: number;
+  last_sent_at: string | null;
 }
 
 export interface MilestoneTemplate {
@@ -1632,6 +1772,53 @@ export interface TrackEngagement {
   buckets: Record<string, number>;
 }
 
+export interface TrackEngagementUser {
+  email: string;
+  first_name: string;
+  last_name: string;
+  completed: number;
+}
+
+export interface TrackEngagementUsers {
+  count: number;
+  users: TrackEngagementUser[];
+}
+
+export interface TrackEvolutionStage {
+  key: string;
+  label: string;
+  count: number;
+  rate: number | null;
+  median_days: number | null;
+}
+
+export interface TrackEvolutionCohort {
+  key: string;
+  label: string;
+  stages: TrackEvolutionStage[];
+}
+
+export interface TrackEvolutionEmail {
+  id: number;
+  name: string;
+  trigger: string;
+  course_title: string | null;
+  sent: number;
+  acted: number | null;
+  rate: number | null;
+  action_label: string | null;
+}
+
+export interface TrackEvolution {
+  track: { slug: string; name: string };
+  total_courses: number;
+  window_days: number;
+  weeks: string[];
+  series: { key: string; label: string; values: number[] }[];
+  cohorts: TrackEvolutionCohort[];
+  emails: TrackEvolutionEmail[];
+}
+
 export interface WorkshopRoute {
   workshop: {
     slug: string;
@@ -1641,6 +1828,11 @@ export interface WorkshopRoute {
     zoom_join_url: string | null;
     attended: boolean;
     attended_at: string | null;
+    // Slug of the live-session recording course, if uploaded. When set, the
+    // "Sesión en vivo" card links here instead of the landing page.
+    recording_slug: string | null;
+    // Mirror Track that owns the downloadable ruta certificate.
+    certification_track: { slug: string; name: string; has_certificate: boolean } | null;
   };
   courses: {
     id: number;
@@ -1651,8 +1843,23 @@ export interface WorkshopRoute {
     enrolled: boolean;
     progress: number;
     completed: boolean;
+    deadline: string | null;   // ISO date, e.g. "2026-06-30"
+    deadline_text: string;     // human label, e.g. "30 de junio" ("" when none)
   }[];
   certificate_issued_at: string | null;
+}
+
+export interface RutaFunnelStep {
+  key: string;
+  label: string;
+  count: number;
+}
+
+export interface RutaFunnel {
+  name: string;
+  date_range: string;
+  steps: RutaFunnelStep[];
+  generated_at: string;
 }
 
 export const workshopsApi = {
@@ -1660,5 +1867,57 @@ export const workshopsApi = {
   getMyRoutes: async (): Promise<{ ok: boolean; data: WorkshopRoute[] }> => {
     const response = await apiFetch('/workshops/my-routes/');
     return { ok: response.ok, data: await response.json() };
+  },
+
+  // Staff-only live funnel for the ruta card on the track view. Returns null
+  // for non-staff, unknown slugs (e.g. a Track slug), or network errors.
+  getRutaFunnel: async (workshopSlug: string): Promise<RutaFunnel | null> => {
+    try {
+      const response = await apiFetch(`/workshops/admin/${workshopSlug}/ruta-funnel/`);
+      if (!response.ok) return null;
+      return await response.json();
+    } catch {
+      return null;
+    }
+  },
+};
+
+// Public verifiable credential (Track completion). No auth — anyone, including
+// people outside Propel, can verify a credential by its code.
+export interface CredentialVerification {
+  recipient_name: string;
+  track_name: string;
+  credential_id: string;
+  issued_at: string;
+  organization: string;
+  badge_url: string;
+  verify_url: string;
+  linkedin_add_url: string;
+  verified: boolean;
+}
+
+// One earned Track credential ("badge") belonging to the logged-in user.
+export interface EarnedCredential {
+  public_code: string;
+  track_slug: string;
+  track_name: string;
+  credential_id: string;
+  issued_at: string;
+  badge_url: string;
+  verify_url: string;
+  linkedin_add_url: string;
+  has_certificate: boolean;
+}
+
+export const credentialApi = {
+  imageUrl: (code: string) => `${API_URL}/courses/credentials/${code}/image/`,
+  verify: async (code: string): Promise<{ ok: boolean; data: CredentialVerification | null }> => {
+    const response = await fetch(`${API_URL}/courses/credentials/${code}/`);
+    return { ok: response.ok, data: response.ok ? await response.json() : null };
+  },
+  // The current user's earned badges (requires auth).
+  mine: async (): Promise<{ ok: boolean; data: EarnedCredential[] }> => {
+    const response = await apiFetch('/courses/my/credentials/');
+    return { ok: response.ok, data: response.ok ? await response.json() : [] };
   },
 };

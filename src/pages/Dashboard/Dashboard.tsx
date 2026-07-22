@@ -312,7 +312,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [favoriteSlugs, setFavoriteSlugs] = useState<Set<string>>(new Set());
   const location = useLocation();
-  const isCatalogRoute = location.pathname === '/cursos';
+  const isCatalogRoute = location.pathname === '/cursos' || location.pathname === '/cursos/';
   const [showAllCatalog, setShowAllCatalog] = useState(isCatalogRoute);
   const [previewSlug, setPreviewSlug] = useState<string | null>(null);
 
@@ -511,11 +511,11 @@ const Dashboard = () => {
     <div className={`dashboard-page${isCatalogRoute ? ' dashboard-page--catalog' : ''}`}>
       <PageHead
         raw
-        title={PAGE_META.home.title}
-        description={PAGE_META.home.description}
-        ogDescription={PAGE_META.home.ogDescription}
-        ogImage={PAGE_META.home.ogImage}
-        canonicalPath={PAGE_META.home.canonicalPath}
+        title={PAGE_META[isCatalogRoute ? 'cursos' : 'home'].title}
+        description={PAGE_META[isCatalogRoute ? 'cursos' : 'home'].description}
+        ogDescription={PAGE_META[isCatalogRoute ? 'cursos' : 'home'].ogDescription}
+        ogImage={PAGE_META[isCatalogRoute ? 'cursos' : 'home'].ogImage}
+        canonicalPath={PAGE_META[isCatalogRoute ? 'cursos' : 'home'].canonicalPath}
       />
 
       {/* Catalog hero band ("Explora nuestros cursos") — hidden when the user
@@ -565,14 +565,14 @@ const Dashboard = () => {
           is prepended as the first step so 'X de N completados' counts it
           and the certification gate maps to the stepper visually. */}
       {loggedIn && dedupedRoutes.length > 0 && dedupedRoutes.map((route) => {
-        const workshopDate = new Date(route.workshop.event_date)
-          .toLocaleDateString('es', { day: 'numeric', month: 'long' });
         const workshopStep = {
           course_id: -1,
           slug: route.workshop.slug,
-          title: route.workshop.name,
-          short_description: `Sesión en vivo · ${workshopDate}`,
-          subtitle: `Sesión en vivo · ${workshopDate}`,
+          // Strip the admin-only "(25 jun)" disambiguator suffix — the card
+          // should show just the workshop title.
+          title: route.workshop.name.replace(/\s*\([^)]*\)\s*$/, ''),
+          short_description: 'Sesión en vivo',
+          subtitle: 'Sesión en vivo',
           duration_display: '',
           thumbnail_url: '/thumbnails/landinglidera.jpg',
           order_index: 0,
@@ -581,9 +581,12 @@ const Dashboard = () => {
           is_completed: route.workshop.attended,
           is_locked: false,
           progress: route.workshop.attended ? 100 : 0,
-          // Click → the public landing for this workshop. The TrackHero now
-          // honors `href` over `/courses/${slug}` so a non-course step works.
-          href: '/lidera-con-ia-mindset',
+          // Click → the live-session recording course once it's uploaded, else
+          // the public landing for this workshop. TrackHero honors `href` over
+          // `/courses/${slug}` so a non-course step works.
+          href: route.workshop.recording_slug
+            ? `/courses/${route.workshop.recording_slug}`
+            : '/lidera-con-ia-mindset',
         };
         const courseSteps = route.courses.map((c, i) => ({
           course_id: c.id,
@@ -595,6 +598,8 @@ const Dashboard = () => {
           thumbnail_url: c.thumbnail_url || null,
           order_index: i + 1,
           deadline_label: '',
+          deadline: c.deadline,
+          deadline_text: c.deadline_text,
           is_enrolled: c.enrolled,
           is_completed: c.completed,
           is_locked: false,
@@ -614,29 +619,20 @@ const Dashboard = () => {
           total_count: allSteps.length,
           courses: allSteps,
           certificate_template_url: null,
+          certificate_svg_url: null,
           medal_image_url: null,
           cert_name_x: 0, cert_name_y: 0, cert_name_font_size: 0, cert_name_color: '',
           completion_email_subject: '', completion_email_body: '',
         };
         return (
           <div key={route.workshop.slug}>
-            <TrackHero track={adapted} userFirstName={user?.first_name} />
-            {route.workshop.zoom_join_url && (
-              <div style={{ textAlign: 'center', margin: '-8px auto 24px', maxWidth: 1200 }}>
-                <a
-                  href={route.workshop.zoom_join_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-block', background: '#FF5A2F', color: '#fff',
-                    padding: '10px 20px', borderRadius: 6, textDecoration: 'none',
-                    fontWeight: 600, fontFamily: "'Libre Franklin', sans-serif",
-                  }}
-                >
-                  Únete al Zoom el {workshopDate}
-                </a>
-              </div>
-            )}
+            <TrackHero
+              track={adapted}
+              userFirstName={user?.first_name}
+              certSlug={route.workshop.certification_track?.has_certificate
+                ? route.workshop.certification_track.slug
+                : null}
+            />
           </div>
         );
       })}
@@ -646,6 +642,9 @@ const Dashboard = () => {
           track={featuredTrack}
           userFirstName={user?.first_name}
           localThumbnails={trackThumbnails}
+          certSlug={featuredTrack.certificate_svg_url || featuredTrack.certificate_template_url
+            ? featuredTrack.slug
+            : null}
           onEnrolled={async () => {
             const r = await tracksApi.getFeatured();
             if (r.ok && r.data) setFeaturedTrack(r.data);

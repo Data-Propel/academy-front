@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authApi, isAuthenticated, coursesApi, MEDIA_URL } from '../../services/api';
+import { authApi, isAuthenticated, coursesApi, tracksApi, credentialApi, MEDIA_URL } from '../../services/api';
+import type { EarnedCredential } from '../../services/api';
 import PageHead from '../../utils/PageHead';
+import { PAGE_META } from '../../utils/pageMeta';
 import './Profile.css';
 
 interface User {
@@ -142,6 +144,10 @@ const Profile = () => {
   const [downloadingCertSlug, setDownloadingCertSlug] = useState<string | null>(null);
   const [certError, setCertError] = useState<string | null>(null);
 
+  // The user's earned badges (verifiable ruta credentials).
+  const [credentials, setCredentials] = useState<EarnedCredential[]>([]);
+  const [downloadingCode, setDownloadingCode] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isAuthenticated()) {
       navigate('/login');
@@ -153,11 +159,14 @@ const Profile = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [profileRes, enrollRes, favRes] = await Promise.all([
+      const [profileRes, enrollRes, favRes, credsRes] = await Promise.all([
         authApi.getProfile(),
         coursesApi.getMyEnrollments(),
         coursesApi.getMyFavorites(),
+        credentialApi.mine(),
       ]);
+
+      if (credsRes.ok) setCredentials(credsRes.data);
 
       if (profileRes.ok) {
         const u = profileRes.data;
@@ -195,6 +204,14 @@ const Profile = () => {
       // Failed to load
     }
     setLoading(false);
+  };
+
+  const handleDownloadCredential = async (code: string, trackSlug: string) => {
+    setDownloadingCode(code);
+    setCertError(null);
+    const res = await tracksApi.downloadCertificate(trackSlug);
+    if (res && !res.ok) setCertError(res.detail || 'No se pudo descargar el certificado.');
+    setDownloadingCode(null);
   };
 
   const handleProfileSave = async (e: React.FormEvent) => {
@@ -333,7 +350,15 @@ const Profile = () => {
 
   return (
     <div className="profile-page">
-      <PageHead title="Mi perfil" noIndex />
+      <PageHead
+        raw
+        noIndex
+        title={PAGE_META.profile.title}
+        description={PAGE_META.profile.description}
+        ogDescription={PAGE_META.profile.ogDescription}
+        ogImage={PAGE_META.profile.ogImage}
+        canonicalPath={PAGE_META.profile.canonicalPath}
+      />
       <div className="profile-container">
         {/* Hero */}
         <div className="profile-hero">
@@ -402,6 +427,60 @@ const Profile = () => {
           {/* Mi Aprendizaje */}
           {activeTab === 'learning' && (
             <div className="profile-learning">
+              {/* Insignias obtenidas — verifiable ruta credentials */}
+              {credentials.length > 0 && (
+                <section className="profile-section">
+                  <h2 className="profile-section-title">Insignias obtenidas</h2>
+                  <div className="profile-badges">
+                    {credentials.map((c) => (
+                      <div className="profile-credential" key={c.public_code}>
+                        <img
+                          className="profile-credential__badge"
+                          src={c.badge_url}
+                          alt={`Insignia: ${c.track_name}`}
+                        />
+                        <div className="profile-credential__body">
+                          <span className="profile-credential__label">Certificación obtenida</span>
+                          <h3 className="profile-credential__name">{c.track_name}</h3>
+                          <span className="profile-credential__meta">
+                            {c.credential_id} · {new Date(c.issued_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}
+                          </span>
+                          <div className="profile-credential__actions">
+                            {c.has_certificate && (
+                              <button
+                                type="button"
+                                className="profile-credential__btn profile-credential__btn--primary"
+                                onClick={() => handleDownloadCredential(c.public_code, c.track_slug)}
+                                disabled={downloadingCode === c.public_code}
+                              >
+                                {downloadingCode === c.public_code ? 'Descargando…' : 'Descargar certificado'}
+                              </button>
+                            )}
+                            <a
+                              className="profile-credential__btn"
+                              href={c.linkedin_add_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Añadir a LinkedIn
+                            </a>
+                            <a
+                              className="profile-credential__btn"
+                              href={c.verify_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Verificar
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {certError && <p className="profile-credential__error">{certError}</p>}
+                </section>
+              )}
+
               {/* In Progress */}
               <section className="profile-section">
                 <h2 className="profile-section-title">En progreso</h2>

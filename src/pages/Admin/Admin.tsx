@@ -13,6 +13,7 @@ import AdminCampaigns from './pages/AdminCampaigns';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminWorkshops from './pages/AdminWorkshops';
 import AdminTracks from './pages/AdminTracks';
+import AdminEngagement from './pages/AdminEngagement';
 import { isSuperuser, isUsersReadonly, isMarketingAdmin } from '../../services/api';
 import './Admin.css';
 import './AdminLayout.css';
@@ -72,6 +73,7 @@ const Admin = () => {
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="workshops" element={<AdminWorkshops />} />
           <Route path="tracks" element={<AdminTracks />} />
+          <Route path="engagement" element={<AdminEngagement />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
       </Routes>

@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react';
 import DOMPurify from 'dompurify';
+import TrackFunnel from '../../Dashboard/TrackFunnel';
 import {
   adminApi,
   tracksApi,
   type Track,
+  type TrackCourse,
   type TrackEmail,
+  type TrackEmailPayload,
+  type TrackEmailRecipients,
+  type TrackEmailTrigger,
   type TrackEngagement,
+  type TrackEngagementUser,
+  type TrackEvolution,
   type TrackWritePayload,
-  type MailchimpTemplate,
 } from '../../../services/api';
 import PageHeader from '../components/PageHeader';
 
@@ -73,33 +79,83 @@ const badge = (fg: string, bg: string): React.CSSProperties => ({
   whiteSpace: 'nowrap',
 });
 
-// Heading that opens the "advanced" group of collapsible sections.
-const advancedGroupHeading: React.CSSProperties = {
-  margin: '24px 0 4px',
-  fontSize: 13,
-  color: C.textFaint,
-  textTransform: 'uppercase',
-  letterSpacing: 0.6,
-  fontWeight: 700,
-};
-
 const advancedSummary: React.CSSProperties = { cursor: 'pointer', fontWeight: 600, color: C.accent, fontSize: 14 };
 
-// Small numbered badge so each step is obvious at a glance.
-const StepHeading = ({ n, children }: { n: number; children: React.ReactNode }) => (
-  <h3 style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 8px', color: C.text, fontFamily: 'Libre Franklin, sans-serif', fontSize: '1.05rem' }}>
-    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: '50%', background: C.accent, color: '#fff', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
-      {n}
-    </span>
-    {children}
-  </h3>
-);
+const fmtSent = (iso: string | null | undefined): string | null => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return `${d.toLocaleDateString('es', { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}`;
+};
+
+// Who the next daily run would email, fetched on demand. Shows the exact list
+// the cron command would send to (same audience logic), so the admin can check
+// recipients before activating. Re-fetches on each open to stay current.
+const RecipientsPreview = ({ slug, emailId }: { slug: string; emailId: number }) => {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<TrackEmailRecipients | null>(null);
+
+  const toggle = async () => {
+    if (open) { setOpen(false); return; }
+    setOpen(true);
+    setLoading(true);
+    const res = await tracksApi.emailRecipients(slug, emailId);
+    setData(res.ok ? res.data : null);
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      <button onClick={toggle} style={{ ...advancedSummary, background: 'none', border: 'none', padding: 0 }}>
+        {open ? '▴' : '▾'} Ver destinatarios del próximo envío
+      </button>
+      {open && (
+        <div style={{ marginTop: 10 }}>
+          {loading && <p style={{ color: C.textFaint, fontSize: 13, margin: 0 }}>Cargando…</p>}
+          {!loading && data?.event_based && (
+            <p style={{ color: C.textFaint, fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+              Este correo se envía automáticamente cuando ocurre el evento (al inscribirse o completar);
+              no hay una lista previa de destinatarios.
+            </p>
+          )}
+          {!loading && data && !data.event_based && (
+            data.count === 0 ? (
+              <p style={{ color: C.textFaint, fontSize: 13, margin: 0 }}>
+                Ahora mismo nadie cumple las condiciones para recibirlo.
+              </p>
+            ) : (
+              <>
+                <p style={{ color: C.textMuted, fontSize: 13, margin: '0 0 8px' }}>
+                  {data.count} {data.count === 1 ? 'persona lo recibiría' : 'personas lo recibirían'} en la próxima revisión diaria:
+                </p>
+                <div style={{ maxHeight: 260, overflowY: 'auto', border: `1px solid ${C.borderSoft}`, borderRadius: 6 }}>
+                  {data.recipients.map((r, i) => (
+                    <div key={r.email} style={{ display: 'flex', gap: 10, padding: '6px 12px', fontSize: 13, background: i % 2 ? C.surface : 'transparent', borderBottom: i < data.recipients.length - 1 ? `1px solid ${C.borderSoft}` : 'none' }}>
+                      <span style={{ color: C.text, minWidth: 0, flex: '0 0 45%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</span>
+                      <span style={{ color: C.textFaint, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// One collapsible section inside an expanded track card. Progressive disclosure:
+// every section starts closed so the card opens to a calm list, not a wall.
+const sectionStyle: React.CSSProperties = { marginTop: 12, borderTop: `1px solid ${C.borderSoft}`, paddingTop: 16 };
+const subSummary: React.CSSProperties = { cursor: 'pointer', fontWeight: 600, color: C.textMuted, fontSize: 14 };
 
 const TrackConfigEditor = ({ track, onSaved }: { track: Track; onSaved: (t: Track) => void }) => {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [certFile, setCertFile] = useState<File | null>(null);
+  const [svgFile, setSvgFile] = useState<File | null>(null);
   const [medalFile, setMedalFile] = useState<File | null>(null);
   const [nameX, setNameX] = useState(track.cert_name_x);
   const [nameY, setNameY] = useState(track.cert_name_y);
@@ -116,6 +172,7 @@ const TrackConfigEditor = ({ track, onSaved }: { track: Track; onSaved: (t: Trac
     fd.append('cert_name_font_size', String(fontSize));
     fd.append('cert_name_color', color);
     if (certFile) fd.append('certificate_template', certFile);
+    if (svgFile) fd.append('certificate_svg', svgFile);
     if (medalFile) fd.append('medal_image', medalFile);
 
     const res = await tracksApi.updateConfig(track.slug, fd);
@@ -123,6 +180,7 @@ const TrackConfigEditor = ({ track, onSaved }: { track: Track; onSaved: (t: Trac
     if (res.ok) {
       setMsg('Guardado.');
       setCertFile(null);
+      setSvgFile(null);
       setMedalFile(null);
       onSaved(res.data.track as Track);
     } else {
@@ -144,6 +202,20 @@ const TrackConfigEditor = ({ track, onSaved }: { track: Track; onSaved: (t: Trac
         <h3 style={{ fontSize: 14, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, margin: '0 0 12px' }}>
           Certificado
         </h3>
+        <div style={fieldRow}>
+          <span style={labelStyle}>Plantilla (SVG)</span>
+          <input type="file" accept="image/svg+xml,.svg" onChange={(e) => setSvgFile(e.target.files?.[0] || null)} />
+          {track.certificate_svg_url && (
+            <a href={track.certificate_svg_url} target="_blank" rel="noreferrer" style={{ color: C.accent }}>
+              Ver actual
+            </a>
+          )}
+        </div>
+        <p style={{ color: C.textFaint, fontSize: 13, margin: '0 0 12px' }}>
+          Usa <code>{'{{NAME}}'}</code> en el SVG donde debe ir el nombre. Si subes un SVG, tiene
+          prioridad sobre el PNG y los campos de posición/fuente/color de abajo se ignoran
+          (vienen del propio SVG). Incrusta las fuentes en el SVG para que el nombre se vea bien.
+        </p>
         <div style={fieldRow}>
           <span style={labelStyle}>Plantilla (PNG)</span>
           <input type="file" accept="image/png,image/jpeg" onChange={(e) => setCertFile(e.target.files?.[0] || null)} />
@@ -351,6 +423,28 @@ const TrackCoursesEditor = ({
 
   const available = catalog.filter((c) => !items.some((it) => it.course_id === c.id));
 
+  // When a Workshop owns this ruta, the workshop path is the source of truth:
+  // show the courses read-only and point the admin to /admin/workshops.
+  if (track.managed_by_workshop) {
+    const w = track.managed_by_workshop;
+    const ordered = [...track.courses].sort((a, b) => a.order_index - b.order_index);
+    return (
+      <div style={{ marginTop: 4 }}>
+        <div style={{ background: 'rgba(253,106,68,0.08)', border: `1px solid ${C.borderSoft}`, borderRadius: 6, padding: '10px 14px', marginBottom: 12, fontSize: 13, color: C.textMuted, lineHeight: 1.5 }}>
+          Los cursos de esta ruta se administran desde <strong style={{ color: C.text }}>Workshops → {w.name} → Ruta de aprendizaje</strong>. Aquí se muestran solo para referencia (se usan en los correos automáticos).
+        </div>
+        {ordered.length === 0 ? (
+          <p style={{ color: C.textFaint }}>Sin cursos.</p>
+        ) : ordered.map((c, i) => (
+          <div key={c.course_id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <span style={{ width: 24, textAlign: 'right', color: C.textFaint, fontVariantNumeric: 'tabular-nums' }}>{i + 1}.</span>
+            <span style={{ flex: 1, color: C.text }}>{c.title}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div style={{ marginTop: 4 }}>
       {items.length === 0 && <p style={{ color: C.textFaint }}>Esta ruta todavía no tiene cursos. Agrega el primero abajo.</p>}
@@ -399,196 +493,6 @@ const TrackCoursesEditor = ({
   );
 };
 
-// Hitos de la ruta → etiqueta que la plataforma agrega sola en Mailchimp («Propel
-// Contacts»), sincronizada cada 2 h por el cron (apps/workshops/mailchimp_sync.py,
-// fuente de verdad de estos nombres). El correo lo manda un Customer Journey de
-// Mailchimp con disparador «se agregó la etiqueta». Solo a quienes asistieron.
-const RUTA_TAGS: { key: string; hito: string; tag: string }[] = [
-  { key: 'curso_1', hito: 'Cuando termina el curso 1', tag: '[MKT&COMM] Registros Ruta Lidera con un IA mindset Q2 2026 - Curso 1 (completado)' },
-  { key: 'curso_2', hito: 'Cuando termina el curso 2', tag: '[MKT&COMM] Registros Ruta Lidera con un IA mindset Q2 2026 - Curso 2 (completado)' },
-  { key: 'curso_3', hito: 'Cuando termina el curso 3', tag: '[MKT&COMM] Registros Ruta Lidera con un IA mindset Q2 2026 - Curso 3 (completado)' },
-  { key: 'ruta_completa', hito: 'Cuando termina toda la ruta', tag: '[MKT&COMM] Ruta Lidera con un IA Mindset Completada (Q2.26)' },
-];
-
-const TrackTagsPanel = ({ track }: { track: Track }) => {
-  const [copied, setCopied] = useState<string | null>(null);
-  const [templates, setTemplates] = useState<MailchimpTemplate[]>([]);
-  const [assigned, setAssigned] = useState<Record<string, { id: number; name: string }>>({});
-  const [tplError, setTplError] = useState<string | null>(null);
-  const [savingKey, setSavingKey] = useState<string | null>(null);
-  const [previewKey, setPreviewKey] = useState<string | null>(null);
-  const [previewHtml, setPreviewHtml] = useState<string>('');
-  const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [previewErr, setPreviewErr] = useState<string | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const [tpls, mts] = await Promise.all([
-        tracksApi.listMailchimpTemplates(),
-        tracksApi.listMilestoneTemplates(track.slug),
-      ]);
-      if (cancelled) return;
-      if (tpls.ok) setTemplates(tpls.data);
-      else setTplError('No se pudieron cargar las plantillas de Mailchimp.');
-      if (mts.ok) {
-        const map: Record<string, { id: number; name: string }> = {};
-        mts.data.forEach((m) => {
-          if (m.template_id) map[m.milestone] = { id: m.template_id, name: m.template_name };
-        });
-        setAssigned(map);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [track.slug]);
-
-  const copy = async (tag: string) => {
-    try {
-      await navigator.clipboard.writeText(tag);
-      setCopied(tag);
-    } catch {
-      /* clipboard no disponible */
-    }
-  };
-
-  const choose = async (key: string, templateId: number) => {
-    setSavingKey(key);
-    const tpl = templates.find((t) => t.id === templateId);
-    const res = await tracksApi.setMilestoneTemplate(track.slug, {
-      milestone: key,
-      template_id: templateId,
-      template_name: tpl?.name || '',
-    });
-    setSavingKey(null);
-    if (!res.ok) return;
-    setAssigned((prev) => {
-      const next = { ...prev };
-      if (templateId) next[key] = { id: templateId, name: tpl?.name || '' };
-      else delete next[key];
-      return next;
-    });
-    if (!templateId && previewKey === key) closePreview();
-  };
-
-  const closePreview = () => {
-    setPreviewKey(null);
-    setPreviewHtml('');
-    setPreviewUrl('');
-    setPreviewErr(null);
-  };
-
-  const preview = async (key: string) => {
-    const tpl = assigned[key];
-    if (!tpl) return;
-    setPreviewKey(key);
-    setPreviewHtml('');
-    setPreviewUrl('');
-    setPreviewErr(null);
-    setPreviewLoading(true);
-    const res = await tracksApi.previewMailchimpTemplate(tpl.id);
-    setPreviewLoading(false);
-    if (!res.ok) {
-      setPreviewErr(res.data?.detail || 'No se pudo cargar la vista previa.');
-      return;
-    }
-    setPreviewHtml(res.data.html || '');
-    setPreviewUrl(res.data.mailchimp_url || '');
-  };
-
-  return (
-    <div style={{ background: C.surface, border: `1px solid ${C.borderSoft}`, borderRadius: 8, padding: 16 }}>
-      <p style={{ margin: '0 0 14px', color: C.textMuted, fontSize: 14, lineHeight: 1.6 }}>
-        Cuando alguien termina un curso, <strong>la plataforma le pone sola una etiqueta en
-        Mailchimp</strong>. Crea el correo <strong>una sola vez</strong> en Mailchimp, elige aquí qué
-        plantilla usaste para cada hito y copia la etiqueta para pegarla allí.
-      </p>
-      {tplError && <p style={{ color: C.danger, fontSize: 13, margin: '0 0 10px' }}>{tplError}</p>}
-      {RUTA_TAGS.map(({ key, hito, tag }) => {
-        const sel = assigned[key];
-        return (
-          <div key={key} style={{ background: C.surfaceSoft, border: `1px solid ${C.borderSoft}`, borderRadius: 6, padding: 12, marginBottom: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-              <span style={{ flex: 1, minWidth: 150, color: C.text, fontSize: 14, fontWeight: 600 }}>{hito}</span>
-              <span style={{ color: C.textMuted, fontSize: 13 }}>Plantilla:</span>
-              <select
-                value={sel?.id ?? ''}
-                disabled={savingKey === key || !!tplError}
-                onChange={(e) => choose(key, Number(e.target.value))}
-                style={{ flex: '0 1 260px', minWidth: 180, padding: '6px 8px', borderRadius: 4, border: `1px solid ${C.border}`, fontSize: 13, background: C.inputBg, color: C.text }}
-              >
-                <option value="" style={optionStyle}>— Sin plantilla —</option>
-                {sel && !templates.some((t) => t.id === sel.id) && (
-                  <option value={sel.id} style={optionStyle}>{sel.name || `Plantilla ${sel.id}`}</option>
-                )}
-                {templates.map((t) => (
-                  <option key={t.id} value={t.id} style={optionStyle}>{t.name}</option>
-                ))}
-              </select>
-              <button
-                onClick={() => preview(key)}
-                disabled={!sel}
-                style={{ border: `1px solid ${sel ? C.accent : C.borderSoft}`, background: 'none', color: sel ? C.accent : C.textFaint, borderRadius: 4, padding: '6px 14px', cursor: sel ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}
-              >
-                Vista previa
-              </button>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <code style={{ flex: 1, minWidth: 0, background: C.inputBg, border: `1px solid ${C.border}`, borderRadius: 4, padding: '6px 8px', fontSize: 12, color: C.text, overflowX: 'auto', whiteSpace: 'nowrap' }}>
-                {tag}
-              </code>
-              <button
-                onClick={() => copy(tag)}
-                style={{ border: 'none', background: C.accent, color: '#fff', borderRadius: 4, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}
-              >
-                {copied === tag ? '¡Copiado!' : 'Copiar'}
-              </button>
-            </div>
-            {previewKey === key && (
-              <div style={{ marginTop: 12 }}>
-                {previewLoading ? (
-                  <p style={{ color: C.textFaint, fontSize: 13 }}>Generando vista previa…</p>
-                ) : previewErr ? (
-                  <p style={{ color: C.danger, fontSize: 13 }}>{previewErr}</p>
-                ) : previewHtml ? (
-                  <iframe
-                    title={`Vista previa: ${hito}`}
-                    srcDoc={previewHtml}
-                    sandbox=""
-                    style={{ width: '100%', height: 480, border: `1px solid ${C.borderSoft}`, borderRadius: 6, background: '#fff' }}
-                  />
-                ) : (
-                  <div style={{ background: C.surfaceSoft, border: `1px solid ${C.borderSoft}`, borderRadius: 6, padding: 16, fontSize: 13, color: C.textMuted, lineHeight: 1.6 }}>
-                    Esta plantilla se creó en el editor nuevo de Mailchimp, que no permite mostrar
-                    una vista previa aquí.
-                    {previewUrl && (
-                      <>
-                        {' '}
-                        Búscala{sel?.name ? <> como «<strong>{sel.name}</strong>»</> : null} en{' '}
-                        <a href={previewUrl} target="_blank" rel="noreferrer" style={{ color: C.accent, fontWeight: 600 }}>
-                          tus plantillas de Mailchimp
-                        </a>.
-                      </>
-                    )}
-                  </div>
-                )}
-                <button
-                  onClick={closePreview}
-                  style={{ marginTop: 6, border: 'none', background: 'none', color: C.accent, cursor: 'pointer', fontSize: 13 }}
-                >
-                  Cerrar vista previa
-                </button>
-              </div>
-            )}
-          </div>
-        );
-      })}
-      <p style={{ margin: '12px 0 0', color: C.textFaint, fontSize: 12.5, lineHeight: 1.5 }}>
-        El correo puede tardar hasta 2 horas en salir. Solo le llega a quien asistió al workshop.
-      </p>
-    </div>
-  );
-};
 
 const subLabel: React.CSSProperties = { margin: '16px 0 8px', fontSize: 14, color: C.text, fontWeight: 700 };
 
@@ -601,6 +505,114 @@ const fillSample = (s: string, track: Track, firstCourse: string, total: number)
     .replace(/\{\{\s*course_title\s*\}\}/g, firstCourse)
     .replace(/\{\{\s*total\s*\}\}/g, String(total))
     .replace(/\{\{\s*completed\s*\}\}/g, '0');
+
+// --- Línea de tiempo de los correos automáticos ----------------------------
+// Read-only summary of every TrackEmail in journey order: qué lo dispara,
+// cuándo se envía exactamente, estado y envíos. Los editores de abajo siguen
+// siendo donde se cambia el contenido.
+
+const TRIGGER_LABEL: Record<TrackEmailTrigger, string> = {
+  track_enrolled: 'Al entrar a la ruta',
+  workshop_attended: 'Al asistir al workshop',
+  course_not_started: 'Curso habilitado sin iniciar',
+  course_inactive: 'Curso iniciado sin terminar',
+  course_completed: 'Al completar un curso',
+  track_completed: 'Al completar toda la ruta',
+};
+
+const plural = (n: number) => (n === 1 ? 'día' : 'días');
+
+// Exact send semantics, mirroring the backend: track_enrolled /
+// course_completed / track_completed send instantly from signals;
+// workshop_attended / course_not_started / course_inactive are picked up by
+// the hourly cron and delivered at 10 AM in the user's local timezone.
+const timingOf = (e: TrackEmail): string => {
+  switch (e.trigger) {
+    case 'track_enrolled':
+      return 'Inmediato, en cuanto la persona entra a la ruta.';
+    case 'workshop_attended':
+      return 'A las 10 AM (hora local de la persona) después de marcarse su asistencia.';
+    case 'course_not_started':
+      return `${e.days_after} ${plural(e.days_after)} después de habilitarse el curso sin haberlo iniciado, a las 10 AM (hora local).`;
+    case 'course_inactive':
+      return `${e.days_after} ${plural(e.days_after)} después de iniciar el curso sin haberlo terminado, a las 10 AM (hora local).`;
+    case 'course_completed':
+      return 'Inmediato, en cuanto la persona completa el curso.';
+    case 'track_completed':
+      return 'Inmediato, en cuanto la persona completa toda la ruta.';
+  }
+};
+
+const TrackEmailTimeline = ({ track }: { track: Track }) => {
+  const [emails, setEmails] = useState<TrackEmail[] | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await tracksApi.listEmails(track.slug);
+      if (cancelled) return;
+      setEmails(res.ok ? res.data : []);
+    })();
+    return () => { cancelled = true; };
+  }, [track.slug]);
+
+  if (emails === undefined) return <p style={{ color: C.textFaint, fontSize: 13 }}>Cargando…</p>;
+  if (emails.length === 0) return <p style={{ color: C.textFaint, fontSize: 13 }}>Esta ruta no tiene correos configurados.</p>;
+
+  // Chronological order of the journey: welcome → workshop → per-course
+  // (recordatorio de inicio → refuerzo → felicitaciones) → cierre de ruta.
+  const courseRank = new Map<number, number>();
+  [...track.courses].sort((a, b) => a.order_index - b.order_index)
+    .forEach((c, i) => courseRank.set(c.course_id, i));
+  const key = (e: TrackEmail): number => {
+    const cr = e.course != null ? (courseRank.get(e.course) ?? 98) : -1;
+    switch (e.trigger) {
+      case 'track_enrolled': return 0;
+      case 'workshop_attended': return 1;
+      case 'course_not_started': return 1000 + (cr + 1) * 10;
+      case 'course_inactive': return 1001 + (cr + 1) * 10;
+      case 'course_completed': return 1002 + (cr + 1) * 10;
+      case 'track_completed': return 100000;
+    }
+  };
+  const sorted = [...emails].sort((a, b) => key(a) - key(b));
+
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <p style={{ margin: '0 0 12px', color: C.textMuted, fontSize: 13, lineHeight: 1.5 }}>
+        Recorrido completo de los correos, en el orden en que le llegan a una persona.
+        Cada quien recibe cada correo una sola vez; los que dicen «10 AM (hora local)» se
+        revisan cada hora y se entregan a esa hora según el país de la persona.
+      </p>
+      <div style={{ paddingLeft: 18, borderLeft: `2px solid ${C.borderSoft}` }}>
+        {sorted.map((e) => (
+          <div key={e.id} style={{ position: 'relative', marginBottom: 14 }}>
+            <span style={{
+              position: 'absolute', left: -25, top: 3, width: 11, height: 11,
+              borderRadius: '50%', background: e.is_active ? C.green : 'rgba(255,255,255,0.25)',
+            }} />
+            <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
+              <span style={badge(C.textMuted, 'rgba(255,255,255,0.08)')}>{TRIGGER_LABEL[e.trigger]}</span>
+              <span style={{ fontWeight: 700, color: C.text, fontSize: 14 }}>{e.name}</span>
+              {e.course_title && <span style={{ color: C.textMuted, fontSize: 13 }}>· {e.course_title}</span>}
+              <span style={{ flex: 1 }} />
+              <span style={{ fontSize: 12, color: e.is_active ? C.green : C.textFaint }}>
+                {e.is_active ? 'Activo' : 'Inactivo'}
+              </span>
+              <span style={{ fontSize: 12, color: C.textFaint }}>· enviado a {e.sent_count}</span>
+              {e.last_sent_at && (
+                <span style={{ fontSize: 12, color: C.textFaint }}>· último {fmtSent(e.last_sent_at)}</span>
+              )}
+            </div>
+            <p style={{ margin: '2px 0 0', fontSize: 13, color: C.textFaint, lineHeight: 1.5 }}>
+              {timingOf(e)}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // Interruptor on/off del correo de bienvenida (track_enrolled) + vista previa.
 const EnrollEmailPanel = ({ track }: { track: Track }) => {
@@ -658,10 +670,13 @@ const EnrollEmailPanel = ({ track }: { track: Track }) => {
         <p style={{ margin: '10px 0 0', color: C.textMuted, fontSize: 13, lineHeight: 1.5 }}>
           Solo afecta a quienes entren de ahora en adelante. A quienes ya están inscritos no les llega solo.
         </p>
+        <p style={{ margin: '8px 0 0', color: C.textFaint, fontSize: 13 }}>
+          Enviado a {email.sent_count}{email.last_sent_at ? ` · último envío ${fmtSent(email.last_sent_at)}` : ''}
+        </p>
       </div>
 
-      <details>
-      <summary style={advancedSummary}>Ver vista previa del correo (datos de ejemplo)</summary>
+      <details open>
+      <summary style={advancedSummary}>Vista previa del correo (datos de ejemplo)</summary>
       <div style={{ marginTop: 12 }}>
       {isFullDoc ? (
         <div style={{ maxWidth: 620 }}>
@@ -697,10 +712,500 @@ const EnrollEmailPanel = ({ track }: { track: Track }) => {
   );
 };
 
-const Bar = ({ label, value, max, color }: { label: string; value: number; max: number; color: string }) => {
+// --- Correos de refuerzo (course_inactive) ---------------------------------
+// Se envían "N días después de empezar un curso sin terminarlo". El admin pega
+// o sube el HTML de una plantilla de Mailchimp; el backend limpia las etiquetas
+// de Mailchimp al guardar. Una fila por curso de la ruta.
+
+const RefuerzoCourseRow = ({
+  track, course, index, email, onSaved,
+}: {
+  track: Track;
+  course: TrackCourse;
+  index: number;
+  email: TrackEmail | null;
+  onSaved: (e: TrackEmail) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [subject, setSubject] = useState(email?.subject ?? '');
+  const [previewText, setPreviewText] = useState(email?.preview_text ?? '');
+  const [body, setBody] = useState(email?.body ?? '');
+  const [daysAfter, setDaysAfter] = useState<number>(email?.days_after ?? 3);
+  const [active, setActive] = useState(email?.is_active ?? false);
+  const [mode, setMode] = useState<'paste' | 'file'>('paste');
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testTo, setTestTo] = useState('');
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const save = async () => {
+    setSaving(true);
+    setMsg(null);
+    const payload: TrackEmailPayload = {
+      trigger: 'course_inactive',
+      course: course.course_id,
+      days_after: Number(daysAfter) || 3,
+      name: `Refuerzo cierre: ${course.title}`,
+      subject,
+      preview_text: previewText,
+      body,
+      cta_label: email?.cta_label ?? '',
+      is_active: active,
+    };
+    const res = email
+      ? await tracksApi.updateEmail(track.slug, email.id, payload)
+      : await tracksApi.createEmail(track.slug, payload);
+    setSaving(false);
+    if (res.ok) {
+      // Mirror the saved (and server-cleaned) values back into the form so the
+      // preview/dirty state reflect what will actually be sent.
+      onSaved(res.data);
+      setSubject(res.data.subject);
+      setPreviewText(res.data.preview_text);
+      setBody(res.data.body);
+      setDaysAfter(res.data.days_after);
+      setActive(res.data.is_active);
+      setMsg('Guardado.');
+    } else {
+      setMsg('No se pudo guardar.');
+    }
+  };
+
+  const sendTest = async () => {
+    if (!email) return;
+    setTesting(true);
+    setMsg(null);
+    const res = await tracksApi.testEmail(track.slug, email.id, testTo.trim() || undefined);
+    setTesting(false);
+    setMsg(res.data?.detail || (res.ok ? 'Correo de prueba enviado.' : 'No se pudo enviar la prueba.'));
+  };
+
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setBody(String(reader.result || ''));
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const total = track.courses.length || track.total_count;
+  const subjectPreview = fillSample(subject, track, course.title, total);
+  const filledBody = fillSample(body, track, course.title, total);
+  const isFullDoc = /^\s*(<!doctype|<html)/i.test(body || '');
+  const dirty =
+    !email ||
+    subject !== email.subject ||
+    previewText !== email.preview_text ||
+    body !== email.body ||
+    Number(daysAfter) !== email.days_after ||
+    active !== email.is_active;
+
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.borderSoft}`, borderRadius: 8, padding: 16, marginBottom: 12 }}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: C.text, padding: 0, textAlign: 'left' }}
+      >
+        <span style={{ width: 9, height: 9, borderRadius: '50%', background: active ? C.green : C.textFaint, flex: '0 0 auto' }} />
+        <span style={{ fontWeight: 700 }}>Curso {index + 1} · {course.title}</span>
+        <span style={{ flex: 1 }} />
+        <span style={{ fontSize: 12, color: active ? C.green : C.textFaint }}>{active ? 'Activo' : 'Inactivo'}</span>
+        {email && <span style={{ fontSize: 12, color: C.textFaint }}>· enviado a {email.sent_count}</span>}
+        {email?.last_sent_at && <span style={{ fontSize: 12, color: C.textFaint }}>· último envío {fmtSent(email.last_sent_at)}</span>}
+        <span style={{ color: C.textFaint }}>{open ? '▴' : '▾'}</span>
+      </button>
+
+      {open && (
+        <div style={{ marginTop: 14 }}>
+          {body ? (
+            <div style={{ maxWidth: 620 }}>
+              <div style={{ background: '#0E4B43', color: '#fff', padding: '12px 16px', fontSize: 14, fontWeight: 600, borderRadius: '8px 8px 0 0' }}>
+                Asunto: {subjectPreview}
+              </div>
+              {isFullDoc ? (
+                <iframe title="Vista previa" sandbox="" srcDoc={filledBody}
+                  style={{ width: '100%', height: 780, border: '1px solid #e2e2e2', borderTop: 'none', borderRadius: '0 0 8px 8px', background: '#fff', display: 'block' }} />
+              ) : (
+                <div style={{ padding: 20, background: '#fff', border: '1px solid #e2e2e2', borderTop: 'none', borderRadius: '0 0 8px 8px' }}>
+                  <p style={{ margin: '0 0 14px', color: '#222', fontSize: 14 }}>Hola María,</p>
+                  <div style={{ color: '#333', fontSize: 14, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(filledBody) }} />
+                </div>
+              )}
+            </div>
+          ) : (
+            <p style={{ color: C.textFaint, fontSize: 13 }}>Sin plantilla todavía. Abre «Editar contenido» para agregar el HTML.</p>
+          )}
+
+          {email && <RecipientsPreview slug={track.slug} emailId={email.id} />}
+
+          <details style={{ marginTop: 14 }}>
+            <summary style={subSummary}>Editar contenido</summary>
+            <div style={{ marginTop: 12 }}>
+              <div style={fieldRow}>
+                <label style={labelStyle}>Asunto</label>
+                <input style={{ ...inputStyle, flex: 1 }} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="{{ user_name }}, te faltó poco…" />
+              </div>
+              <div style={fieldRow}>
+                <label style={labelStyle}>Texto de vista previa</label>
+                <input style={{ ...inputStyle, flex: 1 }} value={previewText} onChange={(e) => setPreviewText(e.target.value)} placeholder="Se muestra en la bandeja tras el asunto (opcional)" />
+              </div>
+              <div style={fieldRow}>
+                <label style={labelStyle}>Enviar a los … días</label>
+                <input type="number" min={1} style={{ ...inputStyle, width: 90 }} value={daysAfter} onChange={(e) => setDaysAfter(Number(e.target.value))} />
+                <span style={{ color: C.textFaint, fontSize: 13 }}>de empezar el curso sin terminarlo</span>
+              </div>
+
+              <p style={subLabel}>Plantilla (HTML de Mailchimp)</p>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                {(['paste', 'file'] as const).map((m) => (
+                  <button key={m} onClick={() => setMode(m)}
+                    style={{ border: `1px solid ${mode === m ? C.accent : C.borderSoft}`, background: 'none', color: mode === m ? C.accent : C.textFaint, borderRadius: 4, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                    {m === 'paste' ? 'Pegar HTML' : 'Subir .html'}
+                  </button>
+                ))}
+              </div>
+              {mode === 'paste' ? (
+                <textarea
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="Pega aquí el código HTML de tu plantilla de Mailchimp…"
+                  style={{ ...inputStyle, width: '100%', minHeight: 160, fontFamily: 'monospace', fontSize: 12, resize: 'vertical' }}
+                />
+              ) : (
+                <input type="file" accept=".html,text/html" onChange={onFile} style={{ color: C.textMuted, fontSize: 13 }} />
+              )}
+              <p style={{ margin: '8px 0 0', color: C.textFaint, fontSize: 12, lineHeight: 1.5 }}>
+                Usa <code>{'{{ user_name }}'}</code> para el nombre y <code>{'{{ cta_url }}'}</code> como enlace del botón para continuar el curso. Las etiquetas de Mailchimp (<code>*|FNAME|*</code>, pie de página, etc.) se limpian al guardar.
+              </p>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} style={{ width: 18, height: 18 }} />
+                  <span style={{ color: active ? C.green : C.text, fontWeight: 600 }}>Activo (se envía automáticamente)</span>
+                </label>
+                <span style={{ flex: 1 }} />
+                <button onClick={save} disabled={saving || !subject || !body}
+                  style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: saving ? 'wait' : 'pointer', fontWeight: 600, opacity: (!subject || !body) ? 0.5 : 1 }}>
+                  {saving ? 'Guardando…' : 'Guardar'}
+                </button>
+                <input
+                  type="email"
+                  value={testTo}
+                  onChange={(e) => setTestTo(e.target.value)}
+                  placeholder="correo de prueba (vacío = a ti)"
+                  style={{ ...inputStyle, width: 230 }}
+                />
+                <button onClick={sendTest} disabled={!email || testing || dirty} title={dirty ? 'Guarda primero' : (testTo.trim() ? `Enviar prueba a ${testTo.trim()}` : 'Te enviamos una prueba a tu correo')}
+                  style={{ background: 'none', color: C.text, border: `1px solid ${C.border}`, borderRadius: 4, padding: '8px 16px', cursor: (!email || dirty) ? 'not-allowed' : 'pointer', opacity: (!email || dirty) ? 0.5 : 1 }}>
+                  {testing ? 'Enviando…' : 'Enviar prueba'}
+                </button>
+              </div>
+              {msg && <p style={{ margin: '10px 0 0', color: C.green, fontSize: 13 }}>{msg}</p>}
+            </div>
+          </details>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const RefuerzoEmailsPanel = ({ track }: { track: Track }) => {
+  const [emails, setEmails] = useState<TrackEmail[] | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await tracksApi.listEmails(track.slug);
+      if (cancelled) return;
+      setEmails(res.ok ? res.data.filter((e) => e.trigger === 'course_inactive') : []);
+    })();
+    return () => { cancelled = true; };
+  }, [track.slug]);
+
+  if (emails === undefined) return <p style={{ color: C.textFaint, fontSize: 13 }}>Cargando…</p>;
+
+  const courses = [...track.courses].sort((a, b) => a.order_index - b.order_index);
+  if (courses.length === 0) {
+    return <p style={{ color: C.textFaint, fontSize: 13 }}>Agrega cursos a la ruta para configurar sus correos de refuerzo.</p>;
+  }
+
+  const byCourse = new Map<number, TrackEmail>();
+  for (const e of emails) if (e.course != null) byCourse.set(e.course, e);
+
+  const onSaved = (saved: TrackEmail) => {
+    setEmails((cur) => [...(cur ?? []).filter((e) => e.id !== saved.id), saved]);
+  };
+
+  return (
+    <div>
+      <p style={{ margin: '0 0 12px', color: C.textMuted, fontSize: 13, lineHeight: 1.5 }}>
+        Se envía solo, unos días después de que la persona empieza un curso y no lo termina
+        (revisión diaria · cada quien lo recibe una sola vez).
+      </p>
+      {courses.map((c, i) => (
+        <RefuerzoCourseRow key={c.course_id} track={track} course={c} index={i}
+          email={byCourse.get(c.course_id) ?? null} onSaved={onSaved} />
+      ))}
+    </div>
+  );
+};
+
+// --- Correos de contenido de la ruta --------------------------------------
+// Inicio (al asistir al workshop), recordatorio de inicio del siguiente curso,
+// felicitaciones al completar y cierre de ruta. Cada registro ya existe; aquí el
+// admin pega el HTML de su plantilla de Mailchimp, lo activa y envía una prueba.
+// El backend limpia las etiquetas de Mailchimp (incluido el enlace de baja) al
+// guardar.
+
+const JourneyEmailRow = ({ track, email, onSaved }: {
+  track: Track;
+  email: TrackEmail;
+  onSaved: (e: TrackEmail) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [subject, setSubject] = useState(email.subject);
+  const [previewText, setPreviewText] = useState(email.preview_text);
+  const [body, setBody] = useState(email.body);
+  const [daysAfter, setDaysAfter] = useState<number>(email.days_after);
+  const [active, setActive] = useState(email.is_active);
+  const [mode, setMode] = useState<'paste' | 'file'>('paste');
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testTo, setTestTo] = useState('');
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const isStartReminder = email.trigger === 'course_not_started';
+
+  const save = async () => {
+    setSaving(true);
+    setMsg(null);
+    const payload: Partial<TrackEmailPayload> = {
+      subject,
+      preview_text: previewText,
+      body,
+      is_active: active,
+      ...(isStartReminder ? { days_after: Number(daysAfter) || 3 } : {}),
+    };
+    const res = await tracksApi.updateEmail(track.slug, email.id, payload);
+    setSaving(false);
+    if (res.ok) {
+      onSaved(res.data);
+      setSubject(res.data.subject);
+      setPreviewText(res.data.preview_text);
+      setBody(res.data.body);
+      setDaysAfter(res.data.days_after);
+      setActive(res.data.is_active);
+      setMsg('Guardado.');
+    } else {
+      setMsg('No se pudo guardar.');
+    }
+  };
+
+  const sendTest = async () => {
+    setTesting(true);
+    setMsg(null);
+    const res = await tracksApi.testEmail(track.slug, email.id, testTo.trim() || undefined);
+    setTesting(false);
+    setMsg(res.data?.detail || (res.ok ? 'Correo de prueba enviado.' : 'No se pudo enviar la prueba.'));
+  };
+
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setBody(String(reader.result || ''));
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const total = track.courses.length || track.total_count;
+  const sampleCourse = email.course_title
+    || [...track.courses].sort((a, b) => a.order_index - b.order_index)[0]?.title
+    || 'tu curso';
+  const subjectPreview = fillSample(subject, track, sampleCourse, total);
+  const filledBody = fillSample(body, track, sampleCourse, total);
+  const isFullDoc = /^\s*(<!doctype|<html)/i.test(body || '');
+  const dirty =
+    subject !== email.subject ||
+    previewText !== email.preview_text ||
+    body !== email.body ||
+    active !== email.is_active ||
+    (isStartReminder && Number(daysAfter) !== email.days_after);
+
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.borderSoft}`, borderRadius: 8, padding: 16, marginBottom: 12 }}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: C.text, padding: 0, textAlign: 'left' }}
+      >
+        <span style={{ width: 9, height: 9, borderRadius: '50%', background: active ? C.green : C.textFaint, flex: '0 0 auto' }} />
+        <span style={{ fontWeight: 700 }}>{email.name}</span>
+        <span style={{ flex: 1 }} />
+        <span style={{ fontSize: 12, color: active ? C.green : C.textFaint }}>{active ? 'Activo' : 'Inactivo'}</span>
+        <span style={{ fontSize: 12, color: C.textFaint }}>· enviado a {email.sent_count}</span>
+        {email.last_sent_at && <span style={{ fontSize: 12, color: C.textFaint }}>· último envío {fmtSent(email.last_sent_at)}</span>}
+        <span style={{ color: C.textFaint }}>{open ? '▴' : '▾'}</span>
+      </button>
+
+      {open && (
+        <div style={{ marginTop: 14 }}>
+          {body ? (
+            <div style={{ maxWidth: 620 }}>
+              <div style={{ background: '#0E4B43', color: '#fff', padding: '12px 16px', fontSize: 14, fontWeight: 600, borderRadius: '8px 8px 0 0' }}>
+                Asunto: {subjectPreview}
+              </div>
+              {isFullDoc ? (
+                <iframe title="Vista previa" sandbox="" srcDoc={filledBody}
+                  style={{ width: '100%', height: 780, border: '1px solid #e2e2e2', borderTop: 'none', borderRadius: '0 0 8px 8px', background: '#fff', display: 'block' }} />
+              ) : (
+                <div style={{ padding: 20, background: '#fff', border: '1px solid #e2e2e2', borderTop: 'none', borderRadius: '0 0 8px 8px' }}>
+                  <p style={{ margin: '0 0 14px', color: '#222', fontSize: 14 }}>Hola María,</p>
+                  <div style={{ color: '#333', fontSize: 14, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(filledBody) }} />
+                </div>
+              )}
+            </div>
+          ) : (
+            <p style={{ color: C.textFaint, fontSize: 13 }}>Sin plantilla todavía. Abre «Editar contenido» para agregar el HTML.</p>
+          )}
+
+          <RecipientsPreview slug={track.slug} emailId={email.id} />
+
+          <details style={{ marginTop: 14 }}>
+            <summary style={subSummary}>Editar contenido</summary>
+            <div style={{ marginTop: 12 }}>
+              <div style={fieldRow}>
+                <label style={labelStyle}>Asunto</label>
+                <input style={{ ...inputStyle, flex: 1 }} value={subject} onChange={(e) => setSubject(e.target.value)} />
+              </div>
+              <div style={fieldRow}>
+                <label style={labelStyle}>Texto de vista previa</label>
+                <input
+                  style={{ ...inputStyle, flex: 1 }}
+                  value={previewText}
+                  onChange={(e) => setPreviewText(e.target.value)}
+                  placeholder="Se muestra en la bandeja tras el asunto (opcional)"
+                />
+              </div>
+              {isStartReminder && (
+                <div style={fieldRow}>
+                  <label style={labelStyle}>Enviar a los … días</label>
+                  <input type="number" min={1} style={{ ...inputStyle, width: 90 }} value={daysAfter} onChange={(e) => setDaysAfter(Number(e.target.value))} />
+                  <span style={{ color: C.textFaint, fontSize: 13 }}>de habilitarse el curso sin empezarlo</span>
+                </div>
+              )}
+
+              <p style={subLabel}>Plantilla (HTML de Mailchimp)</p>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                {(['paste', 'file'] as const).map((m) => (
+                  <button key={m} onClick={() => setMode(m)}
+                    style={{ border: `1px solid ${mode === m ? C.accent : C.borderSoft}`, background: 'none', color: mode === m ? C.accent : C.textFaint, borderRadius: 4, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                    {m === 'paste' ? 'Pegar HTML' : 'Subir .html'}
+                  </button>
+                ))}
+              </div>
+              {mode === 'paste' ? (
+                <textarea
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="Pega aquí el código HTML de tu plantilla de Mailchimp…"
+                  style={{ ...inputStyle, width: '100%', minHeight: 160, fontFamily: 'monospace', fontSize: 12, resize: 'vertical' }}
+                />
+              ) : (
+                <input type="file" accept=".html,text/html" onChange={onFile} style={{ color: C.textMuted, fontSize: 13 }} />
+              )}
+              <p style={{ margin: '8px 0 0', color: C.textFaint, fontSize: 12, lineHeight: 1.5 }}>
+                Usa <code>{'{{ user_name }}'}</code> para el nombre. Las etiquetas de Mailchimp (<code>*|FNAME|*</code>, script de seguimiento, enlace de baja) se limpian al guardar.
+              </p>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} style={{ width: 18, height: 18 }} />
+                  <span style={{ color: active ? C.green : C.text, fontWeight: 600 }}>Activo (se envía automáticamente)</span>
+                </label>
+                <span style={{ flex: 1 }} />
+                <button onClick={save} disabled={saving || !subject || !body}
+                  style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: saving ? 'wait' : 'pointer', fontWeight: 600, opacity: (!subject || !body) ? 0.5 : 1 }}>
+                  {saving ? 'Guardando…' : 'Guardar'}
+                </button>
+                <input
+                  type="email"
+                  value={testTo}
+                  onChange={(e) => setTestTo(e.target.value)}
+                  placeholder="correo de prueba (vacío = a ti)"
+                  style={{ ...inputStyle, width: 230 }}
+                />
+                <button onClick={sendTest} disabled={testing || dirty} title={dirty ? 'Guarda primero' : (testTo.trim() ? `Enviar prueba a ${testTo.trim()}` : 'Te enviamos una prueba a tu correo')}
+                  style={{ background: 'none', color: C.text, border: `1px solid ${C.border}`, borderRadius: 4, padding: '8px 16px', cursor: dirty ? 'not-allowed' : 'pointer', opacity: dirty ? 0.5 : 1 }}>
+                  {testing ? 'Enviando…' : 'Enviar prueba'}
+                </button>
+              </div>
+              {msg && <p style={{ margin: '10px 0 0', color: C.green, fontSize: 13 }}>{msg}</p>}
+            </div>
+          </details>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const JourneyContentEmailsPanel = ({ track }: { track: Track }) => {
+  const [emails, setEmails] = useState<TrackEmail[] | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await tracksApi.listEmails(track.slug);
+      if (cancelled) return;
+      const wanted = new Set<TrackEmailTrigger>(['workshop_attended', 'course_not_started', 'course_completed', 'track_completed']);
+      setEmails(res.ok ? res.data.filter((e) => wanted.has(e.trigger)) : []);
+    })();
+    return () => { cancelled = true; };
+  }, [track.slug]);
+
+  if (emails === undefined) return <p style={{ color: C.textFaint, fontSize: 13 }}>Cargando…</p>;
+  if (emails.length === 0) return <p style={{ color: C.textFaint, fontSize: 13 }}>Esta ruta no tiene estos correos configurados.</p>;
+
+  const courseRank = new Map<number, number>();
+  [...track.courses].sort((a, b) => a.order_index - b.order_index).forEach((c, i) => courseRank.set(c.course_id, i));
+  const rank = (e: TrackEmail) => {
+    const cr = e.course != null ? (courseRank.get(e.course) ?? 9) : 0;
+    if (e.trigger === 'workshop_attended') return 0;
+    if (e.trigger === 'course_not_started') return 100 + cr;
+    if (e.trigger === 'course_completed') return 200 + cr;
+    return 900; // track_completed
+  };
+  const sorted = [...emails].sort((a, b) => rank(a) - rank(b));
+  const onSaved = (saved: TrackEmail) => setEmails((cur) => (cur ?? []).map((e) => (e.id === saved.id ? saved : e)));
+
+  return (
+    <div>
+      <p style={{ margin: '0 0 12px', color: C.textMuted, fontSize: 13, lineHeight: 1.5 }}>
+        Pega el HTML de cada plantilla de Mailchimp, actívala y envíate una prueba. Se envían solos
+        según el avance de cada persona (revisión diaria · cada quien lo recibe una sola vez).
+      </p>
+      {sorted.map((e) => <JourneyEmailRow key={e.id} track={track} email={e} onSaved={onSaved} />)}
+    </div>
+  );
+};
+
+const Bar = ({ label, value, max, color, onClick, active }: {
+  label: string; value: number; max: number; color: string;
+  onClick?: () => void; active?: boolean;
+}) => {
   const pct = max === 0 ? 0 : Math.round((value / max) * 100);
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+    <div
+      onClick={onClick}
+      title={onClick ? 'Ver las personas de este grupo' : undefined}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10,
+        cursor: onClick ? 'pointer' : undefined,
+        padding: '2px 6px', borderRadius: 4,
+        background: active ? 'rgba(253, 106, 68, 0.12)' : undefined,
+        outline: active ? `1px solid ${C.accent}` : undefined,
+      }}
+    >
       <span style={{ width: 200, color: C.textMuted, fontSize: 14 }}>{label}</span>
       <div style={{ flex: 1, background: 'rgba(255, 255, 255, 0.12)', height: 24, borderRadius: 4, overflow: 'hidden' }}>
         <div
@@ -719,14 +1224,61 @@ const Bar = ({ label, value, max, color }: { label: string; value: number; max: 
   );
 };
 
-const TrackStats = ({ stats, error }: { stats: TrackEngagement | null; error: string | null }) => {
+const bucketLabel = (n: number, total: number) =>
+  n === 0 ? '0 cursos · sin empezar'
+  : n === total ? `${n} cursos · terminaron todo`
+  : `${n} curso${n > 1 ? 's' : ''} terminado${n > 1 ? 's' : ''}`;
+
+const TrackStats = ({ slug, stats, error }: { slug: string; stats: TrackEngagement | null; error: string | null }) => {
+  const [bucket, setBucket] = useState<string>('all');
+  const [downloading, setDownloading] = useState(false);
+  const [dlError, setDlError] = useState<string | null>(null);
+  // Drill-down: the people behind the clicked bar ('all' | '0'..'N'), fetched
+  // on demand. peopleBucket === null means no bar is selected.
+  const [peopleBucket, setPeopleBucket] = useState<string | null>(null);
+  const [people, setPeople] = useState<TrackEngagementUser[] | null>(null);
+  const [peopleLoading, setPeopleLoading] = useState(false);
+  const [peopleFilter, setPeopleFilter] = useState('');
+
   if (error) return <p style={{ color: C.danger }}>{error}</p>;
   if (!stats) return <p style={{ color: C.textFaint }}>Cargando…</p>;
+
+  const showPeople = async (b: string) => {
+    if (peopleBucket === b) { setPeopleBucket(null); setPeople(null); return; }
+    setPeopleBucket(b);
+    setBucket(b); // keep the CSV selector in sync with what's on screen
+    setPeopleFilter('');
+    setPeopleLoading(true);
+    const res = await tracksApi.engagementUsers(slug, b === 'all' ? 'all' : Number(b));
+    setPeopleLoading(false);
+    setPeople(res.ok && res.data ? res.data.users : null);
+  };
+
+  const downloadCsv = async () => {
+    setDownloading(true); setDlError(null);
+    const res = await tracksApi.downloadEngagementCsv(slug, bucket === 'all' ? 'all' : Number(bucket));
+    setDownloading(false);
+    if (!res.ok || !res.blob) { setDlError('No se pudo generar el CSV.'); return; }
+    const url = URL.createObjectURL(res.blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mailchimp-${slug}-${bucket === 'all' ? 'todos' : `${bucket}-cursos`}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div style={{ marginTop: 8 }}>
       <div style={{ display: 'flex', gap: 24, marginBottom: 20, color: C.text }}>
-        <div>
+        <div
+          onClick={() => showPeople('all')}
+          title="Ver a todas las personas inscritas"
+          style={{
+            cursor: 'pointer', padding: '2px 8px', borderRadius: 4,
+            background: peopleBucket === 'all' ? 'rgba(253, 106, 68, 0.12)' : undefined,
+            outline: peopleBucket === 'all' ? `1px solid ${C.accent}` : undefined,
+          }}
+        >
           <div style={{ fontSize: 12, color: C.textFaint, textTransform: 'uppercase' }}>Personas inscritas</div>
           <div style={{ fontSize: 28, fontWeight: 700 }}>{stats.enrolled_users}</div>
         </div>
@@ -741,19 +1293,401 @@ const TrackStats = ({ stats, error }: { stats: TrackEngagement | null; error: st
           </div>
         </div>
       </div>
-      <h4 style={{ margin: '12px 0 12px', fontSize: 14, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+      <h4 style={{ margin: '12px 0 4px', fontSize: 14, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
         Cuántas personas terminaron cada número de cursos
       </h4>
+      <p style={{ margin: '0 0 12px', color: C.textFaint, fontSize: 13 }}>
+        Haz clic en una barra para ver a las personas de ese grupo.
+      </p>
       {Array.from({ length: stats.total_courses + 1 }).map((_, n) => {
         const count = stats.buckets[String(n)] ?? 0;
-        const label =
-          n === 0 ? '0 cursos · sin empezar'
-          : n === stats.total_courses ? `${n} cursos · terminaron todo`
-          : `${n} curso${n > 1 ? 's' : ''} terminado${n > 1 ? 's' : ''}`;
         const color = n === stats.total_courses ? C.green : n === 0 ? 'rgba(255,255,255,0.3)' : C.accent;
-        return <Bar key={n} label={label} value={count} max={stats.enrolled_users} color={color} />;
+        return (
+          <Bar
+            key={n}
+            label={bucketLabel(n, stats.total_courses)}
+            value={count}
+            max={stats.enrolled_users}
+            color={color}
+            onClick={() => showPeople(String(n))}
+            active={peopleBucket === String(n)}
+          />
+        );
       })}
+      {peopleBucket !== null && (
+        <div style={{ margin: '16px 0 4px' }}>
+          {peopleLoading && <p style={{ color: C.textFaint, fontSize: 13, margin: 0 }}>Cargando personas…</p>}
+          {!peopleLoading && people === null && (
+            <p style={{ color: C.danger, fontSize: 13, margin: 0 }}>No se pudo cargar la lista.</p>
+          )}
+          {!peopleLoading && people && (() => {
+            const q = peopleFilter.trim().toLowerCase();
+            const shown = q
+              ? people.filter((u) =>
+                  u.email.toLowerCase().includes(q) ||
+                  `${u.first_name} ${u.last_name}`.toLowerCase().includes(q))
+              : people;
+            return (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
+                  <span style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>
+                    {shown.length}{q ? ` de ${people.length}` : ''} persona{shown.length === 1 ? '' : 's'}
+                    {' · '}
+                    {peopleBucket === 'all' ? 'todas las inscritas' : bucketLabel(Number(peopleBucket), stats.total_courses)}
+                  </span>
+                  <input
+                    style={{ ...inputStyle, width: 260 }}
+                    value={peopleFilter}
+                    onChange={(e) => setPeopleFilter(e.target.value)}
+                    placeholder="Filtrar por nombre o email…"
+                  />
+                </div>
+                <div style={{ maxHeight: 320, overflowY: 'auto', border: `1px solid ${C.borderSoft}`, borderRadius: 6 }}>
+                  {shown.map((u, i) => (
+                    <div key={u.email} style={{ display: 'flex', gap: 10, padding: '6px 12px', fontSize: 13, alignItems: 'center', background: i % 2 ? C.surface : 'transparent' }}>
+                      <span style={{ color: C.text, flex: '0 0 45%', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</span>
+                      <span style={{ color: C.textMuted, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.first_name} {u.last_name}</span>
+                      <span style={{ color: u.completed === stats.total_courses ? C.green : C.textFaint, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                        {u.completed}/{stats.total_courses} cursos
+                      </span>
+                    </div>
+                  ))}
+                  {shown.length === 0 && (
+                    <p style={{ color: C.textFaint, fontSize: 13, margin: 0, padding: '10px 12px' }}>Nadie coincide con el filtro.</p>
+                  )}
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 20 }}>
+        <select style={inputStyle} value={bucket} onChange={(e) => setBucket(e.target.value)}>
+          <option style={optionStyle} value="all">Todas las personas inscritas</option>
+          {Array.from({ length: stats.total_courses + 1 }).map((_, n) => (
+            <option key={n} style={optionStyle} value={String(n)}>{bucketLabel(n, stats.total_courses)}</option>
+          ))}
+        </select>
+        <button
+          onClick={downloadCsv}
+          disabled={downloading}
+          style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 4, padding: '8px 20px', cursor: downloading ? 'wait' : 'pointer', fontWeight: 600 }}
+        >
+          {downloading ? 'Generando…' : 'Descargar CSV'}
+        </button>
+        {dlError && <span style={{ color: C.danger, fontSize: 13 }}>{dlError}</span>}
+      </div>
     </div>
+  );
+};
+
+// --- Evolución y resultados -------------------------------------------------
+// Weekly cumulative chart + per-cohort conversion + email impact, all from the
+// evolution endpoint. Ordered single-hue ramp (dark→light = early→final stage),
+// validated for the dark teal surface.
+const EVO_RAMP = ['#2a78d6', '#5598e7', '#86b6ef', '#b7d3f6', '#e2eefc'];
+
+const fmtWeek = (iso: string) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString('es', { day: '2-digit', month: 'short' });
+
+const EvolutionChart = ({ data }: { data: TrackEvolution }) => {
+  const [hover, setHover] = useState<number | null>(null);
+  // The chart reads funnel stages over time: entered + completions. The
+  // "started" series stays available in the data table below.
+  const series = data.series.filter((s) => !s.key.startsWith('started:'));
+  const weeks = data.weeks;
+  const W = 760, H = 280, ML = 46, MR = 58, MT = 14, MB = 30;
+  const maxV = Math.max(1, ...series.flatMap((s) => s.values));
+  const x = (i: number) => ML + (i / Math.max(1, weeks.length - 1)) * (W - ML - MR);
+  const y = (v: number) => MT + (1 - v / maxV) * (H - MT - MB);
+  const color = (i: number) => EVO_RAMP[Math.min(i, EVO_RAMP.length - 1)];
+  const gridVals = [0.25, 0.5, 0.75, 1].map((f) => Math.round(maxV * f));
+  const tickIdx = weeks.length <= 6
+    ? weeks.map((_, i) => i)
+    : [0, 1, 2, 3, 4].map((k) => Math.round((k * (weeks.length - 1)) / 4));
+
+  const onMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * W;
+    const i = Math.round(((px - ML) / (W - ML - MR)) * (weeks.length - 1));
+    setHover(i >= 0 && i < weeks.length ? i : null);
+  };
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        style={{ width: '100%', display: 'block' }}
+        onMouseMove={onMove}
+        onMouseLeave={() => setHover(null)}
+        role="img"
+        aria-label="Personas acumuladas por etapa de la ruta, por semana"
+      >
+        {gridVals.map((v) => (
+          <g key={v}>
+            <line x1={ML} x2={W - MR} y1={y(v)} y2={y(v)} stroke="rgba(255,255,255,0.08)" />
+            <text x={ML - 6} y={y(v) + 3} textAnchor="end" fontSize="10" fill="rgba(242,242,242,0.5)">{v}</text>
+          </g>
+        ))}
+        <line x1={ML} x2={W - MR} y1={y(0)} y2={y(0)} stroke="rgba(255,255,255,0.2)" />
+        {tickIdx.map((i) => (
+          <text key={i} x={x(i)} y={H - 8} textAnchor="middle" fontSize="10" fill="rgba(242,242,242,0.5)">
+            {fmtWeek(weeks[i])}
+          </text>
+        ))}
+        {hover !== null && (
+          <line x1={x(hover)} x2={x(hover)} y1={MT} y2={y(0)} stroke="rgba(255,255,255,0.3)" />
+        )}
+        {series.map((s, si) => (
+          <path
+            key={s.key}
+            d={s.values.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}
+            fill="none"
+            stroke={color(si)}
+            strokeWidth={2}
+            strokeLinejoin="round"
+          />
+        ))}
+        {hover !== null && series.map((s, si) => (
+          <circle key={s.key} cx={x(hover)} cy={y(s.values[hover])} r={3.5} fill={color(si)} />
+        ))}
+        {/* Direct labels on the two headline lines: context (entraron) and outcome (ruta). */}
+        {[0, series.length - 1].map((si) => (
+          <text
+            key={si}
+            x={x(weeks.length - 1) + 6}
+            y={y(series[si].values[weeks.length - 1]) + 3}
+            fontSize="11"
+            fontWeight="600"
+            fill="rgba(242,242,242,0.85)"
+          >
+            {series[si].values[weeks.length - 1]}
+          </text>
+        ))}
+      </svg>
+      {hover !== null && (
+        <div style={{
+          position: 'absolute',
+          left: `${(x(hover) / W) * 100}%`,
+          top: 0,
+          transform: x(hover) > W * 0.6 ? 'translateX(calc(-100% - 10px))' : 'translateX(10px)',
+          background: '#043A37', border: `1px solid ${C.borderSoft}`, borderRadius: 6,
+          padding: '8px 12px', pointerEvents: 'none', zIndex: 2, whiteSpace: 'nowrap',
+        }}>
+          <div style={{ color: C.textMuted, fontSize: 12, marginBottom: 4 }}>Semana del {fmtWeek(weeks[hover])}</div>
+          {series.map((s, si) => (
+            <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: C.text }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: color(si) }} />
+              <span style={{ color: C.textMuted }}>{s.label}:</span> {s.values[hover]}
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginTop: 8 }}>
+        {series.map((s, si) => (
+          <span key={s.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: C.textMuted }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: color(si) }} />
+            {s.label}
+          </span>
+        ))}
+      </div>
+      <details style={{ marginTop: 10 }}>
+        <summary style={{ ...subSummary, fontSize: 13 }}>Ver datos (tabla)</summary>
+        <div style={{ maxHeight: 260, overflowY: 'auto', marginTop: 8, border: `1px solid ${C.borderSoft}`, borderRadius: 6 }}>
+          <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12, color: C.text }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left', padding: '4px 10px', color: C.textFaint }}>Semana</th>
+                {data.series.map((s) => (
+                  <th key={s.key} style={{ textAlign: 'right', padding: '4px 10px', color: C.textFaint }}>{s.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {weeks.map((w, i) => (
+                <tr key={w} style={{ background: i % 2 ? C.surfaceSoft : 'transparent' }}>
+                  <td style={{ padding: '3px 10px' }}>{fmtWeek(w)}</td>
+                  {data.series.map((s) => (
+                    <td key={s.key} style={{ textAlign: 'right', padding: '3px 10px', fontVariantNumeric: 'tabular-nums' }}>
+                      {s.values[i]}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+  );
+};
+
+const EvolutionCohorts = ({ slug, data }: { slug: string; data: TrackEvolution }) => {
+  const [sel, setSel] = useState<{ stage: string; cohort: string; label: string } | null>(null);
+  const [people, setPeople] = useState<TrackEngagementUser[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const stages = data.cohorts[0]?.stages ?? [];
+  const shortLabel = (i: number) =>
+    i === 0 ? 'Entraron' : i === stages.length - 1 ? 'Ruta completa' : `Curso ${i}`;
+
+  const pick = async (stage: string, cohort: string, label: string) => {
+    if (sel && sel.stage === stage && sel.cohort === cohort) { setSel(null); setPeople(null); return; }
+    setSel({ stage, cohort, label });
+    setPeople(null);
+    setLoading(true);
+    const res = await tracksApi.evolutionPeople(slug, stage, cohort);
+    setLoading(false);
+    setPeople(res.ok && res.data ? (res.data.users as TrackEngagementUser[]) : null);
+  };
+
+  const cellBtn: React.CSSProperties = {
+    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+    color: C.text, fontWeight: 700, fontSize: 14, fontVariantNumeric: 'tabular-nums',
+  };
+
+  return (
+    <div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: 'left', padding: '6px 10px', color: C.textFaint, fontWeight: 600 }}>Cohorte</th>
+              {stages.map((st, i) => (
+                <th key={st.key} style={{ textAlign: 'right', padding: '6px 10px', color: C.textFaint, fontWeight: 600 }}
+                    title={st.label}>
+                  {shortLabel(i)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.cohorts.map((co, ci) => (
+              <tr key={co.key} style={{ background: ci % 2 ? C.surfaceSoft : 'transparent', borderTop: `1px solid ${C.borderSoft}` }}>
+                <td style={{ padding: '8px 10px', color: co.key === 'all' ? C.text : C.textMuted, fontWeight: co.key === 'all' ? 700 : 400 }}>
+                  {co.label}
+                </td>
+                {co.stages.map((st) => (
+                  <td key={st.key} style={{ textAlign: 'right', padding: '8px 10px', verticalAlign: 'top' }}>
+                    <button
+                      style={{
+                        ...cellBtn,
+                        textDecoration: sel && sel.stage === st.key && sel.cohort === co.key ? 'underline' : 'none',
+                        color: sel && sel.stage === st.key && sel.cohort === co.key ? C.accent : C.text,
+                      }}
+                      title="Ver a estas personas"
+                      onClick={() => pick(st.key, co.key, `${co.label} · ${st.label}`)}
+                    >
+                      {st.count}
+                    </button>
+                    {st.rate !== null && (
+                      <div style={{ fontSize: 11, color: C.textFaint }}>
+                        {st.rate}%{st.median_days !== null ? ` · ~${st.median_days}d` : ''}
+                      </div>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style={{ margin: '8px 0 0', color: C.textFaint, fontSize: 12, lineHeight: 1.5 }}>
+        Porcentaje = conversión desde la etapa anterior · ~d = mediana de días entre etapas.
+        Haz clic en un número para ver a las personas.
+      </p>
+      {sel && (
+        <div style={{ marginTop: 10 }}>
+          <p style={{ margin: '0 0 6px', color: C.textMuted, fontSize: 13, fontWeight: 700 }}>{sel.label}</p>
+          {loading && <p style={{ color: C.textFaint, fontSize: 13, margin: 0 }}>Cargando…</p>}
+          {!loading && people && (
+            <div style={{ maxHeight: 240, overflowY: 'auto', border: `1px solid ${C.borderSoft}`, borderRadius: 6 }}>
+              {people.map((u, i) => (
+                <div key={u.email} style={{ display: 'flex', gap: 10, padding: '5px 12px', fontSize: 13, background: i % 2 ? C.surface : 'transparent' }}>
+                  <span style={{ color: C.text, flex: '0 0 45%', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</span>
+                  <span style={{ color: C.textMuted, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.first_name} {u.last_name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const EvolutionEmails = ({ data }: { data: TrackEvolution }) => (
+  <div>
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
+        <thead>
+          <tr>
+            {['Correo', 'Enviados', 'Acción esperada', `La hicieron en ≤${data.window_days} días`].map((h, i) => (
+              <th key={h} style={{ textAlign: i === 0 || i === 2 ? 'left' : 'right', padding: '6px 10px', color: C.textFaint, fontWeight: 600 }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.emails.map((e, i) => (
+            <tr key={e.id} style={{ background: i % 2 ? C.surfaceSoft : 'transparent', borderTop: `1px solid ${C.borderSoft}` }}>
+              <td style={{ padding: '7px 10px', color: C.text }}>{e.name}</td>
+              <td style={{ padding: '7px 10px', textAlign: 'right', color: C.text, fontVariantNumeric: 'tabular-nums' }}>{e.sent}</td>
+              <td style={{ padding: '7px 10px', color: C.textMuted }}>{e.action_label ?? '—'}</td>
+              <td style={{ padding: '7px 10px', textAlign: 'right', color: C.text, fontVariantNumeric: 'tabular-nums' }}>
+                {e.acted === null ? '—' : `${e.acted} (${e.rate}%)`}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p style={{ margin: '8px 0 0', color: C.textFaint, fontSize: 12, lineHeight: 1.5 }}>
+      Mide reactivación (quién hizo la acción tras recibir el correo), no causalidad.
+    </p>
+  </div>
+);
+
+const EvolutionSection = ({ track }: { track: Track }) => {
+  const [open, setOpen] = useState(false);
+  const [data, setData] = useState<TrackEvolution | null | undefined>(undefined);
+
+  useEffect(() => {
+    if (!open || data !== undefined) return;
+    let cancelled = false;
+    (async () => {
+      const res = await tracksApi.getEvolution(track.slug);
+      if (!cancelled) setData(res.ok ? res.data : null);
+    })();
+    return () => { cancelled = true; };
+  }, [open, data, track.slug]);
+
+  return (
+    <details style={sectionStyle} onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}>
+      <summary style={advancedSummary}>Evolución y resultados · ¿está funcionando la ruta?</summary>
+      <div style={{ marginTop: 16 }}>
+        {open && data === undefined && <p style={{ color: C.textFaint, fontSize: 13 }}>Cargando…</p>}
+        {open && data === null && <p style={{ color: C.danger, fontSize: 13 }}>No se pudo cargar.</p>}
+        {open && data && data.weeks.length > 0 && (
+          <>
+            <h4 style={{ margin: '0 0 10px', fontSize: 14, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              Evolución semanal (acumulado)
+            </h4>
+            <EvolutionChart data={data} />
+            <h4 style={{ margin: '24px 0 10px', fontSize: 14, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              Conversión por cohorte
+            </h4>
+            <EvolutionCohorts slug={track.slug} data={data} />
+            <h4 style={{ margin: '24px 0 10px', fontSize: 14, color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              Impacto de los correos automáticos
+            </h4>
+            <EvolutionEmails data={data} />
+          </>
+        )}
+        {open && data && data.weeks.length === 0 && (
+          <p style={{ color: C.textFaint, fontSize: 13 }}>Sin datos todavía.</p>
+        )}
+      </div>
+    </details>
   );
 };
 
@@ -818,30 +1752,47 @@ const TrackCard = ({
       </button>
 
       {expanded && (
-        <div style={{ marginTop: 24 }}>
-          <div style={{ marginBottom: 28 }}>
-            <StepHeading n={1}>Cursos de esta ruta</StepHeading>
-            <TrackCoursesEditor track={track} catalog={catalog} onSaved={setTrack} />
-          </div>
-
-          <div>
-            <StepHeading n={2}>Correos automáticos</StepHeading>
-
-            <h4 style={subLabel}>Cuando entra a la ruta · correo de bienvenida</h4>
-            <EnrollEmailPanel track={track} />
-
-            <h4 style={{ ...subLabel, marginTop: 24 }}>Cuando avanza · termina cursos (por Mailchimp)</h4>
-            <TrackTagsPanel track={track} />
-          </div>
-
-          <h3 style={advancedGroupHeading}>Configuración avanzada</h3>
-
-          <details style={{ borderTop: `1px solid ${C.borderSoft}`, paddingTop: 16 }}>
-            <summary style={advancedSummary}>Ver cuántas personas van avanzando</summary>
-            <TrackStats stats={engagement} error={engError} />
+        <div style={{ marginTop: 8 }}>
+          {/* Progressive disclosure: every section starts collapsed, so the card
+              opens to a calm list of sections instead of everything at once. */}
+          <details style={sectionStyle}>
+            <summary style={advancedSummary}>Cursos de esta ruta</summary>
+            <div style={{ marginTop: 16 }}>
+              <TrackCoursesEditor track={track} catalog={catalog} onSaved={setTrack} />
+            </div>
           </details>
 
-          <details style={{ marginTop: 12, borderTop: `1px solid ${C.borderSoft}`, paddingTop: 16 }}>
+          <details style={sectionStyle}>
+            <summary style={advancedSummary}>Correos automáticos</summary>
+            <div style={{ marginTop: 8, paddingLeft: 14 }}>
+              <div style={{ marginTop: 12 }}>
+                <TrackEmailTimeline track={track} />
+              </div>
+              <details style={{ marginTop: 8 }}>
+                <summary style={subSummary}>Cuando entra a la ruta · bienvenida</summary>
+                <div style={{ marginTop: 12 }}><EnrollEmailPanel track={track} /></div>
+              </details>
+              <details style={{ marginTop: 14 }}>
+                <summary style={subSummary}>Cuando no termina · refuerzo del curso</summary>
+                <div style={{ marginTop: 12 }}><RefuerzoEmailsPanel track={track} /></div>
+              </details>
+              <details style={{ marginTop: 14 }}>
+                <summary style={subSummary}>Contenido de la ruta · inicio, siguiente curso, felicitaciones y cierre</summary>
+                <div style={{ marginTop: 12 }}><JourneyContentEmailsPanel track={track} /></div>
+              </details>
+            </div>
+          </details>
+
+          <details style={sectionStyle}>
+            <summary style={advancedSummary}>Estadísticas · cuántas personas van avanzando</summary>
+            <div style={{ marginTop: 16 }}>
+              <TrackStats slug={track.slug} stats={engagement} error={engError} />
+            </div>
+          </details>
+
+          <EvolutionSection track={track} />
+
+          <details style={sectionStyle}>
             <summary style={advancedSummary}>Editar nombre y descripción de la ruta</summary>
             <TrackDetailsForm track={track} onSaved={setTrack} />
             <button
@@ -876,41 +1827,47 @@ const AdminTracks = () => {
   }, []);
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto' }}>
-      <div className="admin-content">
-        <PageHeader
-          title="Rutas de aprendizaje"
-          subtitle="Agrupa cursos en una secuencia y administra los correos automáticos de la ruta."
-          action={!creating ? { label: '+ Nueva ruta', onClick: () => setCreating(true) } : undefined}
-        />
-        <p style={{ margin: '0 0 24px', color: C.textMuted, maxWidth: 640, lineHeight: 1.5 }}>
-          Una ruta es un grupo de cursos en orden. Aquí eliges <strong>qué cursos la forman</strong> y
-          ves <strong>qué etiqueta de Mailchimp</strong> recibe cada persona cuando avanza, para mandarle un correo.
-        </p>
+    <div className="admin-content">
+      <PageHeader
+        title="Rutas de aprendizaje"
+        subtitle="Agrupa cursos en una secuencia y administra los correos automáticos de la ruta."
+        action={!creating ? { label: '+ Nueva ruta', onClick: () => setCreating(true) } : undefined}
+      />
+      <p style={{ margin: '0 0 24px', color: C.textMuted, maxWidth: 640, lineHeight: 1.5 }}>
+        Una ruta es un grupo de cursos en orden. Aquí eliges <strong>qué cursos la forman</strong> y
+        ves <strong>qué etiqueta de Mailchimp</strong> recibe cada persona cuando avanza, para mandarle un correo.
+      </p>
 
-        {creating && (
-          <section style={cardStyle}>
-            <h2 style={{ margin: '0 0 4px', color: C.text, fontFamily: 'Libre Franklin, sans-serif' }}>Nueva ruta</h2>
-            <TrackDetailsForm
-              track={null}
-              onSaved={(t) => { setTracks((prev) => [t, ...(prev ?? [])]); setCreating(false); }}
-              onCancel={() => setCreating(false)}
-            />
-          </section>
-        )}
-        {error && <p style={{ color: C.danger }}>{error}</p>}
-        {tracks === null && !error && <p style={{ color: C.textFaint }}>Cargando…</p>}
-        {tracks && tracks.length === 0 && !creating && <p style={{ color: C.textFaint }}>No hay rutas todavía. Crea la primera.</p>}
-        {tracks && tracks.map((t, i) => (
-          <TrackCard
-            key={t.id}
-            track={t}
-            catalog={catalog}
-            defaultExpanded={i === 0}
-            onDeleted={() => setTracks((prev) => (prev ?? []).filter((x) => x.id !== t.id))}
+      {/* Live funnel of the ruta (registrations → attendance → courses →
+          certified), one card per track that maps to a workshop cohort. */}
+      {tracks && tracks.map((t) => (
+        <div key={`funnel-${t.id}`} style={{ marginBottom: 24 }}>
+          <TrackFunnel trackName={t.name} workshopSlug={t.slug} />
+        </div>
+      ))}
+
+      {creating && (
+        <section style={cardStyle}>
+          <h2 style={{ margin: '0 0 4px', color: C.text, fontFamily: 'Libre Franklin, sans-serif' }}>Nueva ruta</h2>
+          <TrackDetailsForm
+            track={null}
+            onSaved={(t) => { setTracks((prev) => [t, ...(prev ?? [])]); setCreating(false); }}
+            onCancel={() => setCreating(false)}
           />
-        ))}
-      </div>
+        </section>
+      )}
+      {error && <p style={{ color: C.danger }}>{error}</p>}
+      {tracks === null && !error && <p style={{ color: C.textFaint }}>Cargando…</p>}
+      {tracks && tracks.length === 0 && !creating && <p style={{ color: C.textFaint }}>No hay rutas todavía. Crea la primera.</p>}
+      {tracks && tracks.map((t, i) => (
+        <TrackCard
+          key={t.id}
+          track={t}
+          catalog={catalog}
+          defaultExpanded={i === 0}
+          onDeleted={() => setTracks((prev) => (prev ?? []).filter((x) => x.id !== t.id))}
+        />
+      ))}
     </div>
   );
 };

@@ -1,0 +1,129 @@
+/* Staff-only live funnel card on the track view (mockup s6_08). */
+
+.tf-card {
+  background: #ffffff;
+  border: 1px solid #e7e6e0;
+  border-radius: 16px;
+  padding: 36px 40px 28px;
+  text-align: left;
+}
+
+.tf-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.tf-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 6px;
+}
+
+.tf-sub {
+  font-size: 16px;
+  color: #6b6b66;
+  margin: 0;
+}
+
+.tf-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #e1f4ee;
+  color: #106d58;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tf-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #106d58;
+}
+
+.tf-rule {
+  border: none;
+  border-top: 1px solid #ececea;
+  margin: 22px 0 4px;
+}
+
+.tf-rule--bottom {
+  margin-top: 34px;
+}
+
+.tf-row {
+  padding-top: 20px;
+}
+
+.tf-row-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tf-icon {
+  color: #106d58;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.tf-label {
+  font-size: 19px;
+  color: #1c1c1c;
+  flex: 1;
+  min-width: 0;
+}
+
+.tf-pct {
+  font-size: 16px;
+  color: #8a8a85;
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.tf-count {
+  font-size: 29px;
+  font-weight: 700;
+  color: #106d58;
+  min-width: 72px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tf-bar {
+  height: 13px;
+  border-radius: 7px;
+  background: #f2f1ed;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.tf-bar-fill {
+  height: 100%;
+  border-radius: 7px;
+  background: #106d58;
+}
+
+.tf-foot {
+  font-size: 16px;
+  color: #3c3c38;
+  margin: 16px 0 4px;
+}
+
+@media (max-width: 720px) {
+  .tf-card { padding: 24px 20px 20px; }
+  .tf-title { font-size: 21px; }
+  .tf-sub { font-size: 14px; }
+  .tf-head { flex-direction: column; }
+  .tf-label { font-size: 16px; }
+  .tf-pct { display: none; }
+  .tf-count { font-size: 24px; min-width: 52px; }
+}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authApi, isAuthenticated } from '../../services/api';
 import { needsProfileCompletion } from '../../utils/profileOptions';
 import PageHead from '../../utils/PageHead';
+import { PAGE_META } from '../../utils/pageMeta';
 import propelLogo from '../../assets/register/propel-logo.png';
 import tileAsistenteIA from '../../assets/register/tile-asistente-ia.png';
 import tileGrants from '../../assets/register/tile-grants.png';
@@ -236,8 +237,12 @@ const Login = () => {
   return (
     <div className="login2-page">
       <PageHead
-        title="Iniciar sesión"
-        description="Accede a tu cuenta de Propel Academy y continúa con tus cursos para organizaciones sin fines de lucro."
+        raw
+        title={PAGE_META.login.title}
+        description={PAGE_META.login.description}
+        ogDescription={PAGE_META.login.ogDescription}
+        ogImage={PAGE_META.login.ogImage}
+        canonicalPath={PAGE_META.login.canonicalPath}
       />
 
       <header className="login2-mobileHeader">

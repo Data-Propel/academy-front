@@ -711,3 +711,125 @@ a.profile-course-card-title:hover {
     padding: 20px;
   }
 }
+
+/* ---- Ruta certification credential (insignia + download + share) ---- */
+.profile-credential {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #0E4B43 0%, #14655b 100%);
+  border-radius: 14px;
+  color: #fff;
+}
+
+.profile-credential__badge {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.profile-credential__body { flex: 1; min-width: 0; }
+
+.profile-credential__label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+}
+
+.profile-credential__name {
+  margin: 2px 0 4px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.profile-credential__meta {
+  display: block;
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  opacity: 0.8;
+}
+
+.profile-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-credential__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.profile-credential__btn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.profile-credential__btn:hover { background: rgba(255, 255, 255, 0.12); }
+.profile-credential__btn:disabled { opacity: 0.6; cursor: default; }
+
+.profile-credential__btn--primary {
+  background: #FF5A2F;
+  border-color: #FF5A2F;
+}
+
+.profile-credential__btn--primary:hover { background: #e94f28; }
+
+.profile-credential__share { position: relative; }
+
+.profile-credential__share-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.profile-credential__share-menu a,
+.profile-credential__share-menu button {
+  padding: 11px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #0E4B43;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.profile-credential__share-menu a:hover,
+.profile-credential__share-menu button:hover { background: #F5F5F3; }
+
+.profile-credential__error {
+  margin: 10px 0 0;
+  color: #ffd9cd;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .profile-credential { flex-direction: column; text-align: center; }
+  .profile-credential__actions { justify-content: center; }
+  .profile-credential__share-menu { left: 50%; transform: translateX(-50%); }
+}

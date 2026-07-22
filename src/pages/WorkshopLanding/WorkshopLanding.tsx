@@ -98,7 +98,6 @@ const WorkshopLanding = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [zoomJoinUrl, setZoomJoinUrl] = useState<string | null>(null);
   // For authenticated users we ask the backend up-front whether they already
   // have a registration for this workshop. While `statusReady` is false we
   // render a skeleton in the form panel so the form never flashes before
@@ -194,8 +193,6 @@ const WorkshopLanding = () => {
         }),
       });
       if (res.ok) {
-        const data = await res.json().catch(() => ({})) as { zoom_join_url?: string | null };
-        setZoomJoinUrl(data.zoom_join_url ?? null);
         setSuccess(true);
       } else {
         const data = await res.json().catch(() => ({})) as Record<string, unknown>;
@@ -253,13 +250,6 @@ const WorkshopLanding = () => {
             <h2 className="ws-modal__title">¡Estás dentro!</h2>
             <div className="ws-modal__body">
               <p>Gracias por registrarte al workshop: Lidera con un IA mindset.</p>
-              {zoomJoinUrl && (
-                <p>
-                  <a href={zoomJoinUrl} target="_blank" rel="noopener noreferrer" className="ws-modal__zoom-link">
-                    Únete al Zoom el 25 de junio
-                  </a>
-                </p>
-              )}
               <p><strong>
                 {isAuthenticated()
                   ? 'Mientras tanto, comienza tu certificación en la Nonprofit Academy.'
@@ -325,18 +315,6 @@ const WorkshopLanding = () => {
             <div className="ws-form ws-form--registered">
               <h2 className="ws-modal__title">¡Ya estás registrado!</h2>
               <p>Te esperamos en el workshop: Lidera con un IA mindset el 25 de junio.</p>
-              {alreadyRegistered.zoomJoinUrl && (
-                <p>
-                  <a
-                    href={alreadyRegistered.zoomJoinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ws-modal__zoom-link"
-                  >
-                    Únete al Zoom el 25 de junio
-                  </a>
-                </p>
-              )}
               <p><strong>Mientras tanto, comienza tu certificación en la Nonprofit Academy.</strong></p>
               <a href="/cursos" className="ws-btn ws-btn--submit">Ver cursos disponibles</a>
             </div>

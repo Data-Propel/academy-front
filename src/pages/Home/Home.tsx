@@ -167,8 +167,10 @@ const Home = () => {
             </article>
           ))}
         </div>
+      </section>
 
-        {/* Testimonial */}
+      {/* ── Testimonial (white section) ── */}
+      <section className="home-testimonial-section">
         <figure className="home-testimonial">
           <div className="home-testimonial__photo">
             <img src={testimonialAlba} alt="Alba Carrasco" />
