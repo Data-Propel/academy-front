@@ -1,9 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi, isAuthenticated, coursesApi, MEDIA_URL } from '../../services/api';
-import { GOAL_HOURS_OPTIONS, GOAL_COURSES_OPTIONS, visibleGoalCategories } from '../../utils/goalOptions';
+import {
+  GOAL_HOURS_OPTIONS, GOAL_COURSES_OPTIONS, visibleGoalCategories,
+  currentCycle, formatCycleEnd, goalCoursesMin, goalHoursLabel, goalCoursesLabel, joinNames,
+} from '../../utils/goalOptions';
 import PageHead from '../../utils/PageHead';
 import './Profile.css';
+import cameraBadge from '../../assets/profile/camera-badge.svg';
 
 interface User {
   id: number;
@@ -106,6 +110,47 @@ const getPasswordStrength = (password: string): number => {
   return 2;
 };
 
+// Country dial codes for the Celular field (S6-03). Same country set as the
+// País select; flag emoji + dial prefix shown in the dropdown.
+const PHONE_COUNTRIES: { code: string; flag: string; dial: string }[] = [
+  { code: 'AR', flag: '🇦🇷', dial: '+54' },
+  { code: 'BO', flag: '🇧🇴', dial: '+591' },
+  { code: 'BR', flag: '🇧🇷', dial: '+55' },
+  { code: 'CL', flag: '🇨🇱', dial: '+56' },
+  { code: 'CO', flag: '🇨🇴', dial: '+57' },
+  { code: 'CR', flag: '🇨🇷', dial: '+506' },
+  { code: 'CU', flag: '🇨🇺', dial: '+53' },
+  { code: 'DO', flag: '🇩🇴', dial: '+1' },
+  { code: 'EC', flag: '🇪🇨', dial: '+593' },
+  { code: 'SV', flag: '🇸🇻', dial: '+503' },
+  { code: 'GT', flag: '🇬🇹', dial: '+502' },
+  { code: 'HN', flag: '🇭🇳', dial: '+504' },
+  { code: 'MX', flag: '🇲🇽', dial: '+52' },
+  { code: 'NI', flag: '🇳🇮', dial: '+505' },
+  { code: 'PA', flag: '🇵🇦', dial: '+507' },
+  { code: 'PY', flag: '🇵🇾', dial: '+595' },
+  { code: 'PE', flag: '🇵🇪', dial: '+51' },
+  { code: 'PR', flag: '🇵🇷', dial: '+1' },
+  { code: 'ES', flag: '🇪🇸', dial: '+34' },
+  { code: 'US', flag: '🇺🇸', dial: '+1' },
+  { code: 'UY', flag: '🇺🇾', dial: '+598' },
+  { code: 'VE', flag: '🇻🇪', dial: '+58' },
+];
+
+const dialOf = (code: string) => PHONE_COUNTRIES.find((c) => c.code === code)?.dial || '';
+
+// Split a stored "+51 986 913 451" into { country, number }. Matches the
+// longest dial code first so +591 wins over +5. Unknown prefix → whole string
+// kept as the number.
+const parsePhone = (raw?: string): { country: string; number: string } => {
+  const val = (raw || '').trim();
+  const match = [...PHONE_COUNTRIES]
+    .sort((a, b) => b.dial.length - a.dial.length)
+    .find((c) => val.startsWith(c.dial));
+  if (match) return { country: match.code, number: val.slice(match.dial.length).trim() };
+  return { country: '', number: val };
+};
+
 const getThumbnail = (slug: string, thumbnailUrl: string | null) => {
   if (localThumbnails[slug]) return localThumbnails[slug];
   if (thumbnailUrl) {
@@ -121,6 +166,7 @@ const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<ProfileTab>('learning');
   const tabContentRef = useRef<HTMLDivElement>(null);
+  const goalFormRef = useRef<HTMLHeadingElement>(null);
 
   // Profile form
   const [firstName, setFirstName] = useState('');
@@ -129,7 +175,8 @@ const Profile = () => {
   const [organizationType, setOrganizationType] = useState('');
   const [country, setCountry] = useState('');
   const [jobTitle, setJobTitle] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState('PE');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [profileError, setProfileError] = useState('');
@@ -186,7 +233,10 @@ const Profile = () => {
         setOrganizationType(u.organization_type || '');
         setCountry(u.country || '');
         setJobTitle(u.job_title || '');
-        setPhone(u.phone || '');
+        const parsed = parsePhone(u.phone);
+        const fallback = PHONE_COUNTRIES.some((c) => c.code === u.country) ? u.country : 'PE';
+        setPhoneCountry(parsed.country || fallback);
+        setPhoneNumber(parsed.number);
         setGoalHours(u.goal_hours_per_week || '');
         setGoalCourses(u.goal_courses_per_month || '');
         setGoalCats(Array.isArray(u.goal_categories) ? u.goal_categories : []);
@@ -227,7 +277,7 @@ const Profile = () => {
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName.trim() || !lastName.trim() || !organization.trim() || !organizationType || !country) {
+    if (!firstName.trim() || !lastName.trim() || !jobTitle.trim() || !organization.trim() || !organizationType || !country) {
       setProfileError('Completa los campos obligatorios.');
       return;
     }
@@ -244,7 +294,7 @@ const Profile = () => {
         organization_type: organizationType,
         country: country,
         job_title: jobTitle.trim(),
-        phone: phone.trim(),
+        phone: phoneNumber.trim() ? `${dialOf(phoneCountry)} ${phoneNumber.trim()}`.trim() : '',
       });
 
       if (res.ok) {
@@ -359,6 +409,23 @@ const Profile = () => {
     evalStatuses[e.course.slug]?.has_submitted
   ).length;
 
+  // Learning-goal summary band (Figma S6-01) shown atop the Meta tab once a
+  // goal exists: deadline + real progress vs. the monthly course target, the
+  // goal summary, and an "Edita tu meta" CTA that jumps to the edit form.
+  const goalCycle = user?.goal_set_at ? currentCycle(user.goal_set_at) : null;
+  const goalTarget = goalCoursesMin(user?.goal_courses_per_month);
+  const goalCompletedInCycle = goalCycle
+    ? enrollments.filter((e) => {
+        if (!e.completed_at) return false;
+        const t = new Date(e.completed_at).getTime();
+        return t >= goalCycle.start.getTime() && t < goalCycle.end.getTime();
+      }).length
+    : 0;
+  const goalPct = goalCycle ? Math.min(100, Math.round((goalCompletedInCycle / goalTarget) * 100)) : 0;
+  const goalCategoryNames = (user?.goal_categories || [])
+    .map((slug) => goalCategories.find((c) => c.slug === slug)?.name)
+    .filter((n): n is string => !!n);
+
   const switchTab = (tab: ProfileTab) => {
     setActiveTab(tab);
     setTimeout(() => tabContentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
@@ -402,9 +469,16 @@ const Profile = () => {
             className="profile-avatar"
             style={{ background: user ? getAvatarGradient(user.id) : GRADIENTS[0] }}
           >
-            <span className="profile-avatar-initials">
-              {getInitials(user?.first_name || '', user?.last_name || '')}
-            </span>
+            {user?.avatar ? (
+              <img className="profile-avatar-img" src={user.avatar} alt="" />
+            ) : (
+              <span className="profile-avatar-initials">
+                {getInitials(user?.first_name || '', user?.last_name || '')}
+              </span>
+            )}
+            <Link to="/profile/foto" className="profile-avatar-camera" aria-label="Cambiar foto de perfil">
+              <img src={cameraBadge} alt="" />
+            </Link>
           </div>
           <div className="profile-hero-info">
             <h1 className="profile-hero-name">
@@ -514,30 +588,24 @@ const Profile = () => {
                               <div className="profile-learn-fill" style={{ width: `${enrollment.progress}%` }} />
                             </div>
                             <span className="profile-learn-pct">{enrollment.progress}%</span>
-                            {evalPending ? (
-                              <Link to={`/courses/${enrollment.course.slug}/evaluate`} className="profile-learn-cert profile-learn-cert--eval">
-                                Evaluar
-                              </Link>
-                            ) : (
-                              <button
-                                className="profile-learn-cert"
-                                disabled={!canDownload || downloadingCertSlug === enrollment.course.slug}
-                                onClick={async () => {
-                                  setDownloadingCertSlug(enrollment.course.slug);
-                                  setCertError(null);
-                                  try {
-                                    const result = await coursesApi.downloadCertificate(enrollment.course.slug);
-                                    if (result && !result.ok) {
-                                      setCertError(result.detail || 'No se pudo descargar el certificado.');
-                                    }
-                                  } finally {
-                                    setDownloadingCertSlug(null);
+                            <button
+                              className="profile-learn-cert"
+                              disabled={!canDownload || downloadingCertSlug === enrollment.course.slug}
+                              onClick={async () => {
+                                setDownloadingCertSlug(enrollment.course.slug);
+                                setCertError(null);
+                                try {
+                                  const result = await coursesApi.downloadCertificate(enrollment.course.slug);
+                                  if (result && !result.ok) {
+                                    setCertError(result.detail || 'No se pudo descargar el certificado.');
                                   }
-                                }}
-                              >
-                                {downloadingCertSlug === enrollment.course.slug ? 'Descargando...' : 'Certificado'}
-                              </button>
-                            )}
+                                } finally {
+                                  setDownloadingCertSlug(null);
+                                }
+                              }}
+                            >
+                              {downloadingCertSlug === enrollment.course.slug ? 'Descargando...' : 'Certificado'}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -638,13 +706,14 @@ const Profile = () => {
                       />
                     </div>
                     <div className="profile-field">
-                      <label htmlFor="jobTitle">Cargo</label>
+                      <label htmlFor="jobTitle">*Cargo</label>
                       <input
                         id="jobTitle"
                         type="text"
                         value={jobTitle}
                         onChange={(e) => setJobTitle(e.target.value)}
                         placeholder="Ej: Fundador"
+                        required
                       />
                     </div>
                     <div className="profile-field">
@@ -713,13 +782,25 @@ const Profile = () => {
                     </div>
                     <div className="profile-field">
                       <label htmlFor="phone">Celular</label>
-                      <input
-                        id="phone"
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="Ej: +51 986 913 451"
-                      />
+                      <div className="profile-phone">
+                        <select
+                          className="profile-phone-code"
+                          value={phoneCountry}
+                          onChange={(e) => setPhoneCountry(e.target.value)}
+                          aria-label="Código de país"
+                        >
+                          {PHONE_COUNTRIES.map((c) => (
+                            <option key={c.code} value={c.code}>{c.flag} {c.dial}</option>
+                          ))}
+                        </select>
+                        <input
+                          id="phone"
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          placeholder="986 913 451"
+                        />
+                      </div>
                     </div>
                     {profileError && <div className="profile-error">{profileError}</div>}
                     {profileMessage && <div className="profile-success">{profileMessage}</div>}
@@ -798,7 +879,40 @@ const Profile = () => {
           {/* Meta */}
           {activeTab === 'goal' && (
             <div className="profile-goal">
-              <h2 className="profile-goal-title">Edita tu meta</h2>
+              {goalCycle && (
+                <div className="goal-band">
+                  <div className="goal-band__progress">
+                    <h2 className="goal-band__title">Tu meta hasta el {formatCycleEnd(goalCycle.end)}</h2>
+                    <div className="goal-band__bar-row">
+                      <div
+                        className="goal-band__track"
+                        role="progressbar"
+                        aria-valuenow={goalPct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
+                        <div className="goal-band__fill" style={{ width: `${goalPct}%` }} />
+                      </div>
+                      <span className="goal-band__pct">{goalPct}%</span>
+                    </div>
+                  </div>
+                  <div className="goal-band__summary">
+                    <p><span className="goal-band__label">Tiempo:</span> {goalHoursLabel(user?.goal_hours_per_week)} por semana</p>
+                    <p><span className="goal-band__label">Cantidad:</span> {goalCoursesLabel(user?.goal_courses_per_month)} por mes</p>
+                    {goalCategoryNames.length > 0 && (
+                      <p><span className="goal-band__label">Intereses:</span> {joinNames(goalCategoryNames)}</p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="goal-band__edit"
+                    onClick={() => goalFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  >
+                    Edita tu meta
+                  </button>
+                </div>
+              )}
+              <h2 className="profile-goal-title" ref={goalFormRef}>Edita tu meta</h2>
               <form onSubmit={handleGoalSave}>
                 <div className="profile-goal-question">
                   <p className="profile-goal-q">1. ¿Cuántas horas a la semana quieres dedicarle a aprender?</p>

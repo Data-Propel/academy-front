@@ -369,6 +369,21 @@ export const authApi = {
     return { ok: response.ok, data: await response.json() };
   },
 
+  uploadAvatar: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiFetchFormData('/users/profile/avatar/', formData);
+    return { ok: response.ok, data: await response.json() };
+  },
+
+  setAvatarPreset: async (preset: string) => {
+    const response = await apiFetch('/users/profile/avatar/', {
+      method: 'POST',
+      body: JSON.stringify({ preset }),
+    });
+    return { ok: response.ok, data: await response.json() };
+  },
+
   changePassword: async (current_password: string, new_password: string, new_password_confirm: string) => {
     const response = await apiFetch('/users/change-password/', {
       method: 'POST',
