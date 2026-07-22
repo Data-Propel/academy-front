@@ -670,6 +670,36 @@
   width: 100%;
 }
 
+/* "Lectura recomendada" disclaimer (Figma S6-07) */
+.cl-content-html .cl-reading-disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #144a46;
+  padding: 14px 18px;
+  margin: 18px 0;
+  font-size: 18px;
+  color: #063330;
+}
+
+.cl-content-html .cl-reading-disclaimer img {
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .cl-content-html .cl-reading-disclaimer {
+    font-size: 14px;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .cl-content-html .cl-reading-disclaimer img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 .cl-content-html table {
   display: block;
   overflow-x: auto;

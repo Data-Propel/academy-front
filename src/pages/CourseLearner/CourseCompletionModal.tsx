@@ -35,7 +35,6 @@ const CONFETTI_COLORS = ['#FF5A2F', '#A3C94A', '#0E4B43', '#FFD700', '#4FC3F7', 
 export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvaluated, onClose, onEvaluationSubmitted }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [formTitle, setFormTitle] = useState('');
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [loadingForm, setLoadingForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -113,7 +112,6 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
     setLoadingForm(true);
     coursesApi.getEvaluationForm(slug).then(({ ok, data }) => {
       if (ok && data.form) {
-        setFormTitle(data.form.title);
         setQuestions(data.form.questions.sort((a: Question, b: Question) => a.order_index - b.order_index));
       } else {
         setStep('done');
@@ -160,7 +158,7 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
     <div className="ccm-overlay">
       <canvas ref={canvasRef} className="ccm-canvas" />
 
-      <div className={`ccm-modal${step === 'next' ? ' ccm-modal--wide' : ''}`}>
+      <div className={`ccm-modal${step === 'next' ? ' ccm-modal--wide' : ''}${step === 'form' ? ' ccm-modal--form' : ''}`}>
         <button className="ccm-close" onClick={onClose} aria-label="Cerrar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 6L6 18M6 6l12 12" />
@@ -226,16 +224,13 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
           <div className="ccm-loading">Cargando evaluación...</div>
         ) : (
           <div className="ccm-form">
-            <div className="ccm-trophy">🎉</div>
-            <h2 className="ccm-title">¡Completaste el curso!</h2>
-            {formTitle && <p className="ccm-subtitle">{formTitle}</p>}
+            <h2 className="ccm-form-title">¡Completaste el curso! <span aria-hidden="true">🎉</span></h2>
 
             <div className="ccm-questions">
               {questions.map(q => (
                 <div key={q.id} className="ccm-question">
                   <p className="ccm-question-text">
                     {q.question_text}
-                    {q.is_required && <span className="ccm-required"> *</span>}
                   </p>
                   <QuestionInput question={q} value={answers[q.id] || ''} onChange={val => setAnswer(q.id, val)} />
                 </div>
@@ -244,8 +239,8 @@ export default function CourseCompletionModal({ slug, hasEvalForm, alreadyEvalua
 
             {validationError && <p className="ccm-error">{validationError}</p>}
 
-            <button className="ccm-btn ccm-btn-primary ccm-submit" onClick={handleSubmit} disabled={submitting}>
-              {submitting ? 'Enviando...' : 'Enviar evaluación'}
+            <button className="ccm-submit-btn" onClick={handleSubmit} disabled={submitting}>
+              {submitting ? 'Enviando...' : 'Enviar respuestas'}
             </button>
           </div>
         )}
@@ -262,7 +257,7 @@ function QuestionInput({ question, value, onChange }: { question: Question; valu
     case 'yes_no': return <YesNoInput value={value} onChange={onChange} />;
     case 'multiple_choice': return <MultipleChoiceInput options={question.options} value={value} onChange={onChange} />;
     case 'text':
-      return <textarea className="ccm-textarea" value={value} onChange={e => onChange(e.target.value)} placeholder="Escribe tu respuesta..." />;
+      return <textarea className="ccm-textarea" value={value} onChange={e => onChange(e.target.value)} placeholder="Escribe tu respuesta" />;
     default: return null;
   }
 }
@@ -300,7 +295,7 @@ function ScaleInput({ value, onChange }: { value: string; onChange: (v: string) 
         ))}
       </div>
       <div className="ccm-nps-labels">
-        <span>Muy bajo</span>
+        <span>Muy baja</span>
         <span>Muy alta</span>
       </div>
     </div>
@@ -309,14 +304,12 @@ function ScaleInput({ value, onChange }: { value: string; onChange: (v: string) 
 
 function NpsInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const selected = value !== '' ? Number(value) : -1;
-  const getColor = (n: number) => n <= 6 ? '#e74c3c' : n <= 8 ? '#f39c12' : '#27ae60';
   return (
     <div>
       <div className="ccm-nps">
         {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
           <button key={n} type="button"
             className={`ccm-nps-btn${selected === n ? ' active' : ''}`}
-            style={selected === n ? { background: getColor(n), borderColor: getColor(n), color: '#fff' } : undefined}
             onClick={() => onChange(String(n))}>{n}</button>
         ))}
       </div>

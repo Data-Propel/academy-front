@@ -8,7 +8,6 @@ import takeIcon1 from '../../assets/course/take-1.png';
 import takeIcon2 from '../../assets/course/take-2.png';
 import takeIcon3 from '../../assets/course/take-3.png';
 import './CourseDetail.css';
-import ExternalLinkGuard from '../../components/ExternalLinkGuard/ExternalLinkGuard';
 import AddToCalendarModal from '../../components/AddToCalendarModal/AddToCalendarModal';
 import { localThumbnails } from '../../utils/courseThumbnails';
 
@@ -187,7 +186,6 @@ const CourseDetail = () => {
   const [downloadingCert, setDownloadingCert] = useState(false);
   const [certError, setCertError] = useState<string | null>(null);
   const [showEnrollPrompt, setShowEnrollPrompt] = useState(false);
-  const [evalStatus, setEvalStatus] = useState<{ has_evaluation_form: boolean; has_submitted: boolean } | null>(null);
   const [showCalModal, setShowCalModal] = useState(false);
 
   useEffect(() => {
@@ -221,21 +219,6 @@ const CourseDetail = () => {
               const doneTopics = new Set<number>(progressRes.data.completed_topics);
               setCompletedLessons(doneLessons);
               setCompletedTopics(doneTopics);
-
-              // Fetch evaluation status if course is fully completed
-              if (courseData.is_enrolled) {
-                const allLessons = (courseData.lessons || []).filter((l: Lesson) => l.video_url || l.content);
-                const allTopics = (courseData.lessons || []).flatMap((l: Lesson) => l.topics || []);
-                const totalItems = allLessons.length + allTopics.length;
-                const allDone = totalItems > 0 &&
-                  allLessons.every((l: Lesson) => doneLessons.has(l.id)) &&
-                  allTopics.every((t: Topic) => doneTopics.has(t.id));
-                if (allDone) {
-                  coursesApi.getEvaluationStatus(slug).then(res => {
-                    if (res.ok) setEvalStatus(res.data);
-                  });
-                }
-              }
             }
           }
 
@@ -486,7 +469,7 @@ const CourseDetail = () => {
   };
 
   return (
-    <ExternalLinkGuard className="course-detail-page">
+    <div className="course-detail-page">
       <Helmet>
         <title>{seoTitle}</title>
         <meta name="description" content={seoDescription} />
@@ -977,42 +960,29 @@ const CourseDetail = () => {
                 {courseCompleted && (
                   <>
                     <p className="sidebar-completed-note">¡Ya terminaste este curso!</p>
-                    {evalStatus?.has_evaluation_form && !evalStatus.has_submitted ? (
-                      <a
-                        href={`/courses/${slug}/evaluate`}
-                        className="sidebar-certificate-btn"
-                        style={{ textDecoration: 'none', textAlign: 'center' }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-                        </svg>
-                        Completar evaluación
-                      </a>
-                    ) : (
-                      <button
-                        className="sidebar-certificate-btn"
-                        disabled={downloadingCert}
-                        onClick={async () => {
-                          setDownloadingCert(true);
-                          setCertError(null);
-                          try {
-                            const result = await coursesApi.downloadCertificate(course.slug);
-                            if (result && !result.ok) {
-                              setCertError(result.detail || 'No se pudo descargar el certificado.');
-                            }
-                          } finally {
-                            setDownloadingCert(false);
+                    <button
+                      className="sidebar-certificate-btn"
+                      disabled={downloadingCert}
+                      onClick={async () => {
+                        setDownloadingCert(true);
+                        setCertError(null);
+                        try {
+                          const result = await coursesApi.downloadCertificate(course.slug);
+                          if (result && !result.ok) {
+                            setCertError(result.detail || 'No se pudo descargar el certificado.');
                           }
-                        }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                          <polyline points="7 10 12 15 17 10" />
-                          <line x1="12" y1="15" x2="12" y2="3" />
-                        </svg>
-                        {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
-                      </button>
-                    )}
+                        } finally {
+                          setDownloadingCert(false);
+                        }
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                      {downloadingCert ? 'Descargando...' : 'Descargar certificado'}
+                    </button>
                     {certError && <p style={{ color: '#e53e3e', fontSize: '0.85rem', marginTop: '0.5rem' }}>{certError}</p>}
                   </>
                 )}
@@ -1128,7 +1098,7 @@ const CourseDetail = () => {
           </div>
         </div>
       )}
-    </ExternalLinkGuard>
+    </div>
   );
 };
 

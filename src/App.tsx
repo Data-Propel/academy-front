@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useReducer } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Topbar from './components/Topbar/Topbar';
 import Footer from './components/Footer/Footer';
+import ExternalLinkGuard from './components/ExternalLinkGuard/ExternalLinkGuard';
 import Login from './pages/Login/Login';
 import NotFound from './pages/NotFound/NotFound';
 import { isAuthenticated, canAccessAdmin, getProfileComplete } from './services/api';
@@ -11,13 +12,13 @@ const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const CourseDetail = lazy(() => import('./pages/CourseDetail/CourseDetail'));
 const CourseLearner = lazy(() => import('./pages/CourseLearner/CourseLearner'));
 const Profile = lazy(() => import('./pages/Profile/Profile'));
+const ProfilePhoto = lazy(() => import('./pages/Profile/ProfilePhoto'));
 const Admin = lazy(() => import('./pages/Admin/Admin'));
 const Register = lazy(() => import('./pages/Register/Register'));
 const CompleteProfile = lazy(() => import('./pages/CompleteProfile/CompleteProfile'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword/ResetPassword'));
 const AutoLogin = lazy(() => import('./pages/AutoLogin/AutoLogin'));
 const FormPage = lazy(() => import('./pages/FormPage/FormPage'));
-const CourseEvaluation = lazy(() => import('./pages/CourseEvaluation/CourseEvaluation'));
 const WorkshopLanding = lazy(() => import('./pages/WorkshopLanding/WorkshopLanding'));
 const Home = lazy(() => import('./pages/Home/Home'));
 
@@ -88,7 +89,7 @@ export function AppContent() {
     location.pathname !== '/auto-login';
 
   return (
-    <div className={`app${isHomeRoute ? ' app--home' : ''}${isCatalogRoute ? ' app--catalog' : ''}${isCourseDetailRoute ? ' app--coursedetail' : ''}`}>
+    <ExternalLinkGuard className={`app${isHomeRoute ? ' app--home' : ''}${isCatalogRoute ? ' app--catalog' : ''}${isCourseDetailRoute ? ' app--coursedetail' : ''}`}>
       {!isAdminRoute && !isFormRoute && <Topbar hideHamburger={isLearnerRoute} />}
       <Suspense fallback={
         <div className="page-loading">
@@ -110,13 +111,13 @@ export function AppContent() {
           <Route path="/courses/:slug" element={<CourseDetail />} />
           <Route path="/courses/:slug/lessons/:lessonId" element={<CourseLearner />} />
           <Route path="/courses/:slug/topics/:topicId" element={<CourseLearner />} />
-          <Route path="/courses/:slug/evaluate" element={<CourseEvaluation />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/completar-perfil" element={<CompleteProfile />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/auto-login" element={<AutoLogin />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/foto" element={<ProfilePhoto />} />
           <Route path="/forms/:slug" element={<FormPage />} />
           <Route path="/lidera-con-ia-mindset" element={<WorkshopLanding />} />
           <Route path="/admin/*" element={isAuthenticated() ? <Admin /> : <Navigate to="/login" replace />} />
@@ -125,7 +126,7 @@ export function AppContent() {
         )}
       </Suspense>
       {!isAdminRoute && !isFormRoute && !isWorkshopRoute && !isAuthRoute && !isHomeRoute && <Footer />}
-    </div>
+    </ExternalLinkGuard>
   );
 }
 

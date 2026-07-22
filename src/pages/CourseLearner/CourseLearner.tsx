@@ -5,9 +5,9 @@ import { coursesApi, isAuthenticated, isSuperuser, authApi } from '../../service
 import PageHead from '../../utils/PageHead';
 import CourseCompletionModal from './CourseCompletionModal';
 import './CourseLearner.css';
-import ExternalLinkGuard from '../../components/ExternalLinkGuard/ExternalLinkGuard';
 import ShareProgressModal from '../../components/ShareProgressModal/ShareProgressModal';
 import { localThumbnails } from '../../utils/courseThumbnails';
+import alertTriangle from '../../assets/course/alert-triangle.svg';
 
 /** Rewrite WordPress upload URLs to local /pdfs/ path */
 function localizeUrl(url: string): string {
@@ -105,6 +105,25 @@ function extractGoogleLinks(html: string): { html: string; googleLinks: Extracte
   cleaned = cleaned.replace(/<p(\s[^>]*)?>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '');
 
   return { html: cleaned, googleLinks };
+}
+
+// "Lectura recomendada" disclaimer (Figma S6-07, nodes 1029:24124/24123/24079):
+// recommended readings don't count toward the certificate, so an outlined
+// notice is injected right after each reading block in the lesson HTML.
+const READING_DISCLAIMER_HTML =
+  `<div class="cl-reading-disclaimer"><img src="${alertTriangle}" alt="" /><span>Esta lectura no es obligatoria para obtener tu certificado</span></div>`;
+
+function injectReadingDisclaimer(html: string): string {
+  if (!/lectura recomendada/i.test(html)) return html;
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.body.querySelectorAll('h1, h2, h3, h4, h5, h6, p').forEach((el) => {
+    if (!/^lectura recomendada:?$/i.test((el.textContent || '').trim())) return;
+    // Place the notice after the reading link that follows the label
+    const anchor = el.nextElementSibling || el;
+    if (anchor.nextElementSibling?.classList.contains('cl-reading-disclaimer')) return;
+    anchor.insertAdjacentHTML('afterend', READING_DISCLAIMER_HTML);
+  });
+  return doc.body.innerHTML;
 }
 
 /** Replace [pdfjs-viewer url="..."] shortcodes with embedded PDF.js viewer */
@@ -672,7 +691,7 @@ const CourseLearner = () => {
   if (currentItem?.content) {
     const processed = processContent(currentItem.content);
     const extracted = extractGoogleLinks(processed);
-    cleanedHtml = DOMPurify.sanitize(extracted.html);
+    cleanedHtml = injectReadingDisclaimer(DOMPurify.sanitize(extracted.html));
     googleLinks = extracted.googleLinks;
     hasHtmlContent = cleanedHtml.replace(/<[^>]*>/g, '').trim().length > 0;
   }
@@ -690,7 +709,7 @@ const CourseLearner = () => {
   const hasMaterials = googleLinks.length > 0 || currentResources.length > 0 || courseMaterials.length > 0;
 
   return (
-    <ExternalLinkGuard className="cl-page">
+    <div className="cl-page">
       <PageHead title={course.title} noIndex />
       {/* Top bar — unified dark bar */}
       <div className="cl-topbar">
@@ -965,19 +984,7 @@ const CourseLearner = () => {
               </div>
             ) : (
             <>
-              <h1 className="cl-title">{currentItem.title}</h1>
-
-              {/* HTML content */}
-              {hasHtmlContent && (
-                <>
-                  <div
-                    className="cl-content-html"
-                    dangerouslySetInnerHTML={{ __html: cleanedHtml }}
-                  />
-                </>
-              )}
-
-              {/* Video */}
+              {/* Video (on top per Figma course view) */}
               {currentItem.video_url && (() => {
                 const embedUrl = getEmbedUrl(currentItem.video_url);
                 if (embedUrl) {
@@ -1009,6 +1016,18 @@ const CourseLearner = () => {
                   </div>
                 );
               })()}
+
+              <h1 className="cl-title">{currentItem.title}</h1>
+
+              {/* HTML content (description + lectura recomendada below the video) */}
+              {hasHtmlContent && (
+                <>
+                  <div
+                    className="cl-content-html"
+                    dangerouslySetInnerHTML={{ __html: cleanedHtml }}
+                  />
+                </>
+              )}
 
               {/* Completed indicator after video ends */}
               {currentItem.video_url && course?.is_enrolled && videoHasEnded && (
@@ -1311,7 +1330,7 @@ const CourseLearner = () => {
           onClose={() => setShareOpen(false)}
         />
       )}
-    </ExternalLinkGuard>
+    </div>
   );
 };
 

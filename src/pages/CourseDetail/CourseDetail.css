@@ -333,7 +333,7 @@
 .module-item {
   background: var(--cd-card);
   border: 1px solid var(--cd-border);
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
   scroll-margin-top: 20px;
 }
@@ -441,7 +441,7 @@
   gap: 6px;
 }
 
-.topic-item-wrapper { border-radius: 6px; overflow: hidden; }
+.topic-item-wrapper { border-radius: 0; overflow: hidden; }
 
 .topic-item {
   display: flex;
@@ -451,7 +451,7 @@
   padding: 12px 16px;
   background: #f5f5f5;
   border: 1px solid var(--cd-border);
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   transition: background-color 0.2s ease;
   text-align: left;
@@ -475,7 +475,7 @@
   padding: 16px;
   background: #f6f6f6;
   border: 1px solid var(--cd-border);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .module-resources-title {
@@ -500,7 +500,7 @@
   padding: 10px 14px;
   background: var(--cd-card);
   border: 1px solid var(--cd-border);
-  border-radius: 6px;
+  border-radius: 0;
   text-decoration: none;
   color: var(--cd-text);
   font-size: 13px;
@@ -536,7 +536,7 @@
 .module-resource-preview {
   margin-top: 6px;
   border: 1px solid var(--cd-border);
-  border-radius: 6px;
+  border-radius: 0;
   overflow: hidden;
   background: #fff;
 }
@@ -569,7 +569,7 @@
 /* Inline PDF embeds */
 .cd-pdf-embed {
   margin: 24px 0;
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
   border: 1px solid var(--cd-border);
 }
@@ -639,7 +639,7 @@
   padding: 14px 18px;
   background: var(--cd-card);
   border: 1px solid var(--cd-border);
-  border-radius: 8px;
+  border-radius: 0;
   color: var(--cd-text);
   text-decoration: none;
   font-size: 14px;
@@ -658,7 +658,7 @@
 .sidebar-card {
   background: var(--cd-card);
   border: 1px solid var(--cd-border);
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(4, 58, 55, 0.06);
 }
@@ -847,7 +847,7 @@
   padding: 8px 10px;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.2s ease;
