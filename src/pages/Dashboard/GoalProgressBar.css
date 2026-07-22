@@ -30,12 +30,18 @@
 
 .gpb-panel {
   position: relative;
+  background: #F5F5F3;
+  padding: 32px 2rem;
+}
+
+/* Same container as .topbar-container so the panel content aligns with the logo */
+.gpb-panel__inner {
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  background: #F5F5F3;
-  padding: 32px 72px;
 }
 
 .gpb-panel__close {
@@ -53,7 +59,7 @@
 .gpb-panel__close:hover { color: #0E4B43; }
 
 .gpb-panel__title {
-  margin: 0 0 18px;
+  margin: 0 0 40px;
   color: #0E4B43;
   font-size: 26px;
   font-weight: 600;
@@ -103,9 +109,11 @@
   }
   .gpb-strip__track { width: 120px; }
   .gpb-panel {
+    padding: 28px 1rem;
+  }
+  .gpb-panel__inner {
     flex-direction: column;
     align-items: flex-start;
-    padding: 28px 20px;
   }
   .gpb-panel__title { font-size: 21px; }
   .gpb-panel__edit { width: 100%; text-align: center; }

@@ -72,6 +72,7 @@ const GoalProgressBar = ({ goal, categories, completionDates, onEdit }: {
       {panelOpen && (
         <div className="gpb-panel">
           <button className="gpb-panel__close" onClick={() => setPanelOpen(false)} aria-label="Ocultar meta">✕</button>
+          <div className="gpb-panel__inner">
           <div className="gpb-panel__info">
             <h2 className="gpb-panel__title">Tu meta hasta el {formatCycleEnd(end)}</h2>
             <div className="gpb-panel__chips">
@@ -83,6 +84,7 @@ const GoalProgressBar = ({ goal, categories, completionDates, onEdit }: {
             </div>
           </div>
           <button className="gpb-panel__edit" onClick={onEdit}>Edita tu meta</button>
+          </div>
         </div>
       )}
     </div>

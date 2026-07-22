@@ -11,6 +11,7 @@ import GoalProgressBar from './GoalProgressBar';
 import TrackHero from './TrackHero';
 import './Dashboard.css';
 import portadaHero from '../../assets/PortadaAcademy-1920.webp';
+import goalNudgeBell from '../../assets/goal-nudge-bell.svg';
 import trackImgCreaAsistente from '../../assets/track/crea-tu-asistente-ia.png';
 import trackImgDefineUi from '../../assets/track/define-tu-ui-con-ia.png';
 import trackImgDataImpacto from '../../assets/track/data-para-el-impacto-social.png';
@@ -155,7 +156,7 @@ const CourseCard = ({ course, status, progress, isFavorite, onToggleFavorite, on
             <div className="course-progress-bar">
               <div className="course-progress-fill" style={{ width: `${progress}%` }} />
             </div>
-            <span className="course-progress-text">{progress}% completado</span>
+            <span className="course-progress-text">{progress}%</span>
           </div>
         )}
         <span className={`course-button ${status === 'in-progress' ? 'course-button-enrolled' : ''}`}>
@@ -327,6 +328,7 @@ const Dashboard = () => {
   const [goalCategories, setGoalCategories] = useState<GoalCategory[]>([]);
   const [completionDates, setCompletionDates] = useState<string[]>([]);
   const [surveyOpen, setSurveyOpen] = useState(false);
+  const [goalNudgeOpen, setGoalNudgeOpen] = useState(false);
 
   useEffect(() => {
     if (isCatalogRoute) setShowAllCatalog(true);
@@ -367,11 +369,12 @@ const Dashboard = () => {
 
           if (profileRes.ok) {
             setUser(profileRes.data);
-            // User with no learning goal → onboarding survey opens over the
-            // catalog. Server-side goal_set_at drives this, so it survives
-            // logout and can't be skipped via URL/localStorage.
+            // User with no learning goal → show the "Establece tus metas" nudge
+            // card atop the catalog (Continuar opens the survey). Server-side
+            // goal_set_at drives this, so it survives logout / can't be skipped
+            // via URL. Admins are exempt.
             if (!profileRes.data.goal_set_at && !canAccessAdmin()) {
-              setSurveyOpen(true);
+              setGoalNudgeOpen(true);
             }
           }
 
@@ -543,6 +546,23 @@ const Dashboard = () => {
         ogImage={PAGE_META.home.ogImage}
         canonicalPath={PAGE_META.home.canonicalPath}
       />
+
+      {/* No goal yet → "Establece tus metas" nudge card (Figma S6-01) at the
+          top of the screen; Continuar opens the survey, Omitir hides it. */}
+      {loggedIn && goalNudgeOpen && !user?.goal_set_at && (
+        <div className="goal-nudge">
+          <img className="goal-nudge__bell" src={goalNudgeBell} alt="" aria-hidden="true" />
+          <h2 className="goal-nudge__title">Establece tus metas para aumentar tu aprendizaje</h2>
+          <div className="goal-nudge__footer">
+            <button type="button" className="goal-nudge__skip" onClick={() => setGoalNudgeOpen(false)}>
+              Omitir
+            </button>
+            <button type="button" className="goal-nudge__cta" onClick={() => setSurveyOpen(true)}>
+              Continuar <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Learning-goal progress: real completions this cycle vs. the goal
           from the onboarding survey */}

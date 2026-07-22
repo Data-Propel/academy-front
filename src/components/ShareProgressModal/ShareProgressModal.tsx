@@ -36,12 +36,11 @@ const roundedPath = (ctx: CanvasRenderingContext2D, x: number, y: number, w: num
   ctx.closePath();
 };
 
-/** Paints the 1080×1080 branded template with the user's real progress. */
+/** Paints the 1080×1080 branded template with the course thumbnail. */
 const drawShareImage = async (
   canvas: HTMLCanvasElement,
   courseTitle: string,
   thumbnailUrls: Array<string | null | undefined>,
-  progressPercent: number,
 ) => {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -63,14 +62,13 @@ const drawShareImage = async (
   ctx.fillRect(0, 0, S, S);
   ctx.fillStyle = '#F2A65E';
   ctx.fillRect(0, 905, S, S - 905);
-  ctx.fillStyle = '#FF5A2F';
-  ctx.fillRect(S - 175, 905, 175, S - 905);
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 7;
-  ctx.beginPath();
-  ctx.moveTo(S - 145, S - 25);
-  ctx.lineTo(S - 35, 935);
-  ctx.stroke();
+  const favicon = await loadImage('/favicon.jpg');
+  if (favicon) {
+    ctx.drawImage(favicon, S - 175, 905, 175, S - 905);
+  } else {
+    ctx.fillStyle = '#FF5A2F';
+    ctx.fillRect(S - 175, 905, 175, S - 905);
+  }
 
   // Logo
   const logo = await loadImage(propelLogo);
@@ -103,7 +101,7 @@ const drawShareImage = async (
   const tw = 470, th = 290, tx = (S - tw) / 2, ty = 420;
   if (thumb) {
     ctx.save();
-    roundedPath(ctx, tx, ty, tw, th, 10);
+    roundedPath(ctx, tx, ty, tw, th, 0);
     ctx.clip();
     const scale = Math.max(tw / thumb.width, th / thumb.height);
     const dw = thumb.width * scale, dh = thumb.height * scale;
@@ -111,7 +109,7 @@ const drawShareImage = async (
     ctx.restore();
   } else {
     ctx.save();
-    roundedPath(ctx, tx, ty, tw, th, 10);
+    roundedPath(ctx, tx, ty, tw, th, 0);
     ctx.fillStyle = '#0E4B43';
     ctx.fill();
     ctx.fillStyle = '#ffffff';
@@ -135,24 +133,10 @@ const drawShareImage = async (
     ctx.restore();
   }
 
-  // Real progress: bar + label
-  const pw = 470, ph = 16, px = (S - pw) / 2, py = 758;
-  roundedPath(ctx, px, py, pw, ph, 8);
-  ctx.fillStyle = '#E4E4E1';
-  ctx.fill();
-  const fillW = Math.max(ph, Math.round(pw * Math.min(100, Math.max(0, progressPercent)) / 100));
-  roundedPath(ctx, px, py, fillW, ph, 8);
-  ctx.fillStyle = '#FF5A2F';
-  ctx.fill();
-
   ctx.textAlign = 'center';
   ctx.fillStyle = '#0E4B43';
-  ctx.font = `600 34px ${FF}`;
-  const shortTitle = courseTitle.length > 34 ? `${courseTitle.slice(0, 33)}…` : courseTitle;
-  ctx.fillText(`${progressPercent}% de «${shortTitle}»`, S / 2, py + 68);
-
-  ctx.font = `600 32px ${FF}`;
-  ctx.fillText('propelacademy.org', S / 2, 870);
+  ctx.font = `400 32px ${FF}`;
+  ctx.fillText('propelacademy.org', S / 2, 765);
   ctx.textAlign = 'left';
 };
 
@@ -162,7 +146,7 @@ const ShareProgressModal = ({ courseTitle, courseUrl, thumbnailUrls, progressPer
   const [copied, setCopied] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
-  const shareText = `¡Estoy aprendiendo «${courseTitle}» en la Nonprofit Academy de Propel! Llevo un ${progressPercent}% del curso 🚀`;
+  const shareText = `¡Estoy aprendiendo «${courseTitle}» en la Nonprofit Academy de Propel!`;
 
   const close = useCallback(() => onClose(), [onClose]);
 
@@ -192,33 +176,85 @@ const ShareProgressModal = ({ courseTitle, courseUrl, thumbnailUrls, progressPer
 
   const downloadImage = async () => {
     if (!canvasRef.current) return;
-    await drawShareImage(canvasRef.current, courseTitle, thumbnailUrls, progressPercent);
+    await drawShareImage(canvasRef.current, courseTitle, thumbnailUrls);
     const a = document.createElement('a');
     a.href = canvasRef.current.toDataURL('image/png');
     a.download = 'mi-avance-nonprofit-academy.png';
     a.click();
   };
 
-  // Social intents share the course link + text. Instagram has no web share
-  // intent, so it falls back to downloading the card for the user to post.
-  const shareTo = (network: 'linkedin' | 'instagram' | 'facebook' | 'whatsapp') => {
-    const url = encodeURIComponent(courseUrl);
-    const text = encodeURIComponent(shareText);
-    switch (network) {
-      case 'linkedin':
-        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener');
-        break;
-      case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank', 'noopener');
-        break;
-      case 'whatsapp':
-        window.open(`https://wa.me/?text=${text}%20${url}`, '_blank', 'noopener');
-        break;
-      case 'instagram':
-        void downloadImage();
-        setNote('Imagen descargada: súbela a tu historia o publicación de Instagram.');
-        break;
+  // Facebook and Instagram have no way to prefill post text, so we copy it
+  // to the clipboard for the user to paste. LinkedIn's feed composer does
+  // accept pre-filled text via ?shareActive.
+  const copyShareText = async () => {
+    try {
+      await navigator.clipboard.writeText(`${shareText} ${courseUrl}`);
+      return true;
+    } catch {
+      return false;
     }
+  };
+
+  /** Renders the branded card and returns it as a PNG File (null on failure). */
+  const buildImageFile = async (): Promise<File | null> => {
+    if (!canvasRef.current) return null;
+    await drawShareImage(canvasRef.current, courseTitle, thumbnailUrls);
+    const blob = await new Promise<Blob | null>(resolve => canvasRef.current!.toBlob(resolve, 'image/png'));
+    return blob ? new File([blob], 'mi-avance-nonprofit-academy.png', { type: 'image/png' }) : null;
+  };
+
+  // LinkedIn/Facebook/Instagram intents can't attach an image (the shared
+  // post was a bare link), so those buttons share the branded card instead:
+  // on touch devices with file-capable Web Share the OS sheet opens with the
+  // image attached; on desktop the image downloads — with the text prefilled
+  // (LinkedIn) or copied to the clipboard (Facebook/Instagram) — ready for
+  // the user to attach to their post.
+  const shareImageTo = (network: 'linkedin' | 'facebook' | 'instagram') => {
+    const canShareFiles =
+      typeof navigator.share === 'function' &&
+      typeof navigator.canShare === 'function' &&
+      navigator.canShare({ files: [new File([''], 'probe.png', { type: 'image/png' })] });
+    if (canShareFiles && window.matchMedia('(pointer: coarse)').matches) {
+      void (async () => {
+        const file = await buildImageFile();
+        if (!file) return;
+        try {
+          await navigator.share({ files: [file], text: `${shareText} ${courseUrl}` });
+        } catch { /* user closed the sheet */ }
+      })();
+      return;
+    }
+    // Desktop: the clipboard needs focus and popup blockers need the click's
+    // own tick — copy first, open the composer synchronously, download alongside.
+    const copying = network === 'linkedin' ? Promise.resolve(true) : copyShareText();
+    if (network === 'linkedin') {
+      window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(shareText)}%20${encodeURIComponent(courseUrl)}`, '_blank', 'noopener');
+    } else if (network === 'facebook') {
+      // sharer.php only makes link posts — open the composer for an image post.
+      window.open('https://www.facebook.com/', '_blank', 'noopener');
+    }
+    void downloadImage();
+    void copying.then(ok => {
+      if (network === 'linkedin') {
+        setNote('Imagen descargada ✓ Adjúntala a tu publicación de LinkedIn.');
+      } else if (network === 'facebook') {
+        setNote(ok
+          ? 'Imagen descargada y texto copiado ✓ Adjunta la imagen a una publicación de Facebook y pega el texto.'
+          : 'Imagen descargada ✓ Adjúntala a una publicación de Facebook.');
+      } else {
+        setNote(ok
+          ? 'Imagen descargada y texto copiado ✓ Pégalo como pie de tu publicación de Instagram.'
+          : 'Imagen descargada: súbela a tu historia o publicación de Instagram.');
+      }
+    });
+  };
+
+  const shareTo = (network: 'linkedin' | 'instagram' | 'facebook' | 'whatsapp') => {
+    if (network === 'whatsapp') {
+      window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}%20${encodeURIComponent(courseUrl)}`, '_blank', 'noopener');
+      return;
+    }
+    shareImageTo(network);
   };
 
   const copyLink = async () => {
@@ -250,6 +286,13 @@ const ShareProgressModal = ({ courseTitle, courseUrl, thumbnailUrls, progressPer
 
         <p className="spm-subtitle">Comparte tu avance en redes</p>
         <div className="spm-networks">
+          <button
+            className="spm-network"
+            onClick={() => { void downloadImage().then(() => setNote('Imagen descargada ✓')); }}
+            aria-label="Descargar imagen"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+          </button>
           <button className="spm-network" onClick={() => shareTo('linkedin')} aria-label="Compartir en LinkedIn">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
           </button>
@@ -287,7 +330,7 @@ const ShareProgressModal = ({ courseTitle, courseUrl, thumbnailUrls, progressPer
           </svg>
         </button>
 
-        {/* Rendered on demand for the Instagram fallback only */}
+        {/* Rendered on demand when a share needs the branded image */}
         <canvas ref={canvasRef} className="spm-canvas" aria-hidden="true" />
       </div>
     </div>,

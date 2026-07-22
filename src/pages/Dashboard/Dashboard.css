@@ -1,4 +1,5 @@
 .dashboard-page {
+  position: relative;
   min-height: 60vh;
   min-height: 60dvh;
   background: linear-gradient(to bottom, #032220, #021a18);
@@ -1269,6 +1270,73 @@ h3.course-title {
 }
 
 /* Teal hero band */
+/* "Establece tus metas" nudge card (Figma S6-01) — small card at the top of
+   the catalog for users without a learning goal. */
+.goal-nudge {
+  box-sizing: border-box;
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 20;
+  width: 388px;
+  max-width: calc(100% - 48px);
+  background: #f2f2f2;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+/* Bell badge overlapping the card's top-right corner (Figma 1029:10727) */
+.goal-nudge__bell {
+  position: absolute;
+  top: -16px;
+  right: -15px;
+  width: 48px;
+  height: 48px;
+}
+
+.goal-nudge__title {
+  margin: 0;
+  color: #144a46;
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.goal-nudge__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.goal-nudge__skip {
+  border: none;
+  background: none;
+  color: #a2a8b4;
+  font-family: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+.goal-nudge__skip:hover { color: #6b7280; }
+
+.goal-nudge__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  background: none;
+  color: #fc5c3a;
+  font-family: inherit;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+.goal-nudge__cta:hover { text-decoration: underline; }
+
 .catalog-hero {
   background: #007066;
   text-align: center;
@@ -1349,13 +1417,15 @@ h3.course-title {
   gap: 32px;
 }
 
-/* Cards */
+/* Cards — Figma course card (node 1029-22655): white squared card, teal
+   #144a46 text, flat #f4945c progress bar with % beside it, solid #16625b
+   button, white circular favorite with orange heart. */
 .dashboard-page--catalog .course-card {
   background: #fff;
-  border: 1px solid #e3e3e3;
-  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: 0 6px 18px rgba(4, 58, 55, 0.05);
+  box-shadow: none;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -1368,7 +1438,7 @@ h3.course-title {
 
 .dashboard-page--catalog .course-thumbnail {
   height: auto;
-  aspect-ratio: 346 / 233;
+  aspect-ratio: 433 / 282;
   background: #fff;
 }
 
@@ -1380,9 +1450,36 @@ h3.course-title {
   object-fit: cover;
 }
 
+.dashboard-page--catalog .course-status-tag { display: none; }
+
+.dashboard-page--catalog .card-fav-btn {
+  top: 8px;
+  right: 10px;
+  width: 42px;
+  height: 42px;
+  background: #fff;
+  color: #fc5c3a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.dashboard-page--catalog .card-fav-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dashboard-page--catalog .card-fav-btn:hover {
+  background: #fff;
+  transform: scale(1.08);
+}
+
+.dashboard-page--catalog .card-fav-btn--active {
+  background: #fff;
+  color: #fc5c3a;
+}
+
 .dashboard-page--catalog .course-content {
   background: #fff;
-  padding: 22px 24px 26px;
+  padding: 30px 30px 28px;
 }
 
 .dashboard-page--catalog .course-card-title {
@@ -1390,50 +1487,75 @@ h3.course-title {
   font-size: 18px;
   font-weight: 700;
   color: #144a46;
-  margin: 0 0 10px;
+  margin: 0 0 18px;
   line-height: 1.3;
 }
 
 .dashboard-page--catalog .course-card-meta {
   font-size: 14px;
-  color: #5b716c;
-  margin: 0 0 12px;
+  color: #144a46;
+  margin: 0 0 14px;
 }
 
 .dashboard-page--catalog .course-description {
   font-size: 15px;
-  color: #33524d;
-  line-height: 1.45;
+  color: #144a46;
+  line-height: 1.4;
   margin: 0 0 22px;
   min-height: 0;
+}
+
+.dashboard-page--catalog .course-progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.dashboard-page--catalog .course-progress-bar {
+  flex: 1;
+  height: 12px;
+  background: #d9d9d9;
+  border-radius: 0;
+}
+
+.dashboard-page--catalog .course-progress-fill {
+  background: #f4945c;
+  border-radius: 0;
+}
+
+.dashboard-page--catalog .course-progress-text {
+  color: #144a46;
+  font-size: 15px;
+  margin-top: 0;
+  flex-shrink: 0;
 }
 
 .dashboard-page--catalog .course-button {
   align-self: flex-start;
   width: auto;
-  background: #fff;
-  border: 1.5px solid #007066;
-  color: #007066;
-  border-radius: 6px;
-  padding: 11px 28px;
+  background: #16625b;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+  padding: 12px 32px;
   font-family: inherit;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 400;
   margin-top: auto;
 }
 
 .dashboard-page--catalog .course-button:hover {
-  background: #007066;
+  background: #124e49;
   color: #fff;
 }
 
 .dashboard-page--catalog .course-button.course-button-enrolled {
-  background: #007066;
+  background: #16625b;
   color: #fff;
 }
 
-.dashboard-page--catalog .course-button.course-button-enrolled:hover { background: #005f56; }
-
-.dashboard-page--catalog .course-progress-text { color: #5b716c; }
+.dashboard-page--catalog .course-button.course-button-enrolled:hover { background: #124e49; }
 
 /* Empty state */
 .dashboard-page--catalog .no-courses {

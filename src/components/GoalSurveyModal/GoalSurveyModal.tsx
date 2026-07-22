@@ -212,7 +212,6 @@ const GoalSurveyModal = ({ categories, courses, initial, onClose, onSaved }: {
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       )}
-                      <span className="gsm-rec-name">{course.title}</span>
                       <Link to={`/courses/${course.slug}`} className="gsm-rec-cta" onClick={onClose}>
                         Empieza aquí
                       </Link>
