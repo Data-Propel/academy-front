@@ -23,9 +23,14 @@ const PAISES = [
   'Paraguay', 'Perú', 'República Dominicana', 'Uruguay', 'Venezuela', 'España', 'Otro',
 ];
 
+// Must read EXACTLY like the answers on the Zoom registration questionnaire
+// (meeting 89072511024) — same wording is reused in pauta pagada.
 const TIPOS_ORG = [
-  'ONG / OSC', 'Fundación', 'Asociación Civil', 'Empresa Social',
-  'Sector Público', 'Academia / Universidad', 'Otro',
+  'ONG o fundación',
+  'Empresa privada o consultora',
+  'Centro educativo, universidad u otros',
+  'Entidad pública',
+  'Cooperativa o empresa social',
 ];
 
 // Fallback if the landing-info API is unreachable — the live list comes from
@@ -35,7 +40,6 @@ const COMO_TE_ENTERASTE_FALLBACK = [
   'Ikigai',
   'Kunan',
   'Es Hoy',
-  'Fundación OLI',
   'Propel',
 ];
 
@@ -47,11 +51,13 @@ const COUNTRY_ISO_TO_NAME: Record<string, string> = {
   UY: 'Uruguay', VE: 'Venezuela', ES: 'España',
 };
 
-// Profile stores org type as a slug; this form uses labels. Unmapped → 'Otro'.
+// Profile stores org type as a slug; this form uses labels. Unmapped → left
+// empty so the person picks one themselves.
 const ORG_TYPE_SLUG_TO_LABEL: Record<string, string> = {
-  ong: 'ONG / OSC', fundacion: 'Fundación', asociacion: 'Asociación Civil',
-  empresa_social: 'Empresa Social', educativa: 'Academia / Universidad',
-  gobierno: 'Sector Público',
+  ong: 'ONG o fundación', fundacion: 'ONG o fundación', asociacion: 'ONG o fundación',
+  empresa_social: 'Cooperativa o empresa social',
+  educativa: 'Centro educativo, universidad u otros',
+  gobierno: 'Entidad pública',
 };
 
 type PathCourse = {
@@ -115,6 +121,19 @@ const WorkshopLanding = () => {
   const [alreadyRegistered, setAlreadyRegistered] = useState<AlreadyRegistered | null>(null);
   const [pathCourses, setPathCourses] = useState<PathCourse[]>([]);
   const [referralOptions, setReferralOptions] = useState<string[]>(COMO_TE_ENTERASTE_FALLBACK);
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  // Close the help bubble on any click outside it (the bubble itself stays
+  // clickable so the email can be selected and copied).
+  useEffect(() => {
+    if (!helpOpen) return;
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t.closest('.ws-help') && !t.closest('.ws-help-bubble')) setHelpOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [helpOpen]);
 
   // Public 'ruta de aprendizaje' + dropdown de aliados — run on mount for
   // everyone, no auth needed.
@@ -172,7 +191,7 @@ const WorkshopLanding = () => {
           email: f.email || u.email || '',
           organizacion: f.organizacion || u.organization || '',
           pais: f.pais || (u.country ? (COUNTRY_ISO_TO_NAME[u.country] ?? 'Otro') : ''),
-          tipoOrganizacion: f.tipoOrganizacion || (u.organization_type ? (ORG_TYPE_SLUG_TO_LABEL[u.organization_type] ?? 'Otro') : ''),
+          tipoOrganizacion: f.tipoOrganizacion || (u.organization_type ? (ORG_TYPE_SLUG_TO_LABEL[u.organization_type] ?? '') : ''),
         }));
       }
 
@@ -423,11 +442,18 @@ const WorkshopLanding = () => {
           </form>
           )}
 
+          {helpOpen && (
+            <div className="ws-help-bubble" role="tooltip">
+              ¿Dudas? Escríbenos a<br />
+              <strong>nonprofitacademy@wepropel.org</strong>
+            </div>
+          )}
           <button
             type="button"
             className="ws-help"
             aria-label="Ayuda"
-            onClick={() => window.open('mailto:academy@wepropel.org', '_blank')}
+            aria-expanded={helpOpen}
+            onClick={() => setHelpOpen(o => !o)}
           >?</button>
         </div>
       </section>

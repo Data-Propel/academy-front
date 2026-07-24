@@ -392,6 +392,28 @@
 
 .ws-help:hover { background: #f0faf9; }
 
+.ws-help-bubble {
+  position: absolute;
+  right: 20px;
+  bottom: 64px;
+  background: #fff;
+  border: 1.5px solid #007066;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #144a46;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  user-select: text;
+  z-index: 5;
+  max-width: calc(100% - 40px);
+}
+
+.ws-help-bubble strong {
+  color: #007066;
+  word-break: break-all;
+}
+
 /* ── Success modal ── */
 
 .ws-modal-overlay {
@@ -682,6 +704,7 @@
   .ws-field--full { margin-bottom: 10px; }
   .ws-form__note { font-size: 11px; }
   /* Keep checkbox + legal text at the desktop size on all screens. */
+  .ws-checkbox { color: #144a46; }
   .ws-btn--submit { height: 43px; min-width: 128px; font-size: 13px; }
 
   .ws-detail-line { font-size: 14px; }
