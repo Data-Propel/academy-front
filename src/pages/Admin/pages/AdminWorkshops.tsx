@@ -138,6 +138,14 @@ export default function AdminWorkshops() {
   const [zoomErr, setZoomErr] = useState('');
   const [expanded, setExpanded] = useState<number | null>(null);
   const [path, setPath] = useState<PathCourse[]>([]);
+  // Landing form settings (dropdown de aliados + Zoom) — editable in place so
+  // the Academy team can update them without a deploy.
+  const [referralOptions, setReferralOptions] = useState<string[] | null>(null);
+  const [optionDrafts, setOptionDrafts] = useState<string[]>([]);
+  const [newOption, setNewOption] = useState('');
+  const [zoomIdSaved, setZoomIdSaved] = useState('');
+  const [zoomIdDraft, setZoomIdDraft] = useState('');
+  const [zoomSaving, setZoomSaving] = useState(false);
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
   const [courseToAdd, setCourseToAdd] = useState<number | ''>('');
   const [workshops, setWorkshops] = useState<WorkshopOption[]>([]);
@@ -255,6 +263,8 @@ export default function AdminWorkshops() {
       // Reset so the previous selection's data doesn't flash while loading.
       setRegs([]); setPath([]); setExpanded(null);
       setZoom(null); setZoomErr('');
+      setReferralOptions(null); setOptionDrafts([]); setNewOption('');
+      setZoomIdSaved(''); setZoomIdDraft('');
       const tag = (rows: Registration[], w: WorkshopOption) =>
         rows.map((x) => ({ ...x, workshop_slug: w.slug, workshop_name: w.name, workshop_date: w.event_date }));
       if (workshopSlug.startsWith(GROUP_PREFIX)) {
@@ -274,14 +284,21 @@ export default function AdminWorkshops() {
       } else {
         const w = workshops.find((x) => x.slug === workshopSlug)
           ?? { slug: workshopSlug, name: '', event_date: '', track_slug: null };
-        const [r, p] = await Promise.all([
+        const [r, p, s] = await Promise.all([
           adminApi.getWorkshopRegistrations(workshopSlug),
           adminApi.getWorkshopPath(workshopSlug),
+          adminApi.getWorkshopSettings(workshopSlug),
         ]);
         setLoading(false);
         if (r.ok) setRegs(tag(r.data as Registration[], w));
         else showError('No se pudieron cargar las inscripciones.');
         if (p.ok) setPath(p.data as PathCourse[]);
+        if (s.ok) {
+          const st = s.data as { referral_options: string[]; zoom_meeting_id: string };
+          setReferralOptions(st.referral_options);
+          setOptionDrafts(st.referral_options);
+          setZoomIdSaved(st.zoom_meeting_id); setZoomIdDraft(st.zoom_meeting_id);
+        }
       }
     })();
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -315,6 +332,58 @@ export default function AdminWorkshops() {
     setPath((cur) => cur.map((p) => p.id === id ? { ...p, release_date: next } : p));
     const res = await adminApi.setWorkshopPathDate(workshopSlug, id, next);
     if (!res.ok) { setPath(prev); showError('No se pudo guardar la fecha.'); }
+  };
+
+  // Persist the full aliados list (the PATCH replaces it atomically). Reverts
+  // both the saved list and the drafts on failure.
+  const saveReferralOptions = async (next: string[]) => {
+    const prev = referralOptions ?? [];
+    setReferralOptions(next); setOptionDrafts(next);
+    const res = await adminApi.updateWorkshopSettings(workshopSlug, { referral_options: next });
+    if (!res.ok) {
+      setReferralOptions(prev); setOptionDrafts(prev);
+      showError('No se pudieron guardar las opciones del desplegable.');
+    }
+  };
+
+  const addReferralOption = () => {
+    const v = newOption.trim();
+    if (!v || !referralOptions) return;
+    if (referralOptions.some((o) => o.toLowerCase() === v.toLowerCase())) {
+      showError('Esa opción ya existe.');
+      return;
+    }
+    setNewOption('');
+    void saveReferralOptions([...referralOptions, v]);
+  };
+
+  // Inline edit: commit on blur; an emptied field reverts to the saved value.
+  const commitOptionEdit = (i: number) => {
+    if (!referralOptions) return;
+    const v = (optionDrafts[i] ?? '').trim();
+    if (!v || v === referralOptions[i]) {
+      setOptionDrafts(referralOptions);
+      return;
+    }
+    const next = referralOptions.map((o, j) => (j === i ? v : o));
+    void saveReferralOptions(next);
+  };
+
+  const removeReferralOption = (i: number) => {
+    if (!referralOptions) return;
+    void saveReferralOptions(referralOptions.filter((_, j) => j !== i));
+  };
+
+  const saveZoomId = async () => {
+    setZoomSaving(true);
+    const res = await adminApi.updateWorkshopSettings(workshopSlug, { zoom_meeting_id: zoomIdDraft.trim() });
+    setZoomSaving(false);
+    if (res.ok) {
+      const st = res.data as { zoom_meeting_id: string };
+      setZoomIdSaved(st.zoom_meeting_id); setZoomIdDraft(st.zoom_meeting_id);
+    } else {
+      showError('No se pudo guardar el ID de Zoom.');
+    }
   };
 
   // Toggle the registrant's workshop-attended flag. Optimistic — reverts on
@@ -562,6 +631,8 @@ export default function AdminWorkshops() {
         .wk-path-add button { background: #FD6A44; color: #fff; border: none; padding: 9px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Libre Franklin', sans-serif; }
         .wk-path-add button:disabled { opacity: 0.4; cursor: not-allowed; }
         .wk-path-empty { font-size: 0.85rem; color: rgba(242,242,242,0.5); margin-bottom: 14px; }
+        .wk-option-input { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Libre Franklin', sans-serif; font-size: 0.9rem; }
+        .wk-option-input:focus { outline: 1px solid #FD6A44; }
         .wk-create-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
         .wk-create-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: rgba(242,242,242,0.7); }
         .wk-create-grid label input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #F2F2F2; padding: 9px 12px; border-radius: 6px; font-family: 'Libre Franklin', sans-serif; font-size: 0.9rem; }
@@ -787,6 +858,78 @@ export default function AdminWorkshops() {
               Agregar
             </button>
           </div>
+        </section>
+        )}
+
+        {!isAll && referralOptions !== null && (
+        <section className="wk-path-section">
+          <h2 className="wk-path-title">Formulario del landing</h2>
+          <p className="wk-path-sub">
+            Opciones del desplegable «¿Cómo te enteraste del workshop?» y link de Zoom.
+            Los cambios se publican al instante, sin despliegue técnico.
+          </p>
+
+          {referralOptions.length === 0 ? (
+            <p className="wk-path-empty">Aún no hay opciones en el desplegable.</p>
+          ) : (
+            <div className="wk-path-list">
+              {referralOptions.map((opt, i) => (
+                <div className="wk-path-item" key={`${i}-${opt}`}>
+                  <input
+                    type="text"
+                    className="wk-option-input"
+                    value={optionDrafts[i] ?? ''}
+                    onChange={(e) => setOptionDrafts((cur) => cur.map((o, j) => (j === i ? e.target.value : o)))}
+                    onBlur={() => commitOptionEdit(i)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                    aria-label={`Opción ${i + 1}`}
+                  />
+                  <div className="wk-path-actions">
+                    <button
+                      className="wk-path-btn wk-path-btn--danger"
+                      onClick={() => removeReferralOption(i)}
+                      aria-label={`Quitar ${opt}`}
+                    >✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="wk-path-add">
+            <input
+              type="text"
+              className="wk-option-input"
+              placeholder="Nueva opción (ej. nombre del aliado)…"
+              value={newOption}
+              onChange={(e) => setNewOption(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') addReferralOption(); }}
+            />
+            <button onClick={addReferralOption} disabled={!newOption.trim()}>
+              Agregar
+            </button>
+          </div>
+
+          <div className="wk-path-add" style={{ marginTop: 18, alignItems: 'center' }}>
+            <label htmlFor="wk-zoom-id" style={{ whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
+              Link de Zoom (Meeting ID)
+            </label>
+            <input
+              id="wk-zoom-id"
+              type="text"
+              className="wk-option-input"
+              placeholder="Ej. 88213347124 — puede quedar vacío hasta que esté listo"
+              value={zoomIdDraft}
+              onChange={(e) => setZoomIdDraft(e.target.value)}
+            />
+            <button onClick={saveZoomId} disabled={zoomSaving || zoomIdDraft.trim() === zoomIdSaved}>
+              {zoomSaving ? 'Guardando…' : 'Guardar'}
+            </button>
+          </div>
+          <p className="wk-path-sub" style={{ marginTop: 8 }}>
+            Con el ID configurado, cada nueva inscripción se registra automáticamente en Zoom
+            y recibe su link personal. El landing funciona igual mientras esté vacío.
+          </p>
         </section>
         )}
 

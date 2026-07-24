@@ -57,6 +57,6 @@ export const PAGE_META: Record<'home' | 'cursos' | 'register' | 'login' | 'profi
     description: 'Obtén tu certificación en IA en la Nonprofit Academy. Desarrolla un AI mindset, domina herramientas prácticas y lidera el cambio en tu organización social.',
     ogDescription: 'Certifícate en IA y lidera el cambio en tu organización social.',
     ogImage: '/og/workshop.jpg',
-    canonicalPath: '/lidera-con-ia-mindset',
+    canonicalPath: '/certificación-ia-pe',
   },
 };

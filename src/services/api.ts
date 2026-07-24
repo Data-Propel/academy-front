@@ -1262,6 +1262,20 @@ export const adminApi = {
     return { ok: response.ok, data: await response.json().catch(() => null) };
   },
 
+  // Landing/registration settings (dropdown de aliados, Zoom meeting).
+  getWorkshopSettings: async (slug: string) => {
+    const response = await apiFetch(`/workshops/admin/${slug}/settings/`);
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
+
+  updateWorkshopSettings: async (slug: string, data: { referral_options?: string[]; zoom_meeting_id?: string }) => {
+    const response = await apiFetch(`/workshops/admin/${slug}/settings/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    return { ok: response.ok, data: await response.json().catch(() => null) };
+  },
+
   getWorkshopRegistrations: async (slug: string, stage?: number) => {
     const suffix = stage ? `?stage=${stage}` : '';
     const response = await apiFetch(`/workshops/admin/${slug}/registrations/${suffix}`);

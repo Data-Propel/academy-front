@@ -21,6 +21,7 @@ const AutoLogin = lazy(() => import('./pages/AutoLogin/AutoLogin'));
 const FormPage = lazy(() => import('./pages/FormPage/FormPage'));
 const Home = lazy(() => import('./pages/Home/Home'));
 const VerifyCredential = lazy(() => import('./pages/VerifyCredential/VerifyCredential'));
+const WorkshopLanding = lazy(() => import('./pages/WorkshopLanding/WorkshopLanding'));
 
 import './App.css';
 
@@ -71,7 +72,9 @@ export function AppContent() {
     /^\/courses\/[^/]+\/topics\/\d+/.test(location.pathname);
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isFormRoute = location.pathname.startsWith('/forms/');
-  const isWorkshopRoute = location.pathname === '/lidera-con-ia-mindset';
+  // decodeURIComponent: the browser reports accented paths percent-encoded.
+  const isWorkshopRoute = decodeURIComponent(location.pathname) === '/certificación-ia-pe'
+    || location.pathname === '/certificacion-ia-pe';
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/completar-perfil';
   const isHomeRoute = location.pathname === '/';
   const isCatalogRoute = location.pathname === '/cursos' || location.pathname === '/cursos/';
@@ -120,6 +123,8 @@ export function AppContent() {
           <Route path="/profile/foto" element={<ProfilePhoto />} />
           <Route path="/forms/:slug" element={<FormPage />} />
           <Route path="/lidera-con-ia-mindset" element={<Navigate to="/register" replace />} />
+          <Route path="/certificación-ia-pe" element={<WorkshopLanding />} />
+          <Route path="/certificacion-ia-pe" element={<WorkshopLanding />} />
           <Route path="/verify/:code" element={<VerifyCredential />} />
           <Route path="/admin/*" element={isAuthenticated() ? <Admin /> : <Navigate to="/login" replace />} />
           <Route path="*" element={<NotFound />} />

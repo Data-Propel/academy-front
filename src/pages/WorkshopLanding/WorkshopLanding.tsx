@@ -3,11 +3,19 @@ import { authApi, getToken, isAuthenticated } from '../../services/api';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
 import googleOrg from '../../assets/workshop/google-org.png';
-import lideraCard from '../../assets/workshop/lidera-card.jpg';
+import peCard from '../../assets/workshop/pe-card.jpg';
+import peHero from '../../assets/workshop/pe-hero.jpg';
+import peSquare from '../../assets/workshop/pe-square.png';
 import iconCalendar from '../../assets/workshop/icons/calendar.svg';
 import iconClock from '../../assets/workshop/icons/clock.svg';
 import iconVideo from '../../assets/workshop/icons/video.svg';
 import './WorkshopLanding.css';
+
+// Edición PE (setiembre 2026). El slug apunta al Workshop en la base; el resto
+// es el contenido estático del hero y la tarjeta 1 de la ruta.
+const WORKSHOP_SLUG = 'lidera-ia-pe';
+const EVENT_DATE_LABEL = '9 de septiembre';
+const EVENT_TIME_LABEL = '9 AM PE';
 
 const PAISES = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica', 'Ecuador',
@@ -20,13 +28,14 @@ const TIPOS_ORG = [
   'Sector Público', 'Academia / Universidad', 'Otro',
 ];
 
-const COMO_TE_ENTERASTE = [
-  'Wingu',
-  'Red Argentina de Cooperacion Internacional | RACI',
-  'Potenciar Solidario',
-  'Fundación Navarro Viola',
-  'Fundación Mustakis',
-  'Comunidad Organizaciones Solidarias | COS Chile',
+// Fallback if the landing-info API is unreachable — the live list comes from
+// the backend (Workshop.referral_options) so the Academy team can edit it from
+// /admin/workshops without a deploy.
+const COMO_TE_ENTERASTE_FALLBACK = [
+  'Ikigai',
+  'Kunan',
+  'Es Hoy',
+  'Fundación OLI',
   'Propel',
 ];
 
@@ -105,18 +114,32 @@ const WorkshopLanding = () => {
   const [statusReady, setStatusReady] = useState(!isAuthenticated());
   const [alreadyRegistered, setAlreadyRegistered] = useState<AlreadyRegistered | null>(null);
   const [pathCourses, setPathCourses] = useState<PathCourse[]>([]);
+  const [referralOptions, setReferralOptions] = useState<string[]>(COMO_TE_ENTERASTE_FALLBACK);
 
-  // Public 'ruta de aprendizaje' — runs on mount for everyone, no auth needed.
+  // Public 'ruta de aprendizaje' + dropdown de aliados — run on mount for
+  // everyone, no auth needed.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/workshops/lidera-ia-25/path/');
+        const res = await fetch(`/api/workshops/${WORKSHOP_SLUG}/path/`);
         if (!res.ok || cancelled) return;
         const data = await res.json() as PathCourse[];
         if (!cancelled) setPathCourses(data);
       } catch {
         // Leave empty on failure — the section just hides itself.
+      }
+    })();
+    (async () => {
+      try {
+        const res = await fetch(`/api/workshops/${WORKSHOP_SLUG}/landing/`);
+        if (!res.ok || cancelled) return;
+        const data = await res.json() as { referral_options?: string[] };
+        if (!cancelled && Array.isArray(data.referral_options) && data.referral_options.length > 0) {
+          setReferralOptions(data.referral_options);
+        }
+      } catch {
+        // Keep the fallback list.
       }
     })();
     return () => { cancelled = true; };
@@ -131,7 +154,7 @@ const WorkshopLanding = () => {
       const token = getToken();
       const [profileRes, statusRes] = await Promise.all([
         authApi.getProfile(),
-        fetch('/api/workshops/lidera-ia-25/my-status/', {
+        fetch(`/api/workshops/${WORKSHOP_SLUG}/my-status/`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }),
       ]);
@@ -178,7 +201,7 @@ const WorkshopLanding = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch('/api/workshops/lidera-ia-25/register/', {
+      const res = await fetch(`/api/workshops/${WORKSHOP_SLUG}/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -212,12 +235,12 @@ const WorkshopLanding = () => {
     {
       key: 'workshop',
       href: '#ws-registro',
-      thumbnail: lideraCard,
+      thumbnail: peCard,
       alt: 'Lidera con un IA mindset',
       live: true,
-      fecha: '25 de junio',
-      metaLabel: 'Hora',
-      metaValue: '10 AM CH | 11 AM ARG',
+      fecha: EVENT_DATE_LABEL,
+      metaLabel: 'Duración',
+      metaValue: '60 min',
     },
     ...pathCourses.map((c): RutaCard => ({
       key: String(c.id),
@@ -288,11 +311,11 @@ const WorkshopLanding = () => {
           <div className="ws-hero__details">
             <div className="ws-hero__detail">
               <img src={iconCalendar} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
-              <p className="ws-detail-line">25 de junio</p>
+              <p className="ws-detail-line">{EVENT_DATE_LABEL}</p>
             </div>
             <div className="ws-hero__detail">
               <img src={iconClock} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
-              <p className="ws-detail-line">11 AM AR/UR | 10 AM CH</p>
+              <p className="ws-detail-line">{EVENT_TIME_LABEL}</p>
             </div>
             <div className="ws-hero__detail">
               <img src={iconVideo} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
@@ -304,7 +327,15 @@ const WorkshopLanding = () => {
             <img src={googleOrg} alt="with support from Google.org" className="ws-hero__google" />
           </div>
 
-          <img src="/thumbnails/landinglidera.jpg" alt="" aria-hidden="true" className="ws-hero__photo" />
+          {/* Full-bleed photo strip: photo left, Propel square + blue block on
+              the right edge, per the Figma frame. */}
+          <div className="ws-hero__photo" aria-hidden="true">
+            <img src={peHero} alt="" className="ws-hero__photo-img" />
+            <div className="ws-hero__photo-side">
+              <img src={peSquare} alt="" className="ws-hero__photo-square" />
+              <div className="ws-hero__photo-block" />
+            </div>
+          </div>
         </div>
 
         {/* Right: white form panel */}
@@ -314,7 +345,7 @@ const WorkshopLanding = () => {
           ) : alreadyRegistered ? (
             <div className="ws-form ws-form--registered">
               <h2 className="ws-modal__title">¡Ya estás registrado!</h2>
-              <p>Te esperamos en el workshop: Lidera con un IA mindset el 25 de junio.</p>
+              <p>Te esperamos en el workshop: Lidera con un IA mindset el {EVENT_DATE_LABEL}.</p>
               <p><strong>Mientras tanto, comienza tu certificación en la Nonprofit Academy.</strong></p>
               <a href="/cursos" className="ws-btn ws-btn--submit">Ver cursos disponibles</a>
             </div>
@@ -370,7 +401,7 @@ const WorkshopLanding = () => {
               <div className="ws-select">
                 <select id="ws-como" name="comoTeEnteraste" value={form.comoTeEnteraste} onChange={handleChange} required>
                   <option value="" disabled />
-                  {COMO_TE_ENTERASTE.map(o => <option key={o} value={o}>{o}</option>)}
+                  {referralOptions.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
             </div>
@@ -378,8 +409,8 @@ const WorkshopLanding = () => {
             <p className="ws-form__note">*Los campos son obligatorios</p>
 
             <label className="ws-checkbox">
-              <input type="checkbox" name="newsletter" checked={form.newsletter} onChange={handleChange} />
-              <span>¿Quieres suscribirte al newsletter de Propel?</span>
+              <input type="checkbox" name="newsletter" checked={form.newsletter} onChange={handleChange} required />
+              <span>¿Quieres suscribirte al newsletter de Propel?*</span>
             </label>
 
             <p className="ws-form__legal">
@@ -417,7 +448,7 @@ const WorkshopLanding = () => {
                 </div>
                 <div className="ws-card__body">
                   <span className={`ws-card__chip${card.live ? ' ws-card__chip--live' : ''}`}>
-                    {card.live ? 'Workshop Live' : 'On demand'}
+                    {card.live ? 'Workshop' : 'On demand'}
                   </span>
                   {card.fecha && (
                     <p className="ws-card__row">
@@ -425,7 +456,7 @@ const WorkshopLanding = () => {
                     </p>
                   )}
                   {card.metaValue && (
-                    <p className="ws-card__row">
+                    <p className="ws-card__row ws-card__row--meta">
                       <span className="ws-card__row-label">{card.metaLabel}:</span> {card.metaValue}
                     </p>
                   )}
@@ -435,7 +466,7 @@ const WorkshopLanding = () => {
           </div>
 
           <div className="ws-courses__cta">
-            <a href="/register" className="ws-btn ws-btn--cta">Empieza aquí</a>
+            <a href="/register" className="ws-btn ws-btn--cta">Crea tu cuenta</a>
           </div>
         </section>
       )}

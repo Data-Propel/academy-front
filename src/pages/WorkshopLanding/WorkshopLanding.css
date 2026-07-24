@@ -47,12 +47,38 @@
    margins cancel the panel padding so it touches both edges; the
    per-breakpoint overrides below keep it flush as the padding changes. */
 .ws-hero__photo {
-  display: block;
+  display: flex;
   width: calc(100% + var(--pad-l) + var(--pad-r));
   height: 320px;
+  margin: 36px 0 0 calc(-1 * var(--pad-l));
+}
+
+.ws-hero__photo-img {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
   object-fit: cover;
   object-position: center 32%;
-  margin: 36px 0 0 calc(-1 * var(--pad-l));
+  display: block;
+}
+
+/* Right edge of the strip: Propel square on top, solid blue block below. */
+.ws-hero__photo-side {
+  flex: 0 0 15.1%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-hero__photo-square {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.ws-hero__photo-block {
+  flex: 1 1 auto;
+  background: #618ece;
 }
 
 /* Right: white form panel */
@@ -484,26 +510,26 @@
 
 .ws-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 56px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 43px;
+  max-width: 1292px;
+  margin: 0 auto 56px;
 }
 
+/* Card = square-cornered image, 16px gap, rounded white info panel below,
+   per the Figma frame. The <a> itself is transparent. */
 .ws-card {
-  background: #fff;
-  overflow: hidden;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  background: transparent;
   display: block;
   color: inherit;
   text-decoration: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
 }
-.ws-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14); }
+.ws-card:hover { transform: translateY(-2px); }
 
 .ws-card__img {
   width: 100%;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 402 / 264;
   overflow: hidden;
 }
 
@@ -515,7 +541,11 @@
 }
 
 .ws-card__body {
-  padding: 14px 16px 18px;
+  background: #fff;
+  border-radius: 10px;
+  margin-top: 16px;
+  padding: 18px 21px 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .ws-card__tag {
@@ -533,12 +563,12 @@
 .ws-card__chip {
   display: inline-block;
   font-size: 10px;
-  font-weight: 600;
-  color: #5b6b67;
-  background: #eef1ef;
-  padding: 3px 10px;
-  border-radius: 999px;
-  margin-bottom: 10px;
+  font-weight: 500;
+  color: #003a37;
+  background: #f2f2f2;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
 }
 .ws-card__chip--live {
   color: #fff;
@@ -546,13 +576,15 @@
 }
 
 .ws-card__row {
-  font-size: 12.5px;
-  color: #2c3a37;
-  margin: 0 0 3px;
-  line-height: 1.4;
+  font-size: 21px;
+  font-weight: 500;
+  color: #043a37;
+  margin: 0 0 6px;
+  line-height: 1.2;
 }
 .ws-card__row:last-child { margin-bottom: 0; }
-.ws-card__row-label { font-weight: 600; color: #043a37; }
+.ws-card__row--meta { font-size: 14.5px; }
+.ws-card__row-label { font-weight: inherit; color: inherit; }
 
 .ws-courses__cta {
   text-align: center;
@@ -675,6 +707,8 @@
     flex: 0 0 80%;
     scroll-snap-align: start;
   }
+  .ws-card__row { font-size: 17px; }
+  .ws-card__row--meta { font-size: 13px; }
   .ws-btn--cta { height: 52px; font-size: 17px; }
 
   .ws-benefits { padding: 40px 20px; gap: 20px; }
