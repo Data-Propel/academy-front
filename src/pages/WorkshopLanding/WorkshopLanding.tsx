@@ -11,11 +11,39 @@ import iconClock from '../../assets/workshop/icons/clock.svg';
 import iconVideo from '../../assets/workshop/icons/video.svg';
 import './WorkshopLanding.css';
 
-// Edición PE (setiembre 2026). El slug apunta al Workshop en la base; el resto
-// es el contenido estático del hero y la tarjeta 1 de la ruta.
-const WORKSHOP_SLUG = 'lidera-ia-pe';
-const EVENT_DATE_LABEL = '9 de septiembre';
-const EVENT_TIME_LABEL = '9 AM PE';
+// Ediciones del workshop (setiembre 2026). El slug apunta al Workshop en la
+// base; el resto es el contenido estático del hero y la tarjeta 1 de la ruta.
+// `referralFallback` solo se usa si la API del landing no responde — la lista
+// viva es Workshop.referral_options, editable desde /admin/workshops.
+export type WorkshopEditionKey = 'pe' | 'co';
+
+type WorkshopEdition = {
+  slug: string;
+  heroDateLabel: string;
+  cardDateLabel: string;
+  timeLabel: string;
+  referralFallback: string[];
+  metaKey: 'workshop' | 'workshopCo';
+};
+
+const EDITIONS: Record<WorkshopEditionKey, WorkshopEdition> = {
+  pe: {
+    slug: 'lidera-ia-pe',
+    heroDateLabel: '9 de septiembre',
+    cardDateLabel: '9 de septiembre',
+    timeLabel: '9 AM PE',
+    referralFallback: ['Ikigai', 'Kunan', 'Es Hoy', 'Propel'],
+    metaKey: 'workshop',
+  },
+  co: {
+    slug: 'lidera-ia-co',
+    heroDateLabel: '10 de setiembre',
+    cardDateLabel: '10 de septiembre',
+    timeLabel: '9 AM CO',
+    referralFallback: ['AFE', 'Compartamos con Colombia', 'Makaia', 'Propel'],
+    metaKey: 'workshopCo',
+  },
+};
 
 const PAISES = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica', 'Ecuador',
@@ -31,16 +59,6 @@ const TIPOS_ORG = [
   'Centro educativo, universidad u otros',
   'Entidad pública',
   'Cooperativa o empresa social',
-];
-
-// Fallback if the landing-info API is unreachable — the live list comes from
-// the backend (Workshop.referral_options) so the Academy team can edit it from
-// /admin/workshops without a deploy.
-const COMO_TE_ENTERASTE_FALLBACK = [
-  'Ikigai',
-  'Kunan',
-  'Es Hoy',
-  'Propel',
 ];
 
 // Profile stores country as ISO code; this form uses Spanish names. Unmapped → 'Otro'.
@@ -108,7 +126,8 @@ const extractError = (data: Record<string, unknown>): string => {
 
 type AlreadyRegistered = { zoomJoinUrl: string | null };
 
-const WorkshopLanding = () => {
+const WorkshopLanding = ({ edition = 'pe' }: { edition?: WorkshopEditionKey }) => {
+  const ed = EDITIONS[edition];
   const [form, setForm] = useState<FormState>(EMPTY);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -120,7 +139,7 @@ const WorkshopLanding = () => {
   const [statusReady, setStatusReady] = useState(!isAuthenticated());
   const [alreadyRegistered, setAlreadyRegistered] = useState<AlreadyRegistered | null>(null);
   const [pathCourses, setPathCourses] = useState<PathCourse[]>([]);
-  const [referralOptions, setReferralOptions] = useState<string[]>(COMO_TE_ENTERASTE_FALLBACK);
+  const [referralOptions, setReferralOptions] = useState<string[]>(ed.referralFallback);
   const [helpOpen, setHelpOpen] = useState(false);
 
   // Close the help bubble on any click outside it (the bubble itself stays
@@ -141,7 +160,7 @@ const WorkshopLanding = () => {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/workshops/${WORKSHOP_SLUG}/path/`);
+        const res = await fetch(`/api/workshops/${ed.slug}/path/`);
         if (!res.ok || cancelled) return;
         const data = await res.json() as PathCourse[];
         if (!cancelled) setPathCourses(data);
@@ -151,7 +170,7 @@ const WorkshopLanding = () => {
     })();
     (async () => {
       try {
-        const res = await fetch(`/api/workshops/${WORKSHOP_SLUG}/landing/`);
+        const res = await fetch(`/api/workshops/${ed.slug}/landing/`);
         if (!res.ok || cancelled) return;
         const data = await res.json() as { referral_options?: string[] };
         if (!cancelled && Array.isArray(data.referral_options) && data.referral_options.length > 0) {
@@ -162,7 +181,7 @@ const WorkshopLanding = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [ed.slug]);
 
   // Pre-fill from the logged-in user's profile (editable — they may register someone else)
   // and check whether they already have a registration for this workshop.
@@ -173,7 +192,7 @@ const WorkshopLanding = () => {
       const token = getToken();
       const [profileRes, statusRes] = await Promise.all([
         authApi.getProfile(),
-        fetch(`/api/workshops/${WORKSHOP_SLUG}/my-status/`, {
+        fetch(`/api/workshops/${ed.slug}/my-status/`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }),
       ]);
@@ -208,7 +227,7 @@ const WorkshopLanding = () => {
       setStatusReady(true);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [ed.slug]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -220,7 +239,7 @@ const WorkshopLanding = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`/api/workshops/${WORKSHOP_SLUG}/register/`, {
+      const res = await fetch(`/api/workshops/${ed.slug}/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -257,7 +276,7 @@ const WorkshopLanding = () => {
       thumbnail: peCard,
       alt: 'Lidera con un IA mindset',
       live: true,
-      fecha: EVENT_DATE_LABEL,
+      fecha: ed.cardDateLabel,
       metaLabel: 'Duración',
       metaValue: '60 min',
     },
@@ -277,11 +296,11 @@ const WorkshopLanding = () => {
     <div className="ws-page">
       <PageHead
         raw
-        title={PAGE_META.workshop.title}
-        description={PAGE_META.workshop.description}
-        ogDescription={PAGE_META.workshop.ogDescription}
-        ogImage={PAGE_META.workshop.ogImage}
-        canonicalPath={PAGE_META.workshop.canonicalPath}
+        title={PAGE_META[ed.metaKey].title}
+        description={PAGE_META[ed.metaKey].description}
+        ogDescription={PAGE_META[ed.metaKey].ogDescription}
+        ogImage={PAGE_META[ed.metaKey].ogImage}
+        canonicalPath={PAGE_META[ed.metaKey].canonicalPath}
       />
 
       {/* ── Success modal ── */}
@@ -330,11 +349,11 @@ const WorkshopLanding = () => {
           <div className="ws-hero__details">
             <div className="ws-hero__detail">
               <img src={iconCalendar} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
-              <p className="ws-detail-line">{EVENT_DATE_LABEL}</p>
+              <p className="ws-detail-line">{ed.heroDateLabel}</p>
             </div>
             <div className="ws-hero__detail">
               <img src={iconClock} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
-              <p className="ws-detail-line">{EVENT_TIME_LABEL}</p>
+              <p className="ws-detail-line">{ed.timeLabel}</p>
             </div>
             <div className="ws-hero__detail">
               <img src={iconVideo} alt="" aria-hidden="true" className="ws-hero__detail-icon" />
@@ -364,7 +383,7 @@ const WorkshopLanding = () => {
           ) : alreadyRegistered ? (
             <div className="ws-form ws-form--registered">
               <h2 className="ws-modal__title">¡Ya estás registrado!</h2>
-              <p>Te esperamos en el workshop: Lidera con un IA mindset el {EVENT_DATE_LABEL}.</p>
+              <p>Te esperamos en el workshop: Lidera con un IA mindset el {ed.heroDateLabel}.</p>
               <p><strong>Mientras tanto, comienza tu certificación en la Nonprofit Academy.</strong></p>
               <a href="/cursos" className="ws-btn ws-btn--submit">Ver cursos disponibles</a>
             </div>
