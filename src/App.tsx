@@ -73,8 +73,7 @@ export function AppContent() {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isFormRoute = location.pathname.startsWith('/forms/');
   // decodeURIComponent: the browser reports accented paths percent-encoded.
-  const isWorkshopRoute = decodeURIComponent(location.pathname) === '/certificación-ia-pe'
-    || location.pathname === '/certificacion-ia-pe';
+  const isWorkshopRoute = /^\/certificaci(ón|on)-ia-(pe|co)$/.test(decodeURIComponent(location.pathname));
   const isAuthRoute = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/completar-perfil';
   const isHomeRoute = location.pathname === '/';
   const isCatalogRoute = location.pathname === '/cursos' || location.pathname === '/cursos/';
@@ -125,6 +124,8 @@ export function AppContent() {
           <Route path="/lidera-con-ia-mindset" element={<Navigate to="/register" replace />} />
           <Route path="/certificación-ia-pe" element={<WorkshopLanding />} />
           <Route path="/certificacion-ia-pe" element={<WorkshopLanding />} />
+          <Route path="/certificación-ia-co" element={<WorkshopLanding edition="co" />} />
+          <Route path="/certificacion-ia-co" element={<WorkshopLanding edition="co" />} />
           <Route path="/verify/:code" element={<VerifyCredential />} />
           <Route path="/admin/*" element={isAuthenticated() ? <Admin /> : <Navigate to="/login" replace />} />
           <Route path="*" element={<NotFound />} />

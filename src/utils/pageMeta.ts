@@ -16,7 +16,7 @@ export interface PageMeta {
   canonicalPath: string;
 }
 
-export const PAGE_META: Record<'home' | 'cursos' | 'register' | 'login' | 'profile' | 'workshop', PageMeta> = {
+export const PAGE_META: Record<'home' | 'cursos' | 'register' | 'login' | 'profile' | 'workshop' | 'workshopCo', PageMeta> = {
   home: {
     title: 'Propel Nonprofit Academy | Cursos para organizaciones sociales',
     description: 'Explora los cursos de la Nonprofit Academy. Capacítate junto a tu equipo en IA y herramientas digitales para aumentar el impacto de tu organización social.',
@@ -58,5 +58,12 @@ export const PAGE_META: Record<'home' | 'cursos' | 'register' | 'login' | 'profi
     ogDescription: 'Certifícate en IA y lidera el cambio en tu organización social.',
     ogImage: '/og/workshop.jpg',
     canonicalPath: '/certificación-ia-pe',
+  },
+  workshopCo: {
+    title: 'Lidera con un IA mindset | Propel Nonprofit Academy',
+    description: 'Obtén tu certificación en IA en la Nonprofit Academy. Desarrolla un AI mindset, domina herramientas prácticas y lidera el cambio en tu organización social.',
+    ogDescription: 'Certifícate en IA y lidera el cambio en tu organización social.',
+    ogImage: '/og/workshop.jpg',
+    canonicalPath: '/certificación-ia-co',
   },
 };
