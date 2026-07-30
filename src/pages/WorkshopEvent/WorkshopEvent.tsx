@@ -23,7 +23,7 @@ const EVENT = {
     'Un plan para fortalecer su sistema de medición con IA.',
     'Un caso de uso de IA listo para implementar.',
   ],
-  presenter: { name: 'Andrea López Aranda', role: 'Program Lead', org: '@ Propel' },
+  presenter: { name: 'Andrea López Aranda', role: 'Programs Manager', org: '@ Propel' },
 };
 
 const PAISES = [
