@@ -37,7 +37,7 @@ const EDITIONS: Record<WorkshopEditionKey, WorkshopEdition> = {
   },
   co: {
     slug: 'lidera-ia-co',
-    heroDateLabel: '10 de setiembre',
+    heroDateLabel: '10 de septiembre',
     cardDateLabel: '10 de septiembre',
     timeLabel: '9 AM CO',
     referralFallback: ['AFE', 'Compartamos con Colombia', 'Makaia', 'Propel'],
