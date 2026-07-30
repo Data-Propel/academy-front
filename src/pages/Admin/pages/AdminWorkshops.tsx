@@ -146,6 +146,9 @@ export default function AdminWorkshops() {
   const [zoomIdSaved, setZoomIdSaved] = useState('');
   const [zoomIdDraft, setZoomIdDraft] = useState('');
   const [zoomSaving, setZoomSaving] = useState(false);
+  const [zoomLinkSaved, setZoomLinkSaved] = useState('');
+  const [zoomLinkDraft, setZoomLinkDraft] = useState('');
+  const [zoomLinkSaving, setZoomLinkSaving] = useState(false);
   const [allCourses, setAllCourses] = useState<CourseOption[]>([]);
   const [courseToAdd, setCourseToAdd] = useState<number | ''>('');
   const [workshops, setWorkshops] = useState<WorkshopOption[]>([]);
@@ -265,6 +268,7 @@ export default function AdminWorkshops() {
       setZoom(null); setZoomErr('');
       setReferralOptions(null); setOptionDrafts([]); setNewOption('');
       setZoomIdSaved(''); setZoomIdDraft('');
+      setZoomLinkSaved(''); setZoomLinkDraft('');
       const tag = (rows: Registration[], w: WorkshopOption) =>
         rows.map((x) => ({ ...x, workshop_slug: w.slug, workshop_name: w.name, workshop_date: w.event_date }));
       if (workshopSlug.startsWith(GROUP_PREFIX)) {
@@ -294,10 +298,11 @@ export default function AdminWorkshops() {
         else showError('No se pudieron cargar las inscripciones.');
         if (p.ok) setPath(p.data as PathCourse[]);
         if (s.ok) {
-          const st = s.data as { referral_options: string[]; zoom_meeting_id: string };
+          const st = s.data as { referral_options: string[]; zoom_meeting_id: string; zoom_link?: string };
           setReferralOptions(st.referral_options);
           setOptionDrafts(st.referral_options);
           setZoomIdSaved(st.zoom_meeting_id); setZoomIdDraft(st.zoom_meeting_id);
+          setZoomLinkSaved(st.zoom_link ?? ''); setZoomLinkDraft(st.zoom_link ?? '');
         }
       }
     })();
@@ -383,6 +388,18 @@ export default function AdminWorkshops() {
       setZoomIdSaved(st.zoom_meeting_id); setZoomIdDraft(st.zoom_meeting_id);
     } else {
       showError('No se pudo guardar el ID de Zoom.');
+    }
+  };
+
+  const saveZoomLink = async () => {
+    setZoomLinkSaving(true);
+    const res = await adminApi.updateWorkshopSettings(workshopSlug, { zoom_link: zoomLinkDraft.trim() });
+    setZoomLinkSaving(false);
+    if (res.ok) {
+      const st = res.data as { zoom_link: string };
+      setZoomLinkSaved(st.zoom_link); setZoomLinkDraft(st.zoom_link);
+    } else {
+      showError('No se pudo guardar el link de Zoom.');
     }
   };
 
@@ -929,6 +946,28 @@ export default function AdminWorkshops() {
           <p className="wk-path-sub" style={{ marginTop: 8 }}>
             Con el ID configurado, cada nueva inscripción se registra automáticamente en Zoom
             y recibe su link personal. El landing funciona igual mientras esté vacío.
+          </p>
+
+          <div className="wk-path-add" style={{ marginTop: 18, alignItems: 'center' }}>
+            <label htmlFor="wk-zoom-link" style={{ whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
+              Link de Zoom
+            </label>
+            <input
+              id="wk-zoom-link"
+              type="url"
+              className="wk-option-input"
+              placeholder="Ej. https://us06web.zoom.us/meeting/register/…"
+              value={zoomLinkDraft}
+              onChange={(e) => setZoomLinkDraft(e.target.value)}
+            />
+            <button onClick={saveZoomLink} disabled={zoomLinkSaving || zoomLinkDraft.trim() === zoomLinkSaved}>
+              {zoomLinkSaving ? 'Guardando…' : 'Guardar'}
+            </button>
+          </div>
+          <p className="wk-path-sub" style={{ marginTop: 8 }}>
+            Este link se incluye en el correo de confirmación de inscripción. Mientras esté
+            vacío, las confirmaciones quedan en espera; al guardarlo se envían automáticamente
+            a quienes ya se habían inscrito.
           </p>
         </section>
         )}

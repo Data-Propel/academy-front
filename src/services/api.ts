@@ -1268,7 +1268,7 @@ export const adminApi = {
     return { ok: response.ok, data: await response.json().catch(() => null) };
   },
 
-  updateWorkshopSettings: async (slug: string, data: { referral_options?: string[]; zoom_meeting_id?: string }) => {
+  updateWorkshopSettings: async (slug: string, data: { referral_options?: string[]; zoom_meeting_id?: string; zoom_link?: string }) => {
     const response = await apiFetch(`/workshops/admin/${slug}/settings/`, {
       method: 'PATCH',
       body: JSON.stringify(data),

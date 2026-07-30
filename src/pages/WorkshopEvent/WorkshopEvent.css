@@ -1,0 +1,473 @@
+/* wse-* — WorkshopEvent (landing /workshop, Figma "Nueva Landing registro evento") */
+
+.wse-page {
+  font-family: 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #144a46;
+}
+
+/* ── Layout: info panel | decorative strip | form panel ── */
+
+.wse-hero {
+  display: flex;
+  align-items: stretch;
+  min-height: 700px;
+}
+
+.wse-left {
+  flex: 0 0 49.4%;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+}
+
+.wse-left__content {
+  flex: 1 1 auto;
+  padding: 86px clamp(24px, 3vw, 56px) 48px clamp(24px, 7.2vw, 138px);
+}
+
+.wse-strip {
+  flex: 0 0 8.2%;
+  display: flex;
+  flex-direction: column;
+}
+
+.wse-strip__square {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.wse-strip__yellow {
+  flex: 1 1 auto;
+  background: #fff389;
+}
+
+.wse-right {
+  flex: 1 1 auto;
+  background: #fff;
+  padding: 60px clamp(24px, 3.8vw, 73px) 56px clamp(24px, 6vw, 116px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Left panel content ── */
+
+.wse-badge {
+  display: inline-block;
+  background: #fc5c3a;
+  color: #fff;
+  font-size: clamp(20px, 1.44vw, 27.6px);
+  padding: 8px 18px;
+  min-width: 179px;
+  box-sizing: border-box;
+  text-align: center;
+  line-height: normal;
+}
+
+.wse-title {
+  font-size: clamp(38px, 3.25vw, 62px);
+  font-weight: 400;
+  line-height: 1.18;
+  color: #144a46;
+  margin: 31px 0 0;
+}
+
+.wse-title__medium {
+  font-weight: 500;
+}
+
+.wse-takeaways {
+  margin-top: 42px;
+  font-size: clamp(17px, 1.1vw, 21px);
+  line-height: 1.5;
+  color: #144a46;
+}
+
+.wse-takeaways p {
+  margin: 0 0 1.5em;
+}
+
+.wse-takeaways ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wse-takeaways li {
+  padding-left: 1em;
+  position: relative;
+}
+
+.wse-takeaways li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+}
+
+/* Fecha/hora del evento — shared by the hero, the success modal and the
+   already-registered panel. */
+.wse-details {
+  margin-top: 38px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wse-detail {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.wse-detail__icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+}
+
+.wse-detail p {
+  margin: 0;
+  font-size: clamp(17px, 1.05vw, 20px);
+  color: #043a37;
+  line-height: 1.5;
+}
+
+/* Yellow presenter band */
+.wse-band {
+  background: #e7dd5d;
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  padding: 35px clamp(24px, 3vw, 56px) 35px clamp(24px, 7.65vw, 147px);
+}
+
+.wse-band__photo {
+  background: #fff389;
+  padding: 12px 0 0;
+  flex: 0 0 178px;
+  width: 178px;
+}
+
+.wse-band__photo img {
+  display: block;
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.wse-band__presenter {
+  font-size: clamp(19px, 1.3vw, 25px);
+  color: #043a37;
+  line-height: 1.5;
+}
+
+.wse-band__presenter p {
+  margin: 0;
+}
+
+.wse-band__name {
+  font-weight: 600;
+}
+
+/* ── Form panel ── */
+
+.wse-form {
+  max-width: 671px;
+}
+
+.wse-form--loading {
+  min-height: 480px;
+}
+
+.wse-form--registered {
+  padding-top: 24px;
+}
+
+.wse-form--registered .wse-details {
+  margin: 24px 0 28px;
+}
+
+.wse-form__error {
+  background: #fdecea;
+  border: 1px solid #f5c6cb;
+  color: #b02a37;
+  padding: 12px 16px;
+  margin-bottom: 22px;
+  font-size: 15px;
+  border-radius: 4px;
+}
+
+.wse-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 38px;
+  margin-bottom: 30px;
+}
+
+.wse-field label {
+  display: block;
+  font-size: clamp(16px, 1vw, 19.3px);
+  color: #144a46;
+  margin-bottom: 6px;
+}
+
+.wse-field input[type='text'],
+.wse-field input[type='email'],
+.wse-field select {
+  width: 100%;
+  height: 60px;
+  box-sizing: border-box;
+  border: 1.5px solid #007066;
+  border-radius: 0;
+  background: #fff;
+  padding: 0 16px;
+  font-family: inherit;
+  font-size: 17px;
+  color: #144a46;
+  appearance: none;
+}
+
+.wse-field input:focus,
+.wse-field select:focus {
+  outline: 2px solid #007066;
+  outline-offset: 1px;
+}
+
+.wse-input--invalid,
+.wse-field input.wse-input--invalid,
+.wse-field select.wse-input--invalid {
+  border-color: #b02a37;
+}
+
+.wse-field__error {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #b02a37;
+}
+
+/* Custom chevron for selects */
+.wse-select {
+  position: relative;
+}
+
+.wse-select::after {
+  content: '';
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid #007066;
+  border-bottom: 2px solid #007066;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.wse-form__note {
+  font-size: clamp(16px, 1vw, 19.3px);
+  color: #144a46;
+  margin: 0 0 26px;
+}
+
+.wse-field--checkbox {
+  margin-bottom: 26px;
+}
+
+.wse-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  cursor: pointer;
+  font-size: clamp(16px, 1vw, 19.3px);
+  color: #144a46;
+}
+
+.wse-checkbox input {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  margin: 2px 13px 0 0;
+  accent-color: #007066;
+  border: 1.5px solid #007066;
+}
+
+.wse-form__legal {
+  font-size: 14.9px;
+  line-height: 1.5;
+  color: #144a46;
+  margin: 0 0 30px;
+}
+
+.wse-submit {
+  display: inline-block;
+  background: #fc5c3a;
+  color: #fff;
+  border: none;
+  border-radius: 0;
+  min-width: 164px;
+  height: 61px;
+  padding: 0 26px;
+  font-family: inherit;
+  font-size: 19.3px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.wse-submit:hover:not(:disabled) {
+  background: #e04f30;
+}
+
+.wse-submit:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+/* ── Help bubble ── */
+
+.wse-help {
+  position: absolute;
+  right: 28px;
+  bottom: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2.5px solid #007066;
+  background: #fff;
+  color: #007066;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.wse-help-bubble {
+  position: absolute;
+  right: 28px;
+  bottom: 74px;
+  background: #043a37;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.5;
+  white-space: nowrap;
+  z-index: 5;
+}
+
+/* ── Success modal ── */
+
+.wse-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 58, 55, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.wse-modal {
+  position: relative;
+  background: #fff;
+  max-width: 560px;
+  width: 100%;
+  padding: 44px 48px 40px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.wse-modal .wse-details {
+  margin: 24px 0;
+}
+
+.wse-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  border: none;
+  background: none;
+  font-size: 30px;
+  color: #144a46;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.wse-modal__title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #144a46;
+  margin: 0 0 16px;
+}
+
+.wse-modal__text {
+  font-size: 17px;
+  line-height: 1.55;
+  color: #144a46;
+  margin: 0 0 14px;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 1100px) {
+  .wse-hero {
+    flex-direction: column;
+  }
+
+  .wse-strip {
+    display: none;
+  }
+
+  .wse-left__content {
+    padding: 48px 24px 40px;
+  }
+
+  .wse-band {
+    padding: 28px 24px;
+  }
+
+  .wse-right {
+    padding: 40px 24px 56px;
+  }
+
+  .wse-form {
+    max-width: 640px;
+  }
+}
+
+@media (max-width: 640px) {
+  .wse-form__row {
+    grid-template-columns: 1fr;
+    row-gap: 22px;
+    margin-bottom: 22px;
+  }
+
+  .wse-band {
+    gap: 20px;
+  }
+
+  .wse-band__photo {
+    flex-basis: 132px;
+    width: 132px;
+  }
+
+  .wse-band__photo img {
+    height: 141px;
+  }
+
+  .wse-modal {
+    padding: 36px 24px 32px;
+  }
+
+  .wse-field input[type='text'],
+  .wse-field input[type='email'],
+  .wse-field select {
+    height: 54px;
+  }
+
+  .wse-submit {
+    width: 100%;
+  }
+}
