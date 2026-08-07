@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, memo, type FormEvent, type ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, memo, type FormEvent, type ChangeEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAdmin } from '../AdminContext';
 import { type User } from '../AdminContext';
@@ -59,13 +59,13 @@ interface ColumnDef {
 
 const COLUMNS: ColumnDef[] = [
   { key: 'id',                label: 'ID',         type: 'readonly-number', width: '70px' },
-  { key: 'email',             label: 'Email',      type: 'text',            width: '240px' },
-  { key: 'first_name',        label: 'Nombre',     type: 'text',            width: '140px' },
-  { key: 'last_name',         label: 'Apellido',   type: 'text',            width: '140px' },
-  { key: 'display_name',      label: 'Mostrar',    type: 'text',            width: '140px' },
-  { key: 'country',           label: 'País',       type: 'text',            width: '140px' },
-  { key: 'organization',      label: 'Organización', type: 'text',          width: '180px' },
-  { key: 'organization_type', label: 'Tipo org.',  type: 'select',          width: '160px' },
+  { key: 'email',             label: 'Email',      type: 'text',            width: '200px' },
+  { key: 'first_name',        label: 'Nombre',     type: 'text',            width: '120px' },
+  { key: 'last_name',         label: 'Apellido',   type: 'text',            width: '120px' },
+  { key: 'display_name',      label: 'Mostrar',    type: 'text',            width: '120px' },
+  { key: 'country',           label: 'País',       type: 'text',            width: '110px' },
+  { key: 'organization',      label: 'Organización', type: 'text',          width: '160px' },
+  { key: 'organization_type', label: 'Tipo org.',  type: 'select',          width: '140px' },
   { key: 'avatar',            label: 'Avatar URL', type: 'text',            width: '180px' },
   { key: 'bio',               label: 'Bio',        type: 'textarea',        width: '200px' },
   { key: 'is_active',         label: 'Activo',     type: 'checkbox',        width: '70px' },
@@ -77,7 +77,12 @@ const COLUMNS: ColumnDef[] = [
   { key: 'utm_campaign',      label: 'UTM Campaign', type: 'text',          width: '160px' },
   { key: 'referrer',          label: 'Referrer',     type: 'text',          width: '200px' },
   { key: 'landing_page',      label: 'Landing',      type: 'text',          width: '200px' },
-  { key: 'date_joined',       label: 'Registrado', type: 'readonly-date',   width: '120px' },
+  { key: 'date_joined',       label: 'Registrado', type: 'readonly-date',   width: '110px' },
+];
+
+// Columns hidden by default (tracking/rarely-edited); the user's choice persists in localStorage.
+const DEFAULT_HIDDEN_COLS: SortKey[] = [
+  'avatar', 'bio', 'utm_source', 'utm_medium', 'utm_campaign', 'referrer', 'landing_page',
 ];
 
 // Country canonicalization map (mirrors the SQL normalization script).
@@ -456,6 +461,22 @@ const computeSuggestions = (users: User[]): SuggestionCategory[] => {
   ].filter((c) => c.suggestions.length > 0);
 };
 
+// ---- Column visibility persistence ----
+
+const HIDDEN_COLS_KEY = 'admin_users_hidden_cols';
+
+const loadHiddenCols = (): SortKey[] => {
+  if (typeof window === 'undefined') return DEFAULT_HIDDEN_COLS;
+  try {
+    const raw = window.localStorage.getItem(HIDDEN_COLS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed as SortKey[];
+    }
+  } catch { /* corrupt storage -> defaults */ }
+  return DEFAULT_HIDDEN_COLS;
+};
+
 // ---- Column width persistence ----
 
 const COL_WIDTHS_KEY = 'admin_users_col_widths';
@@ -514,12 +535,13 @@ const formatDate = (iso?: string | null): string => {
 interface RowProps {
   user: User;
   edits: RowEdits | undefined;
+  columns: ColumnDef[];
   onCellChange: (id: number, field: EditableField, value: unknown) => void;
   onDelete: (user: User) => void;
   readOnly?: boolean;
 }
 
-const EditableRow = memo(function EditableRow({ user, edits, onCellChange, onDelete, readOnly }: RowProps) {
+const EditableRow = memo(function EditableRow({ user, edits, columns, onCellChange, onDelete, readOnly }: RowProps) {
   const getValue = (field: EditableField): unknown => {
     if (edits && field in edits) return edits[field];
     return user[field];
@@ -528,7 +550,7 @@ const EditableRow = memo(function EditableRow({ user, edits, onCellChange, onDel
 
   return (
     <tr>
-      {COLUMNS.map((col) => {
+      {columns.map((col) => {
         if (col.type === 'readonly-number') {
           return <td key={col.key} className="grid-cell readonly">{user[col.key] as number}</td>;
         }
@@ -601,7 +623,7 @@ const EditableRow = memo(function EditableRow({ user, edits, onCellChange, onDel
       </td>
     </tr>
   );
-}, (prev, next) => prev.user === next.user && prev.edits === next.edits && prev.readOnly === next.readOnly);
+}, (prev, next) => prev.user === next.user && prev.edits === next.edits && prev.columns === next.columns && prev.readOnly === next.readOnly);
 
 // ---- Main component ----
 
@@ -638,6 +660,29 @@ export default function AdminUsers() {
   useEffect(() => {
     window.localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(columnWidths));
   }, [columnWidths]);
+
+  // Column visibility (persisted)
+  const [hiddenCols, setHiddenCols] = useState<SortKey[]>(loadHiddenCols);
+  useEffect(() => {
+    window.localStorage.setItem(HIDDEN_COLS_KEY, JSON.stringify(hiddenCols));
+  }, [hiddenCols]);
+  const [showColPicker, setShowColPicker] = useState(false);
+  const colPickerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!showColPicker) return;
+    const onDown = (e: MouseEvent) => {
+      if (colPickerRef.current && !colPickerRef.current.contains(e.target as Node)) {
+        setShowColPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [showColPicker]);
+
+  const visibleColumns = useMemo(() => COLUMNS.filter((c) => !hiddenCols.includes(c.key)), [hiddenCols]);
+  const toggleCol = (key: SortKey) => {
+    setHiddenCols((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  };
 
   // Suggestions modal
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -998,35 +1043,7 @@ export default function AdminUsers() {
       <div className="admin-content">
         {/* Toolbar: search + filters + save bar */}
         <div className="admin-toolbar grid-toolbar">
-          <div className="admin-filters">
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Buscar por email, nombre, organización..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <select value={filterAdmin} onChange={(e) => setFilterAdmin(e.target.value)}>
-              <option value="">Todos los roles</option>
-              <option value="true">Administradores</option>
-              <option value="false">Usuarios</option>
-            </select>
-            <select value={filterActive} onChange={(e) => setFilterActive(e.target.value)}>
-              <option value="">Todos los estados</option>
-              <option value="true">Activos</option>
-              <option value="false">Inactivos</option>
-            </select>
-            <select value={filterCountry} onChange={(e) => setFilterCountry(e.target.value)}>
-              <option value="">Todos los países</option>
-              <option value="__empty__">(Sin país)</option>
-              {countries.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
           <div className="grid-save-bar">
-            <span className="grid-count">
-              {filteredSorted.length} / {users.length}
-              {!readOnly && dirtyCount > 0 && <span className="grid-dirty-count"> · {dirtyCount} con cambios</span>}
-            </span>
             {!readOnly && (
               <>
                 <button
@@ -1053,6 +1070,65 @@ export default function AdminUsers() {
                 </button>
               </>
             )}
+            <span className="grid-count">
+              {filteredSorted.length} / {users.length}
+              {!readOnly && dirtyCount > 0 && <span className="grid-dirty-count"> · {dirtyCount} con cambios</span>}
+            </span>
+          </div>
+          <div className="admin-filters">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Buscar por email, nombre, organización..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <select value={filterAdmin} onChange={(e) => setFilterAdmin(e.target.value)}>
+              <option value="">Todos los roles</option>
+              <option value="true">Administradores</option>
+              <option value="false">Usuarios</option>
+            </select>
+            <select value={filterActive} onChange={(e) => setFilterActive(e.target.value)}>
+              <option value="">Todos los estados</option>
+              <option value="true">Activos</option>
+              <option value="false">Inactivos</option>
+            </select>
+            <select value={filterCountry} onChange={(e) => setFilterCountry(e.target.value)}>
+              <option value="">Todos los países</option>
+              <option value="__empty__">(Sin país)</option>
+              {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <div className="col-picker" ref={colPickerRef}>
+              <button
+                className="btn-columns"
+                onClick={() => setShowColPicker((v) => !v)}
+                title="Mostrar u ocultar columnas"
+              >
+                Columnas ({visibleColumns.length}/{COLUMNS.length}) ▾
+              </button>
+              {showColPicker && (
+                <div className="col-picker-panel">
+                  {COLUMNS.map((col) => (
+                    <label key={col.key} className="col-picker-item">
+                      <input
+                        type="checkbox"
+                        checked={!hiddenCols.includes(col.key)}
+                        onChange={() => toggleCol(col.key)}
+                      />
+                      {col.label}
+                    </label>
+                  ))}
+                  <div className="col-picker-footer">
+                    <button className="link-btn" onClick={() => setHiddenCols([...DEFAULT_HIDDEN_COLS])}>
+                      Por defecto
+                    </button>
+                    <button className="link-btn" onClick={() => setHiddenCols([])}>
+                      Mostrar todas
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1065,7 +1141,7 @@ export default function AdminUsers() {
             <table className="admin-table grid-table">
               <thead>
                 <tr>
-                  {COLUMNS.map((col) => {
+                  {visibleColumns.map((col) => {
                     const w = getColWidth(col);
                     return (
                       <th
@@ -1105,6 +1181,7 @@ export default function AdminUsers() {
                     key={user.id}
                     user={user}
                     edits={edits[user.id]}
+                    columns={visibleColumns}
                     onCellChange={handleCellChange}
                     onDelete={(u) => setDeleteTarget(u)}
                     readOnly={readOnly}
