@@ -9,8 +9,9 @@ import cameraBadge from '../../assets/profile/camera-badge.svg';
 
 // Profile-picture page (Figma S6-03 "Configuración de perfil"): profile hero +
 // "Sube una foto o elige tu avatar" band with an upload circle and the four
-// predefined Propel avatars. Picking either saves immediately and returns to
-// the profile.
+// predefined Propel avatars. Presets save immediately; uploaded photos first go
+// through an adjust step (drag + zoom inside a circular mask) and the cropped
+// square is what gets uploaded.
 
 const PRESETS = ['/avatars/propel-1.png', '/avatars/propel-2.png', '/avatars/propel-3.png', '/avatars/propel-4.png'];
 
@@ -49,12 +50,35 @@ const formatMemberSince = (dateStr: string) => {
   return `Miembro desde ${months[d.getMonth()]} ${d.getFullYear()}`;
 };
 
+// Output size of the cropped avatar uploaded to the backend.
+const CROP_OUTPUT = 512;
+
+const clampOffset = (x: number, y: number, dispW: number, dispH: number, view: number) => {
+  const maxX = Math.max(0, (dispW - view) / 2);
+  const maxY = Math.max(0, (dispH - view) / 2);
+  return {
+    x: Math.min(maxX, Math.max(-maxX, x)),
+    y: Math.min(maxY, Math.max(-maxY, y)),
+  };
+};
+
 const ProfilePhoto = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cropImgRef = useRef<HTMLImageElement>(null);
+  const dragRef = useRef<{ pointerId: number; startX: number; startY: number; baseX: number; baseY: number } | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  // Crop step state: set when a file was picked and is being adjusted
+  const [cropSrc, setCropSrc] = useState('');
+  const [natural, setNatural] = useState({ w: 0, h: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [viewSize, setViewSize] = useState(320);
+
+  useEffect(() => () => { if (cropSrc) URL.revokeObjectURL(cropSrc); }, [cropSrc]);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -79,13 +103,80 @@ const ProfilePhoto = () => {
     }
   };
 
-  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || saving) return;
+    setError('');
+    setZoom(1);
+    setOffset({ x: 0, y: 0 });
+    setNatural({ w: 0, h: 0 });
+    setViewSize(Math.min(320, window.innerWidth - 72));
+    setCropSrc(URL.createObjectURL(file));
+  };
+
+  // Base scale makes the shorter image side exactly cover the viewport; zoom
+  // multiplies on top of it, so the circle is always fully covered.
+  const baseScale = natural.w && natural.h ? viewSize / Math.min(natural.w, natural.h) : 1;
+  const dispW = natural.w * baseScale * zoom;
+  const dispH = natural.h * baseScale * zoom;
+
+  const onCropImgLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight });
+  };
+
+  const onCropPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, baseX: offset.x, baseY: offset.y };
+  };
+
+  const onCropPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== e.pointerId) return;
+    setOffset(clampOffset(
+      drag.baseX + (e.clientX - drag.startX),
+      drag.baseY + (e.clientY - drag.startY),
+      dispW, dispH, viewSize,
+    ));
+  };
+
+  const onCropPointerUp = () => { dragRef.current = null; };
+
+  const onZoomChange = (value: number) => {
+    setZoom(value);
+    const w = natural.w * baseScale * value;
+    const h = natural.h * baseScale * value;
+    setOffset((prev) => clampOffset(prev.x, prev.y, w, h, viewSize));
+  };
+
+  const cancelCrop = () => {
+    setCropSrc('');
+    setError('');
+  };
+
+  const saveCrop = async () => {
+    const img = cropImgRef.current;
+    if (!img || !natural.w || saving) return;
     setSaving(true);
     setError('');
-    const { ok, data } = await authApi.uploadAvatar(file);
+    const scale = baseScale * zoom;
+    const srcSize = viewSize / scale;
+    const cx = natural.w / 2 - offset.x / scale;
+    const cy = natural.h / 2 - offset.y / scale;
+    const canvas = document.createElement('canvas');
+    canvas.width = CROP_OUTPUT;
+    canvas.height = CROP_OUTPUT;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, CROP_OUTPUT, CROP_OUTPUT);
+    ctx.drawImage(img, cx - srcSize / 2, cy - srcSize / 2, srcSize, srcSize, 0, 0, CROP_OUTPUT, CROP_OUTPUT);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+    if (!blob) {
+      setError('No se pudo procesar la imagen. Inténtalo de nuevo.');
+      setSaving(false);
+      return;
+    }
+    const { ok, data } = await authApi.uploadAvatar(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
     if (ok) {
       navigate('/profile');
     } else {
@@ -121,6 +212,13 @@ const ProfilePhoto = () => {
               <p className="profile-hero-since">{formatMemberSince(user.created_at)}</p>
             )}
           </div>
+          <button className="profile-hero-edit" onClick={() => navigate('/profile')}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+            Volver a tu perfil
+          </button>
         </div>
       </div>
 
@@ -157,9 +255,61 @@ const ProfilePhoto = () => {
               </button>
             ))}
           </div>
-          {error && <p className="pphoto-error">{error}</p>}
+          {error && !cropSrc && <p className="pphoto-error">{error}</p>}
         </div>
       </div>
+
+      {cropSrc && (
+        <div className="pphoto-crop-overlay" role="dialog" aria-label="Ajusta tu foto">
+          <div className="pphoto-crop-card">
+            <h3 className="pphoto-crop-title">Ajusta tu foto</h3>
+            <p className="pphoto-crop-hint">Arrastra la imagen para encajarla en el círculo.</p>
+            <div
+              className="pphoto-crop-viewport"
+              style={{ width: viewSize, height: viewSize }}
+              onPointerDown={onCropPointerDown}
+              onPointerMove={onCropPointerMove}
+              onPointerUp={onCropPointerUp}
+              onPointerCancel={onCropPointerUp}
+            >
+              <img
+                ref={cropImgRef}
+                className="pphoto-crop-img"
+                src={cropSrc}
+                alt=""
+                draggable={false}
+                onLoad={onCropImgLoad}
+                style={natural.w ? {
+                  width: dispW,
+                  height: dispH,
+                  transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))`,
+                } : { visibility: 'hidden' }}
+              />
+              <div className="pphoto-crop-mask" />
+            </div>
+            <label className="pphoto-crop-zoom">
+              Zoom
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.01}
+                value={zoom}
+                onChange={(e) => onZoomChange(Number(e.target.value))}
+              />
+            </label>
+            {error && <p className="pphoto-error">{error}</p>}
+            <div className="pphoto-crop-actions">
+              <button type="button" className="pphoto-crop-cancel" onClick={cancelCrop} disabled={saving}>
+                Cancelar
+              </button>
+              <button type="button" className="pphoto-crop-save" onClick={saveCrop} disabled={saving || !natural.w}>
+                {saving ? 'Guardando…' : 'Guardar foto'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
