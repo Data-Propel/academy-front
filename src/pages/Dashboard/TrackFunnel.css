@@ -118,6 +118,37 @@
   margin: 16px 0 4px;
 }
 
+.tf-foot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tf-download {
+  border: 1px solid #106d58;
+  background: none;
+  color: #106d58;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tf-download:hover:not(:disabled) {
+  background: #106d58;
+  color: #ffffff;
+}
+
+.tf-download:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 @media (max-width: 720px) {
   .tf-card { padding: 24px 20px 20px; }
   .tf-title { font-size: 21px; }

@@ -1919,6 +1919,12 @@ export const workshopsApi = {
       return null;
     }
   },
+
+  // Staff-only CSV of the people behind each funnel bar.
+  downloadRutaFunnelCsv: async (workshopSlug: string): Promise<{ ok: boolean; blob: Blob | null }> => {
+    const response = await apiFetch(`/workshops/admin/${workshopSlug}/ruta-funnel/csv/`);
+    return { ok: response.ok, blob: response.ok ? await response.blob() : null };
+  },
 };
 
 // Public verifiable credential (Track completion). No auth — anyone, including

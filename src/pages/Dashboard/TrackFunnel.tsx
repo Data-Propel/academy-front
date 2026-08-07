@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactElement } from 'react';
-import { workshopsApi, isSuperuser, isMarketingAdmin, type RutaFunnel } from '../../services/api';
+import { workshopsApi, isSuperuser, isMarketingAdmin, triggerBlobDownload, type RutaFunnel } from '../../services/api';
 import './TrackFunnel.css';
 
 // Live funnel card for the ruta — rendered on the track view, staff only
@@ -56,7 +56,16 @@ interface TrackFunnelProps {
 const TrackFunnel = ({ trackName, workshopSlug }: TrackFunnelProps) => {
   const [data, setData] = useState<RutaFunnel | null>(null);
   const [mins, setMins] = useState(0);
+  const [downloading, setDownloading] = useState(false);
   const staff = isSuperuser() || isMarketingAdmin();
+
+  const downloadCsv = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    const { ok, blob } = await workshopsApi.downloadRutaFunnelCsv(workshopSlug);
+    if (ok && blob) triggerBlobDownload(blob, `ruta-funnel-${workshopSlug}.csv`);
+    setDownloading(false);
+  };
 
   useEffect(() => {
     if (!staff) return;
@@ -115,7 +124,12 @@ const TrackFunnel = ({ trackName, workshopSlug }: TrackFunnelProps) => {
       })}
 
       <hr className="tf-rule tf-rule--bottom" />
-      <p className="tf-foot">Meta real de Q3: 50 usuarios certificados en esta ruta.</p>
+      <div className="tf-foot-row">
+        <p className="tf-foot">Meta real de Q3: 50 usuarios certificados en esta ruta.</p>
+        <button className="tf-download" onClick={downloadCsv} disabled={downloading}>
+          {downloading ? 'Descargando…' : 'Descargar lista (CSV)'}
+        </button>
+      </div>
     </div>
   );
 };
