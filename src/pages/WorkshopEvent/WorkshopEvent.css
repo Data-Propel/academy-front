@@ -145,7 +145,6 @@
 
 .wse-band__photo {
   background: #fff389;
-  padding: 12px 0 0;
   flex: 0 0 178px;
   width: 178px;
 }
@@ -153,7 +152,7 @@
 .wse-band__photo img {
   display: block;
   width: 100%;
-  height: 190px;
+  height: 202px;
   object-fit: cover;
 }
 
@@ -454,7 +453,7 @@
   }
 
   .wse-band__photo img {
-    height: 141px;
+    height: 153px;
   }
 
   .wse-modal {

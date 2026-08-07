@@ -3,7 +3,7 @@ import { authApi, getToken, isAuthenticated } from '../../services/api';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
 import propelSquare from '../../assets/workshop/propel-square.png';
-import andreaPhoto from '../../assets/workshop/andrea-lopez.jpg';
+import andreaPhoto from '../../assets/workshop/andrea-lopez.png';
 import iconCalendar from '../../assets/workshop/icons/calendar-dark.svg';
 import iconClock from '../../assets/workshop/icons/clock-dark.svg';
 import iconVideo from '../../assets/workshop/icons/video-dark.svg';

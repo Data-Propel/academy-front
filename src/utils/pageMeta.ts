@@ -70,7 +70,7 @@ export const PAGE_META: Record<'home' | 'cursos' | 'register' | 'login' | 'profi
     title: 'Workshop: Mide tu impacto con IA | Propel Nonprofit Academy',
     description: 'Workshop gratuito de Propel: aprende qué, cómo y cuándo medir el impacto de tu organización social con IA. 20 de agosto, vía Zoom. Inscríbete gratis.',
     ogDescription: 'Mide el impacto de tu organización con IA. 20 de agosto, vía Zoom.',
-    ogImage: '/og/workshop.jpg',
+    ogImage: '/og/workshop-evento.jpg',
     canonicalPath: '/workshop',
   },
 };
