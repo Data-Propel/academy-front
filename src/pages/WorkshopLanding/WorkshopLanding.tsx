@@ -40,7 +40,7 @@ const EDITIONS: Record<WorkshopEditionKey, WorkshopEdition> = {
     heroDateLabel: '10 de septiembre',
     cardDateLabel: '10 de septiembre',
     timeLabel: '9 AM CO',
-    referralFallback: ['AFE', 'Compartamos con Colombia', 'Makaia', 'Propel'],
+    referralFallback: ['AFE', 'Makaia', 'Propel'],
     metaKey: 'workshopCo',
   },
 };
