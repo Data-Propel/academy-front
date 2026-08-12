@@ -21,6 +21,8 @@ export interface JourneySender {
 // Mirrors AUDIENCES in apps/workshops/journey_send.py.
 const AUDIENCE_OPTIONS: { key: string; label: string }[] = [
   { key: 'todos', label: 'Todos los registrados' },
+  { key: 'pauta_pagada', label: 'Vinieron de pauta pagada (Meta Ads)' },
+  { key: 'organico', label: 'Registrados orgánicos (sin pauta)' },
   { key: 'asistentes', label: 'Asistentes al workshop' },
   { key: 'no_asistentes', label: 'Registrados que NO asistieron' },
   { key: 'con_cuenta', label: 'Registrados con cuenta en Academy' },
