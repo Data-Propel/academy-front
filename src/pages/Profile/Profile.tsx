@@ -617,7 +617,7 @@ const Profile = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              Verificar
+                              Ver insignia
                             </a>
                           </div>
                         </div>

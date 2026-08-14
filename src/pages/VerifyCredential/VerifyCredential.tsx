@@ -4,6 +4,7 @@ import PageHead from '../../utils/PageHead';
 import { credentialApi, type CredentialVerification } from '../../services/api';
 import googleOrg from '../../assets/workshop/google-org.png';
 import propelSquare from '../../assets/workshop/propel-square.png';
+import peHero from '../../assets/workshop/pe-hero.jpg';
 import './VerifyCredential.css';
 
 const formatDate = (iso: string): string => {
@@ -70,10 +71,10 @@ const VerifyCredential = () => {
       {/* ── Hero (ruta brand banner) ── */}
       <section className="cred-hero">
         <div className="cred-hero__left">
-          <span className="cred-hero__tag">Certificación en IA</span>
+          <span className="cred-hero__tag">Certificación</span>
           <h1 className="cred-hero__title">
-            <span className="cred-hero__title-light">Lidera con un</span>{' '}
-            <span className="cred-hero__title-medium">IA mindset</span>
+            <span className="cred-hero__title-light">IA para</span>{' '}
+            <span className="cred-hero__title-medium">organizaciones sociales</span>
           </h1>
           <p className="cred-hero__subtitle">Aprende a usar IA en tu organización social</p>
           <img className="cred-hero__google" src={googleOrg} alt="with support from Google.org" />
@@ -81,7 +82,7 @@ const VerifyCredential = () => {
         <div className="cred-hero__right">
           <img
             className="cred-hero__photo"
-            src="/thumbnails/landinglidera.jpg"
+            src={peHero}
             alt=""
             aria-hidden="true"
           />
@@ -92,7 +93,7 @@ const VerifyCredential = () => {
       {/* ── Credential ── */}
       <section className="cred-body">
         <div className="cred-body__left">
-          <h2 className="cred-body__title">Felicidades. Completaste la ruta de aprendizaje.</h2>
+          <h2 className="cred-body__title">Felicidades. Completaste la certificación</h2>
           <ul className="cred-list">
             <li className="cred-item">
               <span className="cred-bullet" aria-hidden="true" />
@@ -125,7 +126,7 @@ const VerifyCredential = () => {
         </div>
 
         <div className="cred-body__right">
-          <img className="cred-badge" src={cred.badge_url} alt="Insignia Lidera con un IA mindset" />
+          <img className="cred-badge" src={cred.badge_url} alt={`Insignia: ${cred.track_name}`} />
           <a className="cred-btn cred-btn--download" href={cred.badge_url} download target="_blank" rel="noopener noreferrer">
             Descarga tu insignia
           </a>
