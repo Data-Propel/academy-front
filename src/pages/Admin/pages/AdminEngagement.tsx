@@ -278,8 +278,17 @@ export default function AdminEngagement() {
             {b.key === 'engagement' && (
               <p style={{ margin: '0 0 10px', color: C.textMuted, fontSize: 12 }}>
                 En el HTML puedes usar <code style={{ color: C.accent }}>{'{{ course_title }}'}</code> (título del
-                último curso iniciado) y <code style={{ color: C.accent }}>{'{{ cta_url }}'}</code> (enlace a ese
-                curso). Cada persona recibe el recordatorio de su último curso iniciado.
+                último curso iniciado), <code style={{ color: C.accent }}>{'{{ cta_url }}'}</code> (enlace a ese
+                curso) y <code style={{ color: C.accent }}>{'{{ course_image_url }}'}</code> (imagen de ese curso).
+                Cada persona recibe el recordatorio de su último curso iniciado.
+              </p>
+            )}
+            {b.key === 'retencion' && (
+              <p style={{ margin: '0 0 10px', color: C.textMuted, fontSize: 12 }}>
+                En el HTML puedes usar <code style={{ color: C.accent }}>{'{{ course_title }}'}</code> (curso
+                completado), <code style={{ color: C.accent }}>{'{{ recommended_course }}'}</code> (curso
+                recomendado), <code style={{ color: C.accent }}>{'{{ cta_url }}'}</code> (enlace al recomendado) y{' '}
+                <code style={{ color: C.accent }}>{'{{ course_image_url }}'}</code> (imagen del recomendado).
               </p>
             )}
             {rows.map((s) => {
