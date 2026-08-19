@@ -16,7 +16,7 @@ export interface PageMeta {
   canonicalPath: string;
 }
 
-export const PAGE_META: Record<'home' | 'cursos' | 'register' | 'login' | 'profile' | 'workshop' | 'workshopCo' | 'workshopEvent', PageMeta> = {
+export const PAGE_META: Record<'home' | 'cursos' | 'register' | 'login' | 'profile' | 'workshop' | 'workshopCo' | 'workshopEvent' | 'about' | 'privacy' | 'terms' | 'contact', PageMeta> = {
   home: {
     title: 'Propel Nonprofit Academy | Cursos para organizaciones sociales',
     description: 'Explora los cursos de la Nonprofit Academy. Capacítate junto a tu equipo en IA y herramientas digitales para aumentar el impacto de tu organización social.',
@@ -72,5 +72,33 @@ export const PAGE_META: Record<'home' | 'cursos' | 'register' | 'login' | 'profi
     ogDescription: 'Mide el impacto de tu organización con IA. 20 de agosto, vía Zoom.',
     ogImage: '/og/workshop-evento.jpg',
     canonicalPath: '/workshop',
+  },
+  about: {
+    title: 'Sobre nosotros | Propel Nonprofit Academy',
+    description: 'La Nonprofit Academy es la plataforma educativa de Propel: fortalecemos las capacidades digitales del sector social de América Latina con formación práctica en tecnología e IA.',
+    ogDescription: 'Conoce la Nonprofit Academy: capacidades digitales para el sector social de América Latina.',
+    ogImage: '/og/sobre-nosotros.jpg',
+    canonicalPath: '/sobre-nosotros',
+  },
+  privacy: {
+    title: 'Política de Privacidad | Propel Nonprofit Academy',
+    description: 'Conoce cómo la Nonprofit Academy de Propel recopila, usa y protege tus datos personales, y los derechos que tienes sobre tu información.',
+    ogDescription: 'Política de privacidad de la Nonprofit Academy de Propel.',
+    ogImage: '/og/home.jpg',
+    canonicalPath: '/politica-de-privacidad',
+  },
+  terms: {
+    title: 'Términos y Condiciones | Propel Nonprofit Academy',
+    description: 'Términos y condiciones de uso de la Nonprofit Academy de Propel: cuentas, cursos, propiedad intelectual y responsabilidades al usar la plataforma.',
+    ogDescription: 'Términos y condiciones de uso de la Nonprofit Academy de Propel.',
+    ogImage: '/og/home.jpg',
+    canonicalPath: '/terminos-y-condiciones',
+  },
+  contact: {
+    title: 'Contacto | Propel Nonprofit Academy',
+    description: 'Contáctanos: soporte de la plataforma Nonprofit Academy (cuenta, certificados, cursos) y alianzas, prensa o colaboraciones con Propel.',
+    ogDescription: 'Escríbenos: soporte de la Nonprofit Academy y alianzas con Propel.',
+    ogImage: '/og/home.jpg',
+    canonicalPath: '/contacto',
   },
 };

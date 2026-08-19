@@ -1,0 +1,521 @@
+/* sn-* — SobreNosotros. Valores tomados 1:1 del CSS del Webflow (propel-2025):
+   green1 #116d66 · green2 #11544f · green3 #043a37 · gray1 #f2f2f2
+   yellow3 #eb9f4f · orange1 #f7a161 · orange2 #fd6a44
+   Breakpoints Webflow: 991 / 767 / 479.
+   Las @font-face ('Libre Franklin WF', 'DM Mono') viven en public/fonts/fonts.css —
+   Vite 7 sobre Node 18 no puede resolver url() a archivos de public/ desde CSS
+   procesado (crypto.hash). 'Libre Franklin WF' trae la cara Regular real que el
+   Webflow usa en todo el texto; la familia global 'Libre Franklin' no la tiene y
+   renderizaría 500.
+
+   --r replica el html { font-size } FLUIDO del Webflow (crece con el viewport:
+   16px a 1440w, 18px a 1920w). Todos los "rem" del diseño se expresan como
+   calc(N * var(--r)); usar rem directo rompería la escala en pantallas anchas
+   (p. ej. la foto del intro quedaba más baja que en el Webflow y recortaba la
+   frente). El rem dentro de --r es el root del navegador (16px), como allá. */
+
+.sn-page {
+  font-family: 'Libre Franklin WF', 'Libre Franklin', 'Libre Franklin Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #043a37;
+  background: #fff;
+  --r: calc(0.625rem + 0.41666666666666663vw);
+  /* .padding-global del Webflow: margin-left 45px + padding lateral 2.5rem
+     (1.25rem ≤767; el margin desaparece ≤479). */
+  --sn-pg: calc(2.5 * var(--r));
+  --sn-mlg: 45px;
+  font-size: var(--r);
+  line-height: 1.5;
+}
+
+@media (max-width: 1440px) {
+  .sn-page { --r: calc(0.8126951092611863rem + 0.20811654526534862vw); }
+}
+
+@media (max-width: 479px) {
+  .sn-page { --r: calc(0.7494769874476988rem + 0.8368200836820083vw); }
+}
+
+/* Equivale a .padding-global > .container-large del Webflow: contenido de
+   86rem centrado dentro del espacio que deja el margin-left de 45px. */
+.sn-container {
+  box-sizing: content-box;
+  max-width: calc(86 * var(--r));
+  padding: 0 var(--sn-pg);
+  margin-right: auto;
+  margin-left: calc(var(--sn-mlg) + max(0px, (100% - var(--sn-mlg) - 86 * var(--r) - 2 * var(--sn-pg)) / 2));
+}
+
+.sn-h2 {
+  font-size: calc(2.625 * var(--r));
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* ── Banner (header10_component: 55vh; ≤991 min 50svh; ≤479 min 30svh) ── */
+
+.sn-banner {
+  height: 55vh;
+}
+
+.sn-banner__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Título (content18_content-wrapper: .75fr/3.5fr, gap 20.4rem;
+   sección con padding-section-medium: 2rem / 4rem ≤991 / 3rem ≤767) ── */
+
+.sn-title {
+  background: #11544f;
+  color: #fff;
+  padding: calc(2 * var(--r)) 0;
+}
+
+.sn-title__grid {
+  display: grid;
+  grid-template-columns: 0.75fr 3.5fr;
+  gap: calc(5 * var(--r)) calc(20.4 * var(--r));
+}
+
+.sn-title__heading {
+  font-size: calc(3.5 * var(--r));
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.sn-title__subheading {
+  font-size: calc(2 * var(--r));
+  font-weight: 400;
+  line-height: 1.3;
+  margin: 0 calc(2 * var(--r)) 0 0;
+  align-self: center;
+}
+
+/* ── Intro (section_header39 + header40_component: .75fr/1fr, gap 0, align
+   center; imagen 100vh cap 30rem con cover — mismo recorte que el Webflow) ── */
+
+.sn-intro {
+  background: #fff;
+}
+
+.sn-intro__grid {
+  display: grid;
+  grid-template-columns: 0.75fr 1fr;
+  align-items: center;
+}
+
+.sn-intro__img {
+  width: 100%;
+  height: 100vh;
+  max-height: calc(30 * var(--r));
+  object-fit: cover;
+  display: block;
+}
+
+.sn-intro__content {
+  max-width: calc(35 * var(--r));
+  margin-left: calc(5 * var(--r));
+  margin-right: 5vw;
+  font-size: calc(1.25 * var(--r));
+  color: #043a37;
+}
+
+/* ── Nuestro impacto (padding-section-xmedium: 4rem / 6rem ≤991 / 4rem ≤767) ── */
+
+.sn-impact {
+  background: #f2f2f2;
+}
+
+.sn-impact__inner {
+  max-width: calc(48 * var(--r));
+  padding: calc(4 * var(--r)) 0;
+}
+
+.sn-impact__sub {
+  font-size: calc(1.5 * var(--r));
+  font-weight: 400;
+  line-height: 1.4;
+  margin: calc(2 * var(--r)) 0 0;
+}
+
+/* ── Stats (stat_item-academy flex center + stats_data.style-2 con
+   padding-top 8rem) ── */
+
+.sn-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.sn-stats__item {
+  padding: calc(2 * var(--r)) calc(1 * var(--r)) calc(2 * var(--r)) calc(2 * var(--r));
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  /* En el Webflow .text-color-alternate pinta número y label de blanco en las
+     tres tarjetas, incluida la amarilla. */
+  color: #fff;
+}
+
+.sn-stats__data {
+  width: 100%;
+  padding: calc(8 * var(--r)) calc(2.5 * var(--r)) 0;
+}
+
+.sn-stats__item--yellow { background: #eb9f4f; }
+.sn-stats__item--orange { background: #f7a161; }
+.sn-stats__item--green { background: #043a37; }
+
+.sn-stats__number {
+  font-family: 'DM Mono', Verdana, monospace;
+  font-weight: 400;
+  font-size: calc(5 * var(--r));
+  line-height: 1.3;
+}
+
+.sn-stats__label {
+  font-size: calc(2 * var(--r));
+  font-weight: 400;
+  line-height: 1.3;
+  margin: calc(1 * var(--r)) calc(2 * var(--r)) 0 0;
+}
+
+/* ── Beneficios (padding-section-xmedium: 4rem / 6rem ≤991 / 4rem ≤767) ── */
+
+.sn-benefits {
+  background: #116d66;
+  color: #fff;
+  padding: calc(4 * var(--r)) 0;
+}
+
+.sn-benefits__heading {
+  max-width: calc(48 * var(--r));
+  font-size: calc(2 * var(--r));
+  font-weight: 400;
+  line-height: 1.3;
+  margin: 0 calc(2 * var(--r)) calc(2 * var(--r)) 0;
+}
+
+.sn-benefits__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: calc(4 * var(--r)) calc(2 * var(--r));
+}
+
+.sn-benefit {
+  background: #fff;
+  color: #043a37;
+  border-radius: calc(0.3 * var(--r));
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sn-benefit__image-wrapper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.sn-benefit__img {
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.sn-benefit__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: calc(2 * var(--r));
+}
+
+.sn-benefit__title {
+  font-size: calc(2 * var(--r));
+  font-weight: 600;
+  line-height: 1.3;
+  color: #043a37;
+  margin: 0 calc(2 * var(--r)) calc(2 * var(--r)) 0;
+}
+
+.sn-benefit__description {
+  font-size: calc(1.25 * var(--r));
+  line-height: 1.5;
+  color: #116d66;
+  margin: 0;
+}
+
+/* ── Testimonios (swiper2: vertical 70vh ≥992 / 80vh ≥1440; horizontal ≤991;
+   autoplay 6s en loop; foto cuadrada con cover como en el Webflow) ── */
+
+.sn-testimonials {
+  height: 70vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.sn-testimonials__track {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.5s ease;
+}
+
+.sn-testimonial {
+  flex: 0 0 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 0.5fr 1fr;
+  align-items: stretch;
+  margin: 0;
+}
+
+.sn-testimonial__image-wrapper {
+  overflow: hidden;
+}
+
+.sn-testimonial__image-link {
+  display: block;
+}
+
+.sn-testimonial__img {
+  aspect-ratio: 1;
+  object-fit: cover;
+  width: 100%;
+  height: 70vh;
+  display: block;
+}
+
+/* testimonial13_content-right: título arriba, cita al medio, redes al pie */
+.sn-testimonial__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: calc(3.5 * var(--r)) max(50vw - 43 * var(--r), 2.5 * var(--r)) 10vw calc(3.5 * var(--r));
+  overflow: hidden;
+}
+
+.sn-testimonial__label {
+  font-size: calc(1.5 * var(--r));
+}
+
+.sn-testimonial__name {
+  font-size: calc(2.625 * var(--r));
+  font-weight: 600;
+  line-height: 1.2;
+  color: #fd6a44;
+}
+
+.sn-testimonial__role {
+  font-size: calc(2 * var(--r));
+  font-weight: 400;
+  line-height: 1.3;
+  color: #fd6a44;
+  margin: calc(0.25 * var(--r)) calc(2 * var(--r)) 0 0;
+}
+
+.sn-testimonial__quote {
+  font-size: calc(1.5 * var(--r));
+  line-height: 1.5;
+  margin: calc(2 * var(--r)) 0 calc(1 * var(--r));
+}
+
+.sn-testimonial__socials {
+  display: flex;
+  gap: 5px;
+}
+
+.sn-testimonial__social {
+  width: calc(2.5 * var(--r));
+  height: calc(2.5 * var(--r));
+  color: #043a37;
+  display: block;
+}
+
+/* ── Una iniciativa de Propel (padding-section-large: 6rem / 4rem ≤767;
+   grid-13: 1.75fr/1fr gap 16px, logo al 70% de su columna) ── */
+
+.sn-propel {
+  background: #116d66;
+  color: #fff;
+  padding: calc(6 * var(--r)) 0;
+}
+
+.sn-propel__grid {
+  display: grid;
+  grid-template-columns: 1.75fr 1fr;
+  gap: 16px;
+}
+
+.sn-propel__text {
+  max-width: calc(48 * var(--r));
+  font-size: calc(1.25 * var(--r));
+  line-height: 1.5;
+  margin: calc(3 * var(--r)) 0 0;
+}
+
+.sn-propel__logo-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sn-propel__logo {
+  width: 70%;
+}
+
+/* ── ≥1440 (overrides min-width del Webflow) ── */
+
+@media (min-width: 1440px) {
+  .sn-stats__number { font-size: calc(7 * var(--r)); }
+  .sn-testimonials { height: 80vh; }
+  .sn-testimonial__img { height: 80vh; }
+  .sn-testimonial__content { padding-bottom: 6vw; }
+}
+
+/* ── Responsive (breakpoints Webflow: 991 / 767 / 479) ── */
+
+@media (max-width: 991px) {
+  .sn-banner { height: 50svh; }
+
+  .sn-title { padding: calc(4 * var(--r)) 0; }
+
+  .sn-title__grid {
+    gap: calc(3 * var(--r));
+  }
+
+  /* header40_component ≤991: una columna, row-gap 4rem, padding-top 6rem */
+  .sn-intro__grid {
+    grid-template-columns: 1fr;
+    row-gap: calc(4 * var(--r));
+    padding-top: calc(6 * var(--r));
+  }
+
+  /* header39_image ≤991: alto natural, sin recorte */
+  .sn-intro__img {
+    height: auto;
+    max-height: none;
+  }
+
+  /* En el Webflow el nodo de texto pasa a grid-area 1/1 ≤991: texto arriba,
+     foto debajo. */
+  .sn-intro__content {
+    grid-row: 1;
+    margin-left: 5%;
+    margin-right: 5%;
+  }
+
+  .sn-impact__inner { padding: calc(6 * var(--r)) 0; }
+  .sn-impact__sub { margin-top: calc(1.5 * var(--r)); }
+
+  .sn-benefits { padding: calc(6 * var(--r)) 0; }
+  .sn-benefits__heading { margin-bottom: calc(1.5 * var(--r)); }
+
+  /* academy_list ≤991: una columna, row-gap 2rem */
+  .sn-benefits__grid {
+    grid-template-columns: 1fr;
+    row-gap: calc(2 * var(--r));
+  }
+
+  /* stats_list ≤991: una columna */
+  .sn-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .sn-stats__data { padding-top: calc(4 * var(--r)); }
+  .sn-stats__number { font-size: calc(4 * var(--r)); }
+
+  /* swiper2 ≤991: slider horizontal, alto del contenido */
+  .sn-testimonials { height: auto; }
+  .sn-testimonials__track { flex-direction: row; height: auto; }
+  .sn-testimonial { height: auto; grid-template-columns: 1fr 1fr; }
+  .sn-testimonial__img { height: 100vh; }
+
+  .sn-propel__text { margin-top: calc(2.5 * var(--r)); }
+}
+
+@media (max-width: 767px) {
+  .sn-page { --sn-pg: calc(1.25 * var(--r)); }
+
+  .sn-title { padding: calc(3 * var(--r)) 0; }
+
+  .sn-title__grid {
+    grid-template-columns: 1fr;
+    gap: calc(1.25 * var(--r));
+    align-items: center;
+  }
+
+  .sn-title__heading { font-size: calc(2.5 * var(--r)); }
+  .sn-title__subheading { font-size: calc(1.5 * var(--r)); }
+  .sn-h2 { font-size: calc(2 * var(--r)); }
+  .sn-impact__inner { padding: calc(4 * var(--r)) 0; }
+  .sn-impact__sub { font-size: calc(1.25 * var(--r)); margin-top: calc(1.25 * var(--r)); }
+  .sn-benefits { padding: calc(4 * var(--r)) 0; }
+  .sn-benefits__heading { font-size: calc(1.5 * var(--r)); margin-bottom: calc(1.25 * var(--r)); }
+  .sn-benefit__title { font-size: calc(1.5 * var(--r)); }
+
+  .sn-intro__grid { padding-top: calc(4 * var(--r)); }
+
+  .sn-stats__number { font-size: calc(3.5 * var(--r)); }
+  .sn-stats__label { font-size: calc(1.5 * var(--r)); }
+
+  /* testimonial13_content ≤767: una columna, texto primero (order:-9999 del
+     Webflow), foto cuadrada debajo, texto a 45vh */
+  .sn-testimonial { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+  .sn-testimonial__img { height: auto; }
+  .sn-testimonial__content { order: -1; height: 45vh; }
+  .sn-testimonial__label { font-size: calc(1.25 * var(--r)); }
+  .sn-testimonial__name { font-size: calc(2 * var(--r)); }
+  .sn-testimonial__role { font-size: calc(1.5 * var(--r)); }
+  .sn-testimonial__quote { font-size: calc(1.25 * var(--r)); margin-top: calc(1.25 * var(--r)); }
+
+  .sn-propel { padding: calc(4 * var(--r)) 0; }
+  .sn-propel__text { margin-top: calc(1.5 * var(--r)); }
+}
+
+@media (max-width: 479px) {
+  .sn-page { --sn-mlg: 0px; }
+
+  .sn-banner { height: 30svh; }
+
+  /* header39_image ≤479: oculta */
+  .sn-intro__img { display: none; }
+
+  .sn-intro__content { font-size: calc(1.125 * var(--r)); }
+  .sn-benefit__content { padding-left: calc(1 * var(--r)); padding-right: calc(1 * var(--r)); }
+  .sn-benefit__description { font-size: calc(1.125 * var(--r)); }
+  .sn-stats__data { padding-top: calc(2 * var(--r)); }
+
+  /* swiper2 ≤479: tarjeta a pantalla completa, foto llena el resto */
+  .sn-testimonials { height: 100vh; }
+  .sn-testimonials__track { height: 100%; }
+  .sn-testimonial { height: 100%; grid-template-rows: auto 1fr; }
+  .sn-testimonial__image-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+  }
+  .sn-testimonial__image-link { height: 100%; }
+  .sn-testimonial__img { aspect-ratio: auto; height: 100%; }
+  .sn-testimonial__content {
+    gap: calc(1 * var(--r));
+    padding-top: calc(1 * var(--r));
+    padding-bottom: calc(1 * var(--r));
+    padding-left: calc(1 * var(--r));
+  }
+
+  .sn-propel__grid { grid-template-columns: 1.75fr; gap: 30px; }
+  .sn-propel__logo-wrapper { justify-content: flex-start; }
+  .sn-propel__logo { width: 50%; }
+  .sn-propel__text { font-size: calc(1.125 * var(--r)); }
+}

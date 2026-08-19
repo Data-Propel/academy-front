@@ -125,6 +125,15 @@
   color: #fd6a44;
 }
 
+/* Contáctanos en amarillo, como el .yellow-color del footer del Webflow */
+.footer-legal a.footer-contact {
+  color: #efe46e;
+}
+
+.footer-legal a.footer-contact:hover {
+  color: #fd6a44;
+}
+
 .footer-divider {
   color: #f2f2f2;
 }

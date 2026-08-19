@@ -18,6 +18,9 @@ const Footer = () => {
             <p className="footer-heading">Quiénes Somos</p>
             <ul className="footer-links">
               <li>
+                <a href="/sobre-nosotros">Sobre nosotros</a>
+              </li>
+              <li>
                 <a href="https://www.wepropel.org/equipo-propel" target="_blank" rel="noopener noreferrer">
                   Equipo Propel
                 </a>
@@ -41,7 +44,7 @@ const Footer = () => {
             <a href="https://www.instagram.com/wepropelorg" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <img src="/landing/social/instagram.svg" alt="" />
             </a>
-            <a href="https://www.facebook.com/wepropel" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <a href="https://www.facebook.com/wepropelorg" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
               <img src="/landing/social/facebook.svg" alt="" />
             </a>
             <a href="https://www.linkedin.com/company/wepropel" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
@@ -50,9 +53,11 @@ const Footer = () => {
           </div>
 
           <p className="footer-legal">
-            <a href="/terminos">Términos &amp; Condiciones</a>
+            <a href="/contacto" className="footer-contact">Contáctanos</a>
             <span className="footer-divider"> | </span>
-            <a href="/privacidad">Política de Privacidad</a>
+            <a href="/terminos-y-condiciones">Términos &amp; Condiciones</a>
+            <span className="footer-divider"> | </span>
+            <a href="/politica-de-privacidad">Política de Privacidad</a>
           </p>
         </div>
       </div>

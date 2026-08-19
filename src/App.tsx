@@ -23,6 +23,8 @@ const Home = lazy(() => import('./pages/Home/Home'));
 const VerifyCredential = lazy(() => import('./pages/VerifyCredential/VerifyCredential'));
 const WorkshopLanding = lazy(() => import('./pages/WorkshopLanding/WorkshopLanding'));
 const WorkshopEvent = lazy(() => import('./pages/WorkshopEvent/WorkshopEvent'));
+const SobreNosotros = lazy(() => import('./pages/SobreNosotros/SobreNosotros'));
+const LegalPage = lazy(() => import('./pages/Legal/LegalPage'));
 
 import './App.css';
 
@@ -128,6 +130,12 @@ export function AppContent() {
           <Route path="/certificación-ia-co" element={<WorkshopLanding edition="co" />} />
           <Route path="/certificacion-ia-co" element={<WorkshopLanding edition="co" />} />
           <Route path="/workshop" element={<WorkshopEvent />} />
+          <Route path="/sobre-nosotros" element={<SobreNosotros />} />
+          <Route path="/politica-de-privacidad" element={<LegalPage page="privacy" />} />
+          <Route path="/privacidad" element={<Navigate to="/politica-de-privacidad" replace />} />
+          <Route path="/terminos-y-condiciones" element={<LegalPage page="terms" />} />
+          <Route path="/terminos" element={<Navigate to="/terminos-y-condiciones" replace />} />
+          <Route path="/contacto" element={<LegalPage page="contact" />} />
           <Route path="/verify/:code" element={<VerifyCredential />} />
           <Route path="/admin/*" element={isAuthenticated() ? <Admin /> : <Navigate to="/login" replace />} />
           <Route path="*" element={<NotFound />} />
