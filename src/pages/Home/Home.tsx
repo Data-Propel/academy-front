@@ -219,7 +219,7 @@ const Home = () => {
       </section>
 
       {/* ── FAQ (teal) ── */}
-      <section className="home-faq">
+      <section className="home-faq" id="faq">
         <div className="home-faq__inner">
           <h2 className="home-faq__title">Preguntas frecuentes</h2>
           <ul className="home-faq__list">

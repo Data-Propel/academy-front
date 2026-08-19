@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
-import heroBanner from '../../assets/about/hero-banner.png';
-import introImg from '../../assets/about/intro.png';
-import cardCursos from '../../assets/about/card-cursos.jpg';
-import cardIa from '../../assets/about/card-ia.png';
-import cardCasos from '../../assets/about/card-casos.jpg';
-import testimonialSofia from '../../assets/about/testimonial-sofia.jpeg';
-import testimonialHugo from '../../assets/about/testimonial-hugo.png';
+import heroBanner from '../../assets/about/hero-banner.webp';
+import introImg from '../../assets/about/intro.webp';
+import cardCursos from '../../assets/about/card-cursos.webp';
+import cardIa from '../../assets/about/card-ia.webp';
+import cardCasos from '../../assets/about/card-casos.webp';
+import testimonialSofia from '../../assets/about/testimonial-sofia.webp';
+import testimonialHugo from '../../assets/about/testimonial-hugo.webp';
 import propelLogo from '../../assets/about/propel-logo.svg';
 import './SobreNosotros.css';
 

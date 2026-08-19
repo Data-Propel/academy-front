@@ -2,17 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/api';
 import { getAttribution } from '../../utils/attribution';
+import { trackEvent } from '../../utils/analytics';
 import { ORGANIZATION_TYPES, COUNTRIES, needsProfileCompletion } from '../../utils/profileOptions';
 import PageHead from '../../utils/PageHead';
 import { PAGE_META } from '../../utils/pageMeta';
-import propelLogo from '../../assets/register/propel-logo.png';
-import tileAsistenteIA from '../../assets/register/tile-asistente-ia.png';
-import tileGrants from '../../assets/register/tile-grants.png';
-import tileGrowth from '../../assets/register/tile-growth.png';
-import tileData from '../../assets/register/tile-data.png';
+import propelLogo from '../../assets/register/propel-logo.webp';
+import tileAsistenteIA from '../../assets/register/tile-asistente-ia.webp';
+import tileGrants from '../../assets/register/tile-grants.webp';
+import tileGrowth from '../../assets/register/tile-growth.webp';
+import tileData from '../../assets/register/tile-data.webp';
 import googleOrg from '../../assets/register/google-org.png';
 import googleG from '../../assets/register/google-g.png';
-import propelSquare from '../../assets/register/propel-square.png';
+import propelSquare from '../../assets/register/propel-square.webp';
 import './Register.css';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID as string | undefined;
@@ -75,6 +76,7 @@ const Register = () => {
         ...getAttribution(),
       });
       if (ok) {
+        trackEvent('sign_up', { method: 'google' });
         navigate(needsProfileCompletion(data.user) ? '/completar-perfil' : '/cursos');
       } else {
         setError(data.detail || 'No fue posible iniciar sesión con Google.');
@@ -171,6 +173,7 @@ const Register = () => {
         ...getAttribution(),
       });
       if (ok) {
+        trackEvent('sign_up', { method: 'email' });
         setRegistered(true);
       } else {
         const errorMsg = data.email?.[0] || data.password?.[0] || data.detail || 'Error al registrar. Intenta de nuevo.';

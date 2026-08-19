@@ -207,3 +207,99 @@
     font-size: calc(2.2 * var(--r));
   }
 }
+
+/* ── Formulario de contacto (/contacto) ── */
+.lp-form {
+  margin-top: calc(2.5 * var(--r));
+  max-width: calc(42 * var(--r));
+}
+
+.lp-form__title {
+  font-size: calc(1.5 * var(--r));
+  font-weight: 600;
+  color: #0E4B43;
+  margin: 0 0 calc(1 * var(--r));
+}
+
+.lp-form__row {
+  display: flex;
+  gap: calc(1 * var(--r));
+}
+
+.lp-form__field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: calc(0.35 * var(--r));
+  margin-bottom: calc(1 * var(--r));
+  font-size: calc(0.9 * var(--r));
+  font-weight: 600;
+  color: #0E4B43;
+}
+
+.lp-form__field input,
+.lp-form__field textarea {
+  font-family: inherit;
+  font-weight: 400;
+  font-size: var(--r);
+  color: #1a1a1a;
+  background: #fff;
+  border: 1px solid #d5d5d0;
+  border-radius: 6px;
+  padding: calc(0.6 * var(--r)) calc(0.75 * var(--r));
+  resize: vertical;
+}
+
+.lp-form__field input:focus,
+.lp-form__field textarea:focus {
+  outline: 2px solid #0E4B43;
+  outline-offset: 1px;
+  border-color: #0E4B43;
+}
+
+/* Honeypot: fuera de pantalla, invisible para humanos */
+.lp-form__hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.lp-form__error {
+  color: #c0392b;
+  font-size: calc(0.9 * var(--r));
+  margin: 0 0 calc(0.75 * var(--r));
+}
+
+.lp-form__submit {
+  font-family: inherit;
+  font-size: var(--r);
+  font-weight: 600;
+  color: #fff;
+  background: #FF5A2F;
+  border: none;
+  border-radius: 6px;
+  padding: calc(0.7 * var(--r)) calc(1.8 * var(--r));
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.lp-form__submit:hover { background: #e64d24; }
+.lp-form__submit:disabled { opacity: 0.6; cursor: default; }
+
+.lp-form--success {
+  background: #fff;
+  border-left: 4px solid #A3C94A;
+  padding: calc(1.25 * var(--r)) calc(1.5 * var(--r));
+}
+
+.lp-form__success-title {
+  font-weight: 600;
+  color: #0E4B43;
+  margin: 0 0 calc(0.4 * var(--r));
+}
+
+@media (max-width: 767px) {
+  .lp-form__row { flex-direction: column; gap: 0; }
+}

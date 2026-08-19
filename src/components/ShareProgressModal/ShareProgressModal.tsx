@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import propelLogo from '../../assets/register/propel-logo.png';
+import propelLogo from '../../assets/register/propel-logo.webp';
 import './ShareProgressModal.css';
 
 // "Compartir avance" popup (S6-04): renders a branded share image on a

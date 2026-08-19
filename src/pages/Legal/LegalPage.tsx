@@ -4,6 +4,7 @@ import orangeIco from '../../assets/about/orange-ico.avif';
 import { PRIVACIDAD_HTML } from './privacidadContent';
 import { TERMINOS_HTML } from './terminosContent';
 import { CONTACTO_HTML } from './contactoContent';
+import ContactForm from './ContactForm';
 import './LegalPage.css';
 
 // Páginas de texto del Webflow (header38 verde + rich text sobre gris). Todas
@@ -64,6 +65,7 @@ const LegalPage = ({ page }: { page: keyof typeof PAGES }) => {
         <div className="lp-container">
           {/* Contenido legal estático extraído del Webflow — ver *Content.ts */}
           <div className="lp-richtext" dangerouslySetInnerHTML={{ __html: html }} />
+          {page === 'contact' && <ContactForm />}
         </div>
       </section>
     </div>

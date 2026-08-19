@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
 import { coursesApi, isAuthenticated } from '../../services/api';
 import { getCurrentAttribution } from '../../utils/attribution';
+import { trackEvent } from '../../utils/analytics';
 import takeIcon1 from '../../assets/course/take-1.png';
 import takeIcon2 from '../../assets/course/take-2.png';
 import takeIcon3 from '../../assets/course/take-3.png';
@@ -279,6 +280,7 @@ const CourseDetail = () => {
     try {
       const response = await coursesApi.enroll(course.slug, getCurrentAttribution());
       if (response.ok) {
+        trackEvent('course_enroll', { course: course.slug });
         const sortedLessons = [...(course.lessons || [])].sort((a, b) => a.order_index - b.order_index);
         // Content is stripped for unenrolled users, so navigate by ID order:
         // prefer first topic (always present), fall back to first lesson

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { authApi, getToken, isAuthenticated } from '../../services/api';
 import PageHead from '../../utils/PageHead';
+import { trackEvent } from '../../utils/analytics';
 import { PAGE_META } from '../../utils/pageMeta';
 import googleOrg from '../../assets/workshop/google-org.png';
 import peCard from '../../assets/workshop/pe-card.jpg';
@@ -254,6 +255,7 @@ const WorkshopLanding = ({ edition = 'pe' }: { edition?: WorkshopEditionKey }) =
         }),
       });
       if (res.ok) {
+        trackEvent('workshop_register', { workshop: ed.slug });
         setSuccess(true);
       } else {
         const data = await res.json().catch(() => ({})) as Record<string, unknown>;
